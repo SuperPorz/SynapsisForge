@@ -19,5 +19,5 @@ test_file:
   stage: test
   script:
     - echo "test started"
-    - test -f build/test_file.txt && echo "File exists, test passed." || echo "File does not exist, test failed."
+    - test -f build/test_file.txt"
     - echo "test completed, file existence checked."
