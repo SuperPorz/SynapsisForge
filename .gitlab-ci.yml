@@ -5,5 +5,11 @@ create_file:
   script:
     - echo "This is a test file created by GitLab CI/CD pipeline."
     - mkdir build
-    - touch build/test_file.txt
-    - echo "File created successfully."
+    - touch build/test_file.txt && echo "File created at build/test_file.txt" || echo "Failed to create file."
+
+# Job 2: test if the file has got created or not
+test_file:
+  image: ubuntu:latest
+  script:
+    - echo "test started"
+    - test -f build/test_file.txt && echo "File exists, test passed." || echo "File does not exist, test failed."
