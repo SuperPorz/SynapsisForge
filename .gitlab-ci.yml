@@ -1,0 +1,9 @@
+# test gitlab
+# Job 1: config test, file creation
+create_file:
+  image: ubuntu:latest
+  script:
+    - echo "This is a test file created by GitLab CI/CD pipeline."
+    - mkdir build
+    - touch build/test_file.txt
+    - echo "File created successfully."
