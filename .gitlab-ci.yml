@@ -12,6 +12,9 @@ create_file:
     - mkdir build
     - touch build/test_file.txt
     - echo "File created successfully."
+  artifacts:
+    paths:
+      - build/
 
 # Job 2: test if the file has got created or not
 test_file:
