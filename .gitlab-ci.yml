@@ -22,5 +22,5 @@ test_file:
   stage: test
   script:
     - echo "test started"
-    - test -f build/test_file.txt"
+    - test -f build/test_file.txt
     - echo "test completed, file existence checked."
