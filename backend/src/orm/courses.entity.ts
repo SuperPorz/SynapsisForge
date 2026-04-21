@@ -1,6 +1,6 @@
 // prettier-ignore
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
-import { Status } from './courses.enum';
+import { Status } from './enum/courses.enum';
 import { User } from './users.entity';
 import { Category } from './categories.entity';
 

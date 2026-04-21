@@ -1,6 +1,6 @@
 // prettier-ignore
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
-import { Country, UserRole } from './users.enum';
+import { Country, UserRole } from './enum/users.enum';
 
 @Entity('users')
 export class User {
