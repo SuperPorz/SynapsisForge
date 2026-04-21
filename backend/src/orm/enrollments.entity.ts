@@ -9,7 +9,7 @@ export class Enrollment {
   id!: string;
 
   @ManyToOne(() => User, { nullable: false })
-  user_id!: User;
+  user!: User;
 
   @ManyToOne(() => Course, { nullable: false })
   course!: Course;
@@ -20,6 +20,6 @@ export class Enrollment {
   @CreateDateColumn()
   enrolled_at!: Date;
 
-  @CreateDateColumn()
-  completed_at!: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  completed_at!: Date | null;
 }

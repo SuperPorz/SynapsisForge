@@ -4,7 +4,7 @@ import { Rating } from './enum/reviews.enum';
 import { Enrollment } from './enrollments.entity';
 
 @Entity('reviews')
-@Unique(['enrollment_id'])
+@Unique(['enrollment'])
 export class Review {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

@@ -1,11 +1,10 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import { Course } from './courses.entity';
 import { User } from './users.entity';
 import { Currency, Status } from './enum/payments.enum';
 
 @Entity('payments')
-@Unique(['enrollment_id'])
 export class Payment {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -20,7 +19,7 @@ export class Payment {
   amount!: number;
 
   @Column({ type: 'enum', enum: Currency })
-  rating!: Currency;
+  currency!: Currency;
 
   @Column()
   gateway_id!: string;

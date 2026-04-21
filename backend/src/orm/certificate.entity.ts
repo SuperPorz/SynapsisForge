@@ -1,5 +1,5 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn } from 'typeorm';
 import { Enrollment } from './enrollments.entity';
 
 @Entity('certificates')
@@ -7,7 +7,8 @@ export class Certificate {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => Enrollment, { nullable: false })
+  @OneToOne(() => Enrollment, { nullable: false })
+  @JoinColumn()
   enrollment!: Enrollment;
 
   @CreateDateColumn()
