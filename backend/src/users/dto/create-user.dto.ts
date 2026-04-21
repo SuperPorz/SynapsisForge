@@ -1,23 +1,6 @@
 import { IsDate, IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
-import { Type } from 'class-transformer'; // <--- Importa questo
-
-//piu avanti aggiungere altri paesi, magari da database
-export enum Country {
-  USA = 'USA',
-  CANADA = 'CANADA',
-  MEXICO = 'MEXICO',
-  ITALY = 'ITALY',
-  FRANCE = 'FRANCE',
-  GERMANY = 'GERMANY',
-  SPAIN = 'SPAIN',
-  UK = 'UK',
-}
-
-export enum UserRole {
-  STUDENT = 'STUDENT',
-  INSTRUCTOR = 'INSTRUCTOR',
-  ADMIN = 'ADMIN',
-}
+import { Type } from 'class-transformer';
+import { Country, UserRole } from '../../orm/users.enum';
 
 export class CreateUsersDto {
   @IsEmail()

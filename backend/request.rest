@@ -1,0 +1,21 @@
+### Base URL
+@baseUrl = http://localhost:3000
+
+### 1. Get Hello - Root endpoint
+GET {{baseUrl}}/
+
+### 2. Health Check
+GET {{baseUrl}}/health
+
+### 3. Get All Users
+GET {{baseUrl}}/users
+
+### 4. Create User
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "role": "user"
+}
