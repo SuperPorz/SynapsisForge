@@ -1,7 +1,7 @@
 // prettier-ignore
 import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUsersDto } from './dto/create-user.dto';
+import { CreateUsersDto } from '../dto/create-user.dto';
 
 @Controller('users')
 export class UsersController {
