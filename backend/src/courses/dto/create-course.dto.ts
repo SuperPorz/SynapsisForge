@@ -1,5 +1,5 @@
 import { IsEnum, IsNumber, IsString } from 'class-validator';
-import { Status } from '../../orm/enum/courses.enum';
+import { Status } from '../../entities/enum/courses.enum';
 
 export class CreateCourseDto {
   @IsString()

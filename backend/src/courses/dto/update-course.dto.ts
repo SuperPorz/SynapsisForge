@@ -1,4 +1,4 @@
-import { Status } from '../../orm/enum/courses.enum';
+import { Status } from '../../entities/enum/courses.enum';
 
 export class UpdateCourseDto {
   title?: string;

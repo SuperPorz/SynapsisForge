@@ -1,6 +1,6 @@
 import { IsDate, IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Country, UserRole } from '../../orm/enum/users.enum';
+import { Country, UserRole } from '../../entities/enum/users.enum';
 
 export class CreateUsersDto {
   @IsEmail()
