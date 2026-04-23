@@ -5,6 +5,7 @@ import { HealthService } from './health/health.service';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CoursesService } from './courses/courses.service';
 
 @Module({
   imports: [
@@ -25,6 +26,6 @@ import { MongooseModule } from '@nestjs/mongoose';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, HealthService],
+  providers: [AppService, HealthService, CoursesService],
 })
 export class AppModule {}

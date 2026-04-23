@@ -21,7 +21,7 @@ export class Course {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price!: number;
 
-  @Column({ type: 'enum', enum: Status })
+  @Column({ type: 'enum', enum: Status, default: Status.DRAFT })
   status!: Status;
 
   @Column()
