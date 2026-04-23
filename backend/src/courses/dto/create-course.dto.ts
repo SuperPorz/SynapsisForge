@@ -1,5 +1,5 @@
-import { IsDate, IsEnum, IsNumber, IsString } from 'class-validator';
-import { Category } from '../../orm/categories.entity';
+import { IsEnum, IsNumber, IsString } from 'class-validator';
+import { Status } from '../../orm/enum/courses.enum';
 
 export class CreateCourseDto {
   @IsString()
@@ -14,9 +14,12 @@ export class CreateCourseDto {
   @IsNumber()
   price!: number;
 
-  @IsEnum(Category)
-  category!: Category;
+  @IsString()
+  category_id!: string;
 
-  @IsDate()
-  created_at!: Date;
+  @IsEnum(Status)
+  status!: Status;
+
+  @IsString()
+  thumbnail!: string;
 }

@@ -55,9 +55,19 @@ export class CoursesService {
 
   async search(query: string): Promise<Course[]> {
     return await this.coursesRepo
-      .createQueryBuilder('course')
-      .where('course.title ILIKE :query', { query: `%${query}%` })
-      //.orWhere('course.description ILIKE :query', { query: `%${query}%` })  // si può aggiungere in seguito
+      .createQueryBuilder('course') //alias della tabella
+      .where('course.title ILIKE :q', { q: `%${query}%` }) // ILIKE è il LIKE case-insensitive di PostgreSQL, :q (short per query) è un parametro bindato — protegge da SQL injection
+      .orWhere('course.description ILIKE :q', { q: `%${query}%` })
       .getMany();
   }
 }
+
+/* 
+findAll
+findOne
+findBySlug
+create
+update
+delete
+search
+*/
