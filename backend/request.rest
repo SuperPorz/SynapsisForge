@@ -19,3 +19,6 @@ Content-Type: application/json
   "email": "john@example.com",
   "role": "user"
 }
+
+### 5. Get API/Docs
+GET {{baseUrl}}/api/docs

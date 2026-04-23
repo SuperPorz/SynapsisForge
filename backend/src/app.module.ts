@@ -5,10 +5,12 @@ import { HealthService } from './health/health.service';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
   imports: [
     UsersModule,
+    CoursesModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
