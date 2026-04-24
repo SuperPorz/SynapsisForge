@@ -19,7 +19,7 @@ import { CoursesModule } from './courses/courses.module';
       password: 'qwerty',
       database: 'pg_database',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // Da usare con cautela in produzione
+      synchronize: true, // Impostare su false quando si va in produzione
     }),
     // Database Secondario (MongoDB)
     MongooseModule.forRoot('mongodb://localhost:27017/nosql_db', {

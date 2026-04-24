@@ -1,8 +1,9 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, DeleteDateColumn, OneToMany } from 'typeorm';
 import { Status } from './enum/courses.enum';
 import { User } from './users.entity';
 import { Category } from './categories.entity';
+import { Lesson } from './lessons.entity';
 
 @Entity('courses')
 export class Course {
@@ -25,7 +26,7 @@ export class Course {
   status!: Status;
 
   @Column()
-  thumbnail_url!: string;
+  thumbnail_url?: string;
 
   // colonna importante per la relazione FK con la tabella User, rappresenta l'insegnante del corso
   @ManyToOne(() => User, { nullable: false })
@@ -33,6 +34,9 @@ export class Course {
 
   @ManyToOne(() => Category, { nullable: false })
   category!: Category;
+
+  @OneToMany(() => Lesson, (lesson) => lesson.course)
+  lessons?: Lesson[];
 
   @CreateDateColumn()
   created_at!: Date;

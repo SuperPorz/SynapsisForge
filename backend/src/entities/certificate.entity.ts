@@ -7,7 +7,9 @@ export class Certificate {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @OneToOne(() => Enrollment, { nullable: false })
+  @OneToOne(() => Enrollment, (enrollment) => enrollment.certificate, {
+    nullable: false,
+  })
   @JoinColumn()
   enrollment!: Enrollment;
 
@@ -15,5 +17,5 @@ export class Certificate {
   issued_at!: Date;
 
   @Column({ type: 'text', nullable: true })
-  pdf_url!: string;
+  pdf_url: string | null = null;
 }

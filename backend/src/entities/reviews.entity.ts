@@ -1,10 +1,9 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 import { Rating } from './enum/reviews.enum';
 import { Enrollment } from './enrollments.entity';
 
 @Entity('reviews')
-@Unique(['enrollment'])
 export class Review {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -15,6 +14,9 @@ export class Review {
   @Column({ type: 'text', nullable: true })
   comment!: string | null;
 
-  @ManyToOne(() => Enrollment, { nullable: false })
+  @OneToOne(() => Enrollment, (enrollment) => enrollment.review, {
+    nullable: false,
+  })
+  @JoinColumn()
   enrollment!: Enrollment;
 }
