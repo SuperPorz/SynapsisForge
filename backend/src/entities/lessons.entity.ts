@@ -19,6 +19,6 @@ export class Lesson {
   @Column()
   content_id!: string;
 
-  @ManyToOne(() => Course, { nullable: false })
+  @ManyToOne(() => Course, { nullable: false, onDelete: 'CASCADE' })
   course!: Course;
 }

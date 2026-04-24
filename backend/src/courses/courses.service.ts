@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from 'src/entities/courses.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -40,8 +44,20 @@ export class CoursesService {
   }
 
   async create(dto: CreateCourseDto): Promise<Course> {
-    const course = this.coursesRepo.create(dto);
-    return await this.coursesRepo.save(course);
+    try {
+      const course = this.coursesRepo.create({
+        ...dto,
+        instructor: { id: dto.instructor_id },
+        category: { id: dto.category_id },
+      });
+      return await this.coursesRepo.save(course);
+    } catch (err) {
+      const pgError = err as { code?: string }; // typeguard per accedere in sicurezza a code
+      if (pgError.code === '23505') {
+        throw new ConflictException(`Course "${dto.title}" already exists`);
+      }
+      throw err;
+    }
   }
 
   async update(id: string, dto: UpdateCourseDto): Promise<Course> {
@@ -49,8 +65,13 @@ export class CoursesService {
     return await this.findOne(id);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.coursesRepo.delete({ id });
+  async delete(id: string): Promise<{ message: string }> {
+    const course = await this.coursesRepo.findOneBy({ id });
+    if (!course) throw new NotFoundException(`Course ${id} not found`);
+    await this.coursesRepo.softDelete({ id });
+    return {
+      message: `Course "${course.title}" has been deactivated successfully`,
+    };
   }
 
   async search(query: string): Promise<Course[]> {
@@ -60,14 +81,18 @@ export class CoursesService {
       .orWhere('course.description ILIKE :q', { q: `%${query}%` })
       .getMany();
   }
-}
 
-/* 
-findAll
-findOne
-findBySlug
-create
-update
-delete
-search
-*/
+  async restore(id: string): Promise<{ message: string }> {
+    const course = await this.coursesRepo.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+    if (!course) throw new NotFoundException(`Course ${id} not found`);
+    if (!course.deleted_at)
+      throw new ConflictException(`Course "${course.title}" is already active`);
+    await this.coursesRepo.restore({ id });
+    return {
+      message: `Course "${course.title}" has been restored successfully`,
+    };
+  }
+}

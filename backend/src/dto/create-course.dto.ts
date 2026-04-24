@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Status } from '../entities/enum/courses.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -26,6 +26,13 @@ export class CreateCourseDto {
   description!: string;
 
   @ApiProperty({
+    description: 'The UUID of the instructor teaching the course',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @IsString()
+  instructor_id!: string;
+
+  @ApiProperty({
     description: 'The price of the course',
     example: 99.99,
   })
@@ -39,13 +46,19 @@ export class CreateCourseDto {
   @IsString()
   category_id!: string;
 
+  @ApiProperty({
+    description: 'The status of the course',
+    enum: Status,
+    default: Status.DRAFT, // Per la documentazione Swagger
+  })
+  @IsOptional() // Permette al client di non inviarlo
   @IsEnum(Status)
-  status!: Status;
+  status?: Status = Status.DRAFT;
 
   @ApiProperty({
     description: 'The thumbnail URL of the course',
     example: 'https://example.com/thumbnail.jpg',
   })
   @IsString()
-  thumbnail!: string;
+  thumbnail_url!: string;
 }

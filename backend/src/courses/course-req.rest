@@ -1,0 +1,50 @@
+### Base URL
+@baseUrl = http://localhost:3000
+@courseId = 39ead153-e777-4be8-8f35-7dc44a3d3edd
+@slug = nestjs-avanzato
+@instructorId = 942fecf9-cdbe-4b90-951f-931deee6905f
+@categoryId = 52f4e37b-6609-4daa-af6e-8eee6ac74b4e
+
+### 1. Get All Courses (con paginazione e filtro categoria)
+GET {{baseUrl}}/courses?page=1&limit=10&category=DevOps
+
+### 1.1 Get All Courses with pagination
+GET {{baseUrl}}/courses?page=1&limit=10
+
+### 2. Search Courses
+GET {{baseUrl}}/courses/search?q=typescript
+
+### 3. Get Course by ID
+GET {{baseUrl}}/courses/{{courseId}}
+
+### 4. Get Course by Slug
+GET {{baseUrl}}/courses/slug/{{slug}}
+
+### 5. Create New Course
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{
+  "title": "Laravel 13: Guida Completa",
+  "slug": "laravel-13-guida-completa",
+  "description": "Sviluppo backend moderno con PHP 8.4 e Laravel 13.",
+  "price": 54.99,
+  "status": "DRAFT",
+  "category_id": "{{categoryId}}",
+  "instructor_id": "{{instructorId}}",
+  "thumbnail_url": "https://example.com/images/laravel-13.jpg"
+}
+
+### 6. Update Course
+PATCH {{baseUrl}}/courses/{{courseId}}
+Content-Type: application/json
+
+{
+  "price": 75.25
+}
+
+### 7. Delete Course
+DELETE {{baseUrl}}/courses/{{courseId}}
+
+### 8. Restore Course
+PATCH {{baseUrl}}/courses/{{courseId}}/restore

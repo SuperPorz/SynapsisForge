@@ -10,6 +10,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true, // Rimuove le proprietà (dal payload) non presenti nei DTO
       transform: true, // Trasforma i payload in istanze dei DTO
+      forbidNonWhitelisted: true, // Blocca la richiesta se ci sono proprietà extr
     }),
   );
 
