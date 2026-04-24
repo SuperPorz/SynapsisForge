@@ -1,6 +1,7 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 import { Country, UserRole } from './enum/users.enum';
+import { Payment } from './payments.entity';
 
 @Entity('users')
 export class User {
@@ -33,4 +34,7 @@ export class User {
 
   @Column({ type: 'varchar', nullable: true })
   refresh_token_hash!: string | null;
+
+  @OneToMany(() => Payment, (payment) => payment.user)
+  payments?: Payment[];
 }

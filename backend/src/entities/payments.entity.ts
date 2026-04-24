@@ -9,7 +9,7 @@ export class Payment {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, (user) => user.payments, { nullable: false })
   user!: User;
 
   @ManyToOne(() => Course, { nullable: false })
