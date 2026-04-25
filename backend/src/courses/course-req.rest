@@ -1,6 +1,6 @@
 ### Base URL
 @baseUrl = http://localhost:3000
-@courseId = 39ead153-e777-4be8-8f35-7dc44a3d3edd
+@courseId = 381f00aa-f612-4ee2-9169-16bd567da659
 @slug = nestjs-avanzato
 @instructorId = 942fecf9-cdbe-4b90-951f-931deee6905f
 @categoryId = 52f4e37b-6609-4daa-af6e-8eee6ac74b4e

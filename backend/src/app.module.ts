@@ -11,6 +11,7 @@ import { CoursesModule } from './courses/courses.module';
   imports: [
     UsersModule,
     CoursesModule,
+    // Database primario (PostgreSQL)
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -21,8 +22,8 @@ import { CoursesModule } from './courses/courses.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // Impostare su false quando si va in produzione
     }),
-    // Database Secondario (MongoDB)
-    MongooseModule.forRoot('mongodb://localhost:27017/nosql_db', {
+    // Database secondario (MongoDB)
+    MongooseModule.forRoot('mongodb://localhost:27017/mongo_synapsis', {
       connectionName: 'mongo_synapsis', // Nome della connessione
     }),
   ],

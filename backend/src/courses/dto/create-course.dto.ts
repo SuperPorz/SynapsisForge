@@ -1,5 +1,5 @@
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Status } from '../entities/enum/courses.enum';
+import { Status } from '../../entities/enum/courses.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCourseDto {

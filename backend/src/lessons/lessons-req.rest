@@ -1,0 +1,93 @@
+### Base URL
+@baseUrl = http://localhost:3000
+@lessonId = 2b4a6ccd-4799-43ee-bd1d-63f76a04d14d
+@courseId = 39ead153-e777-4be8-8f35-7dc44a3d3edd
+
+### 1. Get Lesson with Content (PostgreSQL + MongoDB merged)
+GET {{baseUrl}}/lessons/{{lessonId}}/content
+
+### 2. Create Lesson Content
+POST {{baseUrl}}/lessons/{{lessonId}}/content
+Content-Type: application/json
+
+{
+  "lessonId": "{{lessonId}}",
+  "videoUrl": "https://example.com/videos/intro-nestjs.mp4",
+  "transcript": "In questa lezione introduciamo NestJS e la sua architettura modulare.",
+  "attachments": [
+    {
+      "name": "Slide introduzione",
+      "url": "https://example.com/attachments/intro-nestjs.pdf",
+      "type": "pdf"
+    },
+    {
+      "name": "Codice sorgente",
+      "url": "https://example.com/attachments/intro-nestjs.zip",
+      "type": "zip"
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Quale decoratore si usa per definire un controller in NestJS?",
+      "options": [
+        { "label": "A", "text": "@Module()" },
+        { "label": "B", "text": "@Controller()" },
+        { "label": "C", "text": "@Injectable()" },
+        { "label": "D", "text": "@Service()" }
+      ],
+      "correctAnswer": "B"
+    },
+    {
+      "question": "Quale ORM viene spesso usato con NestJS per PostgreSQL?",
+      "options": [
+        { "label": "A", "text": "Mongoose" },
+        { "label": "B", "text": "Sequelize" },
+        { "label": "C", "text": "TypeORM" },
+        { "label": "D", "text": "Prisma" }
+      ],
+      "correctAnswer": "C"
+    }
+  ]
+}
+
+### 3. Update Lesson Content (campi parziali)
+PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+Content-Type: application/json
+
+{
+  "videoUrl": "https://example.com/videos/intro-nestjs-v2.mp4",
+  "transcript": "Trascrizione aggiornata della lezione."
+}
+
+### 4. Update solo quiz
+PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+Content-Type: application/json
+
+{
+  "quiz": [
+    {
+      "question": "Cosa fa il decoratore @Injectable()?",
+      "options": [
+        { "label": "A", "text": "Definisce un controller" },
+        { "label": "B", "text": "Marca una classe come provider iniettabile" },
+        { "label": "C", "text": "Registra un modulo" },
+        { "label": "D", "text": "Crea una route" }
+      ],
+      "correctAnswer": "B"
+    }
+  ]
+}
+
+### 5. Update solo attachments
+PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+Content-Type: application/json
+
+{
+  "attachments": [
+    {
+      "name": "Slide aggiornate",
+      "url": "https://example.com/attachments/intro-nestjs-v2.pdf",
+      "type": "pdf"
+    }
+  ]
+}
