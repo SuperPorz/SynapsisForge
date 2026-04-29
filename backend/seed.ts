@@ -98,7 +98,7 @@ async function seed() {
   const categories: any[] = [];
   for (const cat of categoryData) {
     const existing = await db.query(
-      `SELECT id FROM categories WHERE name = $1`,
+      `SELECT id, name FROM categories WHERE name = $1`,
       [cat.name],
     );
     if (existing.length === 0) {
@@ -222,10 +222,56 @@ async function seed() {
     }
   }
 
-  const instructors = users.filter((u) => u.role === UserRole.INSTRUCTOR);
-  const students = users.filter((u) => u.role === UserRole.STUDENT);
+  const instructorUsers = users.filter((u) => u.role === UserRole.INSTRUCTOR);
+  const studentUsers = users.filter((u) => u.role === UserRole.STUDENT);
 
-  // ── 3. COURSES ─────────────────────────────────────────────────────────────
+  // ── 3. INSTRUCTOR PROFILES ─────────────────────────────────────────────────
+  // InstructorProfile usa userId come PK (stesso valore di users.id)
+  console.log('\n  Inserimento instructor profiles...');
+  const instructorProfiles: any[] = [];
+  for (const instructor of instructorUsers) {
+    const existing = await db.query(
+      `SELECT * FROM instructor_profiles WHERE "userId" = $1`,
+      [instructor.id],
+    );
+    if (existing.length === 0) {
+      const [inserted] = await db.query(
+        `INSERT INTO instructor_profiles ("userId") VALUES ($1) RETURNING *`,
+        [instructor.id],
+      );
+      instructorProfiles.push(inserted);
+      console.log(`  ✅ InstructorProfile: ${instructor.email}`);
+    } else {
+      instructorProfiles.push(existing[0]);
+      console.log(`  ⏭️  InstructorProfile già esistente: ${instructor.email}`);
+    }
+  }
+
+  // ── 4. STUDENT PROFILES ────────────────────────────────────────────────────
+  // StudentProfile usa userId come PK (stesso valore di users.id)
+  console.log('\n  Inserimento student profiles...');
+  const studentProfiles: any[] = [];
+  for (const student of studentUsers) {
+    const existing = await db.query(
+      `SELECT * FROM student_profiles WHERE "userId" = $1`,
+      [student.id],
+    );
+    if (existing.length === 0) {
+      const [inserted] = await db.query(
+        `INSERT INTO student_profiles ("userId") VALUES ($1) RETURNING *`,
+        [student.id],
+      );
+      studentProfiles.push(inserted);
+      console.log(`  ✅ StudentProfile: ${student.email}`);
+    } else {
+      studentProfiles.push(existing[0]);
+      console.log(`  ⏭️  StudentProfile già esistente: ${student.email}`);
+    }
+  }
+
+  // ── 5. COURSES ─────────────────────────────────────────────────────────────
+  // courses."instructorId" → FK verso instructor_profiles."userId"
+  console.log('\n  Inserimento corsi...');
   const coursesData = [
     {
       title: 'NestJS Avanzato',
@@ -289,10 +335,11 @@ async function seed() {
       c.title,
     ]);
     if (existing.length === 0) {
-      const instructor = instructors[c.instructorIndex];
+      // instructorProfiles[i].userId è la PK della tabella instructor_profiles
+      const instructorProfile = instructorProfiles[c.instructorIndex];
       const category = categories.find((cat) => cat.name === c.categoryName);
       const [inserted] = await db.query(
-        `INSERT INTO courses (id, title, slug, description, price, status, thumbnail_url, "instructorId", "categoryId")
+        `INSERT INTO courses (id, title, slug, description, price, status, thumbnail_url, "instructorUserId", "categoryId")
          VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
         [
           c.title,
@@ -301,7 +348,7 @@ async function seed() {
           c.price,
           c.status,
           c.thumbnail_url,
-          instructor.id,
+          instructorProfile.userId,  // FK → instructor_profiles."userId"
           category.id,
         ],
       );
@@ -317,7 +364,7 @@ async function seed() {
     (_, i) => coursesData[i]?.status === CourseStatus.PUBLISHED,
   );
 
-  // ── 4. LESSONS ─────────────────────────────────────────────────────────────
+  // ── 6. LESSONS ─────────────────────────────────────────────────────────────
   console.log('\n  Inserimento lezioni...');
   for (const course of publishedCourses) {
     const existing = await db.query(
@@ -346,19 +393,21 @@ async function seed() {
     console.log(`  ✅ ${lessonCount} lezioni per: ${course.title}`);
   }
 
-  // ── 5. ENROLLMENTS + PAYMENTS + REVIEWS + CERTIFICATES ────────────────────
+  // ── 7. ENROLLMENTS + PAYMENTS + REVIEWS + CERTIFICATES ────────────────────
   console.log('\n  Inserimento enrollment, pagamenti, recensioni...');
 
-  const enrollments: any[] = [];
+  for (const studentProfile of studentProfiles) {
+    // Ricaviamo il corrispondente user per email/log
+    const studentUser = studentUsers.find((u) => u.id === studentProfile.userId);
 
-  for (const student of students) {
     // Ogni studente si iscrive a 2-3 corsi pubblicati
     const coursesToEnroll = publishedCourses.slice(0, randomInt(2, 3));
 
     for (const course of coursesToEnroll) {
+      // enrollments."studentId" → FK verso student_profiles."userId"
       const existingEnroll = await db.query(
-        `SELECT * FROM enrollments WHERE "userId" = $1 AND "courseId" = $2`,
-        [student.id, course.id],
+        `SELECT * FROM enrollments WHERE "studentUserId" = $1 AND "courseId" = $2`,
+        [studentProfile.userId, course.id],
       );
 
       let enrollment: any;
@@ -366,27 +415,25 @@ async function seed() {
         const progress = randomInt(0, 100);
         const completed = progress === 100 ? new Date().toISOString() : null;
         const [inserted] = await db.query(
-          `INSERT INTO enrollments (id, "userId", "courseId", progress_percent, completed_at)
+          `INSERT INTO enrollments (id, "studentUserId", "courseId", progress_percent, completed_at)
            VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING *`,
-          [student.id, course.id, progress, completed],
+          [studentProfile.userId, course.id, progress, completed],
         );
         enrollment = inserted;
         console.log(
-          `  ✅ Enrollment: ${student.email} → ${course.title} (${progress}%)`,
+          `  ✅ Enrollment: ${studentUser?.email} → ${course.title} (${progress}%)`,
         );
       } else {
         enrollment = existingEnroll[0];
         console.log(
-          `  ⏭️  Enrollment già esistente: ${student.email} → ${course.title}`,
+          `  ⏭️  Enrollment già esistente: ${studentUser?.email} → ${course.title}`,
         );
       }
 
-      enrollments.push(enrollment);
-
-      // Payment
+      // payments."userId" → FK verso users."id" (relazione diretta, invariata)
       const existingPayment = await db.query(
         `SELECT id FROM payments WHERE "userId" = $1 AND "courseId" = $2`,
-        [student.id, course.id],
+        [studentProfile.userId, course.id],
       );
       if (existingPayment.length === 0) {
         const currencies = [Currency.EUR, Currency.USD, Currency.GBP];
@@ -394,7 +441,7 @@ async function seed() {
           `INSERT INTO payments (id, "userId", "courseId", amount, currency, gateway_id, status)
            VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6)`,
           [
-            student.id,
+            studentProfile.userId,
             course.id,
             course.price,
             randomElement(currencies),
@@ -402,7 +449,7 @@ async function seed() {
             PaymentStatus.COMPLETED,
           ],
         );
-        console.log(`  ✅ Payment: ${student.email} → ${course.price}€`);
+        console.log(`  ✅ Payment: ${studentUser?.email} → ${course.price}€`);
       }
 
       // Review (solo se progress > 50%)
@@ -428,7 +475,7 @@ async function seed() {
             `INSERT INTO reviews (id, rating, comment, "enrollmentId") VALUES (gen_random_uuid(), $1, $2, $3)`,
             [rating, randomElement(comments), enrollment.id],
           );
-          console.log(`  ✅ Review: ${student.email} → ⭐ ${rating}`);
+          console.log(`  ✅ Review: ${studentUser?.email} → ⭐ ${rating}`);
         }
       }
 
@@ -446,7 +493,7 @@ async function seed() {
               `https://synapsis.dev/certificates/${enrollment.id}.pdf`,
             ],
           );
-          console.log(`  ✅ Certificato emesso per: ${student.email}`);
+          console.log(`  ✅ Certificato emesso per: ${studentUser?.email}`);
         }
       }
     }
