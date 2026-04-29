@@ -7,7 +7,7 @@ export class Certificate {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @OneToOne(() => Enrollment, (enrollment) => enrollment.certificate, {
+  @OneToOne(() => Enrollment, {
     nullable: false,
   })
   @JoinColumn()

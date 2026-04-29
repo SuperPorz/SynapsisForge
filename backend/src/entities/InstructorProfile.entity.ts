@@ -5,7 +5,7 @@ import { Course } from './courses.entity';
 
 @Entity('instructor_profiles')
 export class InstructorProfile {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: 'uuid' })
   userId!: string;
 
   @OneToOne(() => User, (user) => user.instructorProfile)

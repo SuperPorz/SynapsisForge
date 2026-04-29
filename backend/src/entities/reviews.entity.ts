@@ -14,7 +14,7 @@ export class Review {
   @Column({ type: 'text', nullable: true })
   comment!: string | null;
 
-  @OneToOne(() => Enrollment, (enrollment) => enrollment.review, {
+  @OneToOne(() => Enrollment, {
     nullable: false,
   })
   @JoinColumn()

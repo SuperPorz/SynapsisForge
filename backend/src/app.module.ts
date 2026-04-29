@@ -6,11 +6,13 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesModule } from './courses/courses.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
 
 @Module({
   imports: [
     UsersModule,
     CoursesModule,
+    EnrollmentsModule,
     // Database primario (PostgreSQL)
     TypeOrmModule.forRoot({
       type: 'postgres',

@@ -5,7 +5,7 @@ import { Enrollment } from './enrollments.entity';
 
 @Entity('student_profiles')
 export class StudentProfile {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: 'uuid' })
   userId!: string;
 
   @OneToOne(() => User, (user) => user.studentProfile)

@@ -47,7 +47,7 @@ export class CoursesService {
     try {
       const course = this.coursesRepo.create({
         ...dto,
-        instructor: { id: dto.instructor_id },
+        instructor: { userId: dto.instructor_id },
         category: { id: dto.category_id },
       });
       return await this.coursesRepo.save(course);
