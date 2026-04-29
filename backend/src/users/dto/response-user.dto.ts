@@ -3,7 +3,7 @@
 import { UserRole } from 'src/entities/enum/users.enum';
 
 export class ResponseUserDto {
-  id!: number;
+  id!: string;
   email!: string;
   first_name!: string;
   last_name!: string;

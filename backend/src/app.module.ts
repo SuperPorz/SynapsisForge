@@ -10,9 +10,6 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
 
 @Module({
   imports: [
-    UsersModule,
-    CoursesModule,
-    EnrollmentsModule,
     // Database primario (PostgreSQL)
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -28,6 +25,9 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
     MongooseModule.forRoot('mongodb://localhost:27017/mongo_synapsis', {
       connectionName: 'mongo_synapsis', // Nome della connessione
     }),
+    UsersModule,
+    CoursesModule,
+    EnrollmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, HealthService],
