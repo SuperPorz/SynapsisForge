@@ -1,17 +1,17 @@
 // prettier-ignore
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToOne } from 'typeorm';
-import { User } from './users.entity';
 import { Course } from './courses.entity';
 import { Certificate } from './certificate.entity';
 import { Review } from './reviews.entity';
+import { StudentProfile } from './StudentProfile.entity';
 
 @Entity('enrollments')
 export class Enrollment {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => User, { nullable: false })
-  user!: User;
+  @ManyToOne(() => StudentProfile, { nullable: false })
+  student!: StudentProfile;
 
   @ManyToOne(() => Course, { nullable: false })
   course!: Course;

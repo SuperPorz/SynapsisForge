@@ -1,7 +1,9 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne } from 'typeorm';
 import { Country, UserRole } from './enum/users.enum';
 import { Payment } from './payments.entity';
+import { StudentProfile } from './StudentProfile.entity';
+import { InstructorProfile } from './InstructorProfile.entity';
 
 @Entity('users')
 export class User {
@@ -37,4 +39,10 @@ export class User {
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments?: Payment[];
+
+  @OneToOne(() => InstructorProfile, (profile) => profile.user)
+  instructorProfile?: InstructorProfile;
+
+  @OneToOne(() => StudentProfile, (profile) => profile.user)
+  studentProfile?: StudentProfile;
 }
