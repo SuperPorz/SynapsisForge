@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -24,6 +25,11 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
     // Database secondario (MongoDB)
     MongooseModule.forRoot('mongodb://localhost:27017/mongo_synapsis', {
       connectionName: 'mongo_synapsis', // Nome della connessione
+    }),
+    EventEmitterModule.forRoot({
+      // Configurazioni opzionali di event-emitter2
+      wildcard: true,
+      delimiter: '.',
     }),
     UsersModule,
     CoursesModule,

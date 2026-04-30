@@ -56,7 +56,7 @@ ENROLLMENTS MODULE
 [x] updateProgress() — marca lezione completata su MongoDB, ricalcola progress_percent
 [ ] POST   /enrollments — iscrive studente a corso
 [ ] PATCH  /enrollments/:id/progress — aggiorna progresso con lesson_id
-[ ] EventEmitter2 — emette "enrollment.completed" quando progress_percent = 100
+[x] EventEmitter2 — emette "enrollment.completed" quando progress_percent = 100
 [ ] POST   /enrollments/:id/refund — richiede rimborso (student o admin)
 
 ------------------------------------------

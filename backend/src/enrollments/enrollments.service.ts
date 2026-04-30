@@ -12,6 +12,7 @@ import { Payment } from 'src/entities/payments.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LessonProgress } from 'src/enrollments/schemas/lesson-progress.schema';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class EnrollmentsService {
@@ -30,6 +31,8 @@ export class EnrollmentsService {
 
     @InjectModel(LessonProgress.name, 'mongo_synapsis')
     private lessonProgressModel: Model<LessonProgress>,
+
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async enroll(dto: CreateEnrollmentDto): Promise<Enrollment> {
@@ -124,7 +127,7 @@ export class EnrollmentsService {
   // 5. Se completato al 100%, segna la data
   if (enrollment.progress_percent === 100 && !enrollment.completed_at) {
     enrollment.completed_at = new Date();
-    // qui andrà l'EventEmitter2 per il certificato (Giorno 21)
+    this.eventEmitter.emit('enrollment.completed', { enrollmentId: enrollment.id });
   }
 
   return this.enrollmentRepository.save(enrollment);
