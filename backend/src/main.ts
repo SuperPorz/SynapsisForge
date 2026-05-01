@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TransformInterceptor } from './interceptors/transform.interceptor';
 import { LoggingInterceptor } from './interceptors/loggin.interceptor';
@@ -10,9 +10,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalInterceptors(
-    new LoggingInterceptor(), // 1° — logga la request in arrivo
-    new TimeoutInterceptor(), // 2° — imposta il timeout
-    new TransformInterceptor(), // 3° — wrappa la response finale
+    new ClassSerializerInterceptor(app.get(Reflector)), // 1° — trasforma le entità in DTO usando @Exclude e @Expose
+    new LoggingInterceptor(), // 2° — logga la request in arrivo
+    new TimeoutInterceptor(), // 3° — imposta il timeout
+    new TransformInterceptor(), // 4° — wrappa la response finale
   );
 
   app.useGlobalPipes(

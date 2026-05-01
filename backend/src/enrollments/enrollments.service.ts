@@ -13,6 +13,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LessonProgress } from 'src/enrollments/schemas/lesson-progress.schema';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { plainToInstance } from 'class-transformer';
+import { ResponseEnrollmentDto } from './dto/response-enrollment.dto';
 
 @Injectable()
 export class EnrollmentsService {
@@ -35,7 +37,15 @@ export class EnrollmentsService {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  async enroll(dto: CreateEnrollmentDto): Promise<Enrollment> {
+  // Helper per trasformare l'entità Enrollment in ResponseEnrollmentDto
+  // usata sia in enroll che in updateProgress, per questo è privata ed esterna ai metodi, cosi da evitare ripetizioni
+  private toDto(enrollment: Enrollment): ResponseEnrollmentDto {
+    return plainToInstance(ResponseEnrollmentDto, enrollment, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async enroll(dto: CreateEnrollmentDto): Promise<ResponseEnrollmentDto> {
     // 1. Verifica che lo StudentProfile esista
     const studentProfile = await this.studentProfileRepository.findOne({
       where: { userId: dto.userId },
@@ -87,49 +97,51 @@ export class EnrollmentsService {
     // 5. Crea e salva l'enrollment
     const enrollment = this.enrollmentRepository.create({
       student: studentProfile,
-      course: course,
-      progress_percent: 0, // int NOT NULL — inizializzato a 0
+      course,
+      progress_percent: 0,
     });
 
-    return this.enrollmentRepository.save(enrollment);
+    const saved = await this.enrollmentRepository.save(enrollment);
+    return this.toDto(saved);
   }
-
+  ///////////////////////////////////// UPDATE PROGRESS ///////////////////////////////////////////
   // prettier-ignore
-  async updateProgress(enrollmentId: string, lessonId: string): Promise<Enrollment> {
-  // 1. Carica l'enrollment con le relazioni necessarie
-  const enrollment = await this.enrollmentRepository.findOne({
-    where: { id: enrollmentId },
-    relations: ['course', 'course.lessons'],
-  });
-  if (!enrollment) {
-    throw new NotFoundException(`Enrollment ${enrollmentId} not found`);
+  async updateProgress(enrollmentId: string, lessonId: string): Promise<ResponseEnrollmentDto> {
+    // 1. Carica l'enrollment con le relazioni necessarie
+    const enrollment = await this.enrollmentRepository.findOne({
+      where: { id: enrollmentId },
+      relations: ['course', 'course.lessons', 'student'],
+    });
+    if (!enrollment) {
+      throw new NotFoundException(`Enrollment ${enrollmentId} not found`);
+    }
+
+    const totalLessons = enrollment.course.lessons?.length ?? 0;
+    if (totalLessons === 0) {
+      throw new BadRequestException(`Course has no lessons`);
+    }
+
+    // 2. Salva la lezione completata in MongoDB (upsert — evita duplicati)
+    await this.lessonProgressModel.updateOne(
+      { enrollmentId, lessonId },
+      { enrollmentId, lessonId, completedAt: new Date() },
+      { upsert: true },
+    );
+
+    // 3. Conta le lezioni completate per questo enrollment
+    const completedCount = await this.lessonProgressModel.countDocuments({ enrollmentId });
+
+    // 4. Ricalcola il progresso
+    const percent = Math.round((completedCount / totalLessons) * 100);
+    enrollment.progress_percent = Math.min(100, percent);
+
+    // 5. Se completato al 100%, segna la data ed emetti l'evento
+    if (enrollment.progress_percent === 100 && !enrollment.completed_at) {
+      enrollment.completed_at = new Date();
+      this.eventEmitter.emit('enrollment.completed', { enrollmentId: enrollment.id });
+    }
+
+    const saved = await this.enrollmentRepository.save(enrollment);
+    return this.toDto(saved);
   }
-
-  const totalLessons = enrollment.course.lessons?.length ?? 0;
-  if (totalLessons === 0) {
-    throw new BadRequestException(`Course has no lessons`);
-  }
-
-  // 2. Salva la lezione completata in MongoDB (upsert — evita duplicati)
-  await this.lessonProgressModel.updateOne(
-    { enrollmentId, lessonId },
-    { enrollmentId, lessonId, completedAt: new Date() },
-    { upsert: true },
-  );
-
-  // 3. Conta le lezioni completate per questo enrollment
-  const completedCount = await this.lessonProgressModel.countDocuments({ enrollmentId });
-
-  // 4. Ricalcola il progresso
-  const percent = Math.round((completedCount / totalLessons) * 100);
-  enrollment.progress_percent = Math.min(100, percent);
-
-  // 5. Se completato al 100%, segna la data
-  if (enrollment.progress_percent === 100 && !enrollment.completed_at) {
-    enrollment.completed_at = new Date();
-    this.eventEmitter.emit('enrollment.completed', { enrollmentId: enrollment.id });
-  }
-
-  return this.enrollmentRepository.save(enrollment);
-}
 }
