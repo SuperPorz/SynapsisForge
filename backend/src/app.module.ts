@@ -8,6 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ProductsModule } from './common/test1/products.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     UsersModule,
     CoursesModule,
     EnrollmentsModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService, HealthService],

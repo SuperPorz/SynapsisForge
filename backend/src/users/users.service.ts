@@ -2,12 +2,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { User } from 'src/entities/users.entity';
+import { User } from 'src/common/entities/users.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
-import { Course } from 'src/entities/courses.entity';
-import { InstructorProfile } from 'src/entities/InstructorProfile.entity';
+import { Course } from 'src/common/entities/courses.entity';
+import { InstructorProfile } from 'src/common/entities/InstructorProfile.entity';
 
 @Injectable()
 export class UsersService {

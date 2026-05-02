@@ -1,0 +1,36 @@
+### products.rest
+
+@baseUrl = http://localhost:3000
+
+### ✅ GET tutti i prodotti
+GET {{baseUrl}}/products
+
+### ✅ POST crea prodotto
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{ "name": "Laptop" }
+
+### 💥 409 Conflict — nome duplicato (esegui dopo quello sopra)
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{ "name": "Laptop" }
+
+### ✅ GET prodotto esistente
+GET {{baseUrl}}/products/1
+
+### 💥 404 Not Found
+GET {{baseUrl}}/products/9999
+
+### 💥 400 Bad Request — id non numerico (ParseIntPipe)
+GET {{baseUrl}}/products/abc
+
+### ✅ DELETE prodotto esistente
+DELETE {{baseUrl}}/products/1
+
+### 💥 403 Forbidden — id speciale 999
+DELETE {{baseUrl}}/products/999
+
+### 💥 404 Not Found in delete
+DELETE {{baseUrl}}/products/9999

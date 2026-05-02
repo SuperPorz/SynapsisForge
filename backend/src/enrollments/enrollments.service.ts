@@ -1,14 +1,14 @@
 // prettier-ignore
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Course } from 'src/entities/courses.entity';
-import { Enrollment } from 'src/entities/enrollments.entity';
+import { Course } from 'src/common/entities/courses.entity';
+import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { Repository } from 'typeorm';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
-import { StudentProfile } from 'src/entities/StudentProfile.entity';
-import { Status as CourseStatus } from '../entities/enum/courses.enum';
-import { Status as PaymentStatus } from '../entities/enum/payments.enum';
-import { Payment } from 'src/entities/payments.entity';
+import { StudentProfile } from 'src/common/entities/StudentProfile.entity';
+import { Status as CourseStatus } from '../common/entities/enum/courses.enum';
+import { Status as PaymentStatus } from '../common/entities/enum/payments.enum';
+import { Payment } from 'src/common/entities/payments.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LessonProgress } from 'src/enrollments/schemas/lesson-progress.schema';

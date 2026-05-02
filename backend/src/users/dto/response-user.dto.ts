@@ -1,6 +1,6 @@
 // This file defines the DTO (Data Transfer Object) for RETRIEVING a user's profile.
 // It includes all the fields that are relevant for the user's profile, including role and createdAt.
-import { UserRole } from 'src/entities/enum/users.enum';
+import { UserRole } from 'src/common/entities/enum/users.enum';
 
 export class ResponseUserDto {
   id!: string;

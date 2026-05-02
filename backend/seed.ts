@@ -12,6 +12,7 @@ enum UserRole {
 enum Country {
   USA = 'USA',
   CANADA = 'CANADA',
+  MEXICO = 'MEXICO',
   ITALY = 'ITALY',
   FRANCE = 'FRANCE',
   GERMANY = 'GERMANY',
@@ -348,7 +349,7 @@ async function seed() {
           c.price,
           c.status,
           c.thumbnail_url,
-          instructorProfile.userId,  // FK → instructor_profiles."userId"
+          instructorProfile.userId, // FK → instructor_profiles."userId"
           category.id,
         ],
       );
@@ -398,7 +399,9 @@ async function seed() {
 
   for (const studentProfile of studentProfiles) {
     // Ricaviamo il corrispondente user per email/log
-    const studentUser = studentUsers.find((u) => u.id === studentProfile.userId);
+    const studentUser = studentUsers.find(
+      (u) => u.id === studentProfile.userId,
+    );
 
     // Ogni studente si iscrive a 2-3 corsi pubblicati
     const coursesToEnroll = publishedCourses.slice(0, randomInt(2, 3));
