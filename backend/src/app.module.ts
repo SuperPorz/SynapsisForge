@@ -9,9 +9,18 @@ import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ProductsModule } from './common/test1/products.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000, // tempo in millisecondi (1 minuto)
+          limit: 100, // massimo 100 richieste per IP ogni minuto
+        },
+      ],
+    }),
     // Database primario (PostgreSQL)
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -38,6 +47,10 @@ import { ProductsModule } from './common/test1/products.module';
     ProductsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, HealthService],
+  providers: [
+    AppService,
+    HealthService,
+    { provide: 'APP_GUARD', useClass: ThrottlerGuard }, // Applica il ThrottlerGuard a livello globale
+  ],
 })
 export class AppModule {}

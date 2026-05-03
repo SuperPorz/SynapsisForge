@@ -3,6 +3,8 @@ import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { ApiBadRequestResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ParseUuidPipe } from 'src/common/pipes/parse-uuid.pipe';
+import { ParsePositiveIntPipe } from 'src/common/pipes/parse-positive-int.pipe';
 
 @ApiTags('courses')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
@@ -15,8 +17,8 @@ export class CoursesController {
   @ApiResponse({ status: 404, description: 'No courses found for the given criteria.' })
   @Get()
   findAll(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
+    @Query('page', ParsePositiveIntPipe) page: number = 1,
+    @Query('limit', ParsePositiveIntPipe) limit: number = 10,
     @Query('category') category?: string,
   ) {
     return this.CoursesService.findAll(page, limit, category);
@@ -34,7 +36,7 @@ export class CoursesController {
   @ApiResponse({ status: 200, description: 'Course retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUuidPipe) id: string) {
     return this.CoursesService.findOne(id);
   }
 
@@ -58,7 +60,7 @@ export class CoursesController {
   @ApiResponse({ status: 200, description: 'Course updated successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateCourseDto) {
+  update(@Param('id', ParseUuidPipe) id: string, @Body() dto: UpdateCourseDto) {
     return this.CoursesService.update(id, dto);
   }
 
@@ -66,7 +68,7 @@ export class CoursesController {
   @ApiResponse({ status: 200, description: 'Course deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
   @Delete(':id')
-  delete(@Param('id') id: string) {
+  delete(@Param('id', ParseUuidPipe) id: string) {
     return this.CoursesService.delete(id);
   }
 
@@ -75,7 +77,7 @@ export class CoursesController {
   @ApiResponse({ status: 404, description: 'Course not found.' })
   @ApiResponse({ status: 409, description: 'Course is already active.' })
   @Patch(':id/restore')
-  restore(@Param('id') id: string) {
+  restore(@Param('id', ParseUuidPipe) id: string) {
     return this.CoursesService.restore(id);
   }
 }

@@ -2,6 +2,7 @@ import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 // prettier-ignore
 import { ApiBadRequestResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ParseUuidPipe } from 'src/common/pipes/parse-uuid.pipe';
 
 @ApiTags('lessons')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
@@ -13,7 +14,7 @@ export class LessonsController {
   @ApiResponse({ status: 200, description: 'Lesson retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Lesson not found' })
   @Get(':id/content')
-  async getContent(@Param('id') id: string) {
+  async getContent(@Param('id', ParseUuidPipe) id: string) {
     const lesson = await this.lessonsService.findLesson(id);
     if (!lesson) throw new NotFoundException(`Lesson ${id} non trovata`);
 

@@ -2,9 +2,9 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { TransformInterceptor } from './interceptors/transform.interceptor';
-import { LoggingInterceptor } from './interceptors/loggin.interceptor';
-import { TimeoutInterceptor } from './interceptors/timeout.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { LoggingInterceptor } from './common/interceptors/loggin.interceptor';
+import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
