@@ -1,5 +1,5 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Rating } from './enum/reviews.enum';
 import { Enrollment } from './enrollments.entity';
 
@@ -19,4 +19,7 @@ export class Review {
   })
   @JoinColumn()
   enrollment!: Enrollment;
+
+  @CreateDateColumn()
+  created_at!: Date;
 }

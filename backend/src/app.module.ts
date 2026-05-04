@@ -10,9 +10,15 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ProductsModule } from './common/test1/products.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ReviewsModule } from './reviews/reviews.module';
+import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -45,12 +51,14 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     CoursesModule,
     EnrollmentsModule,
     ProductsModule,
+    ReviewsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    HealthService,
-    { provide: 'APP_GUARD', useClass: ThrottlerGuard }, // Applica il ThrottlerGuard a livello globale
+    HealthService, // bisogna metterlo qui questo?
+    { provide: 'APP_GUARD', useClass: ThrottlerGuard }, // Applica il ThrottlerGuard a livello globale,
   ],
 })
 export class AppModule {}
