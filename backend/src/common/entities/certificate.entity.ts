@@ -1,5 +1,5 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn, Generated } from 'typeorm';
 import { Enrollment } from './enrollments.entity';
 
 @Entity('certificates')
@@ -16,6 +16,13 @@ export class Certificate {
   @CreateDateColumn()
   issued_at!: Date;
 
-  @Column({ type: 'text', nullable: true })
-  pdf_url: string | null = null;
+  @Column({ type: 'text' })
+  pdf_url!: string;
+
+  @Column({ type: 'boolean', default: true })
+  is_valid!: boolean;
+
+  @Generated('uuid')
+  @Column({ type: 'uuid', unique: true })
+  certificate_code!: string;
 }

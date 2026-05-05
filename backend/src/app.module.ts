@@ -13,6 +13,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { CertificatesModule } from './certificates/certificates.module';
 
 @Module({
   imports: [
@@ -53,11 +54,12 @@ import { AuthModule } from './auth/auth.module';
     ProductsModule,
     ReviewsModule,
     AuthModule,
+    CertificatesModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    HealthService, // bisogna metterlo qui questo?
+    HealthService,
     { provide: 'APP_GUARD', useClass: ThrottlerGuard }, // Applica il ThrottlerGuard a livello globale,
   ],
 })
