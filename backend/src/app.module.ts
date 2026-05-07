@@ -32,13 +32,13 @@ import { AdminModule } from './admin/admin.module';
     // Database primario (PostgreSQL)
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'admin',
-      password: 'qwerty',
-      database: 'pg_database',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT ?? '5432', 10),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // Impostare su false quando si va in produzione
+      synchronize: true, // TODO: Impostare su false quando si va in produzione
     }),
     // Database secondario (MongoDB)
     MongooseModule.forRoot('mongodb://localhost:27017/mongo_synapsis', {

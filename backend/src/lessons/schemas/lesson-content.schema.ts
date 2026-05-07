@@ -48,7 +48,7 @@ export class LessonContent {
   @Prop({ required: true })
   videoUrl!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   transcript!: string | null;
 
   @Prop({ type: [Attachment], default: [] })
