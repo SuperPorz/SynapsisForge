@@ -1,4 +1,3 @@
-// prettier-ignore
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -6,51 +5,54 @@ import { User } from 'src/common/entities/users.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
-import { Course } from 'src/common/entities/courses.entity';
-import { InstructorProfile } from 'src/common/entities/InstructorProfile.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-
-    @InjectRepository(InstructorProfile)
-    private instructorProfileRepository: Repository<InstructorProfile>,
   ) {}
+
+  // ---------------------------------------------------------------------------
+  // Metodi interni — non hanno endpoint HTTP, vengono chiamati da altri service
+  // tramite dependency injection (AuthService, JwtStrategy, ecc.)
+  // ---------------------------------------------------------------------------
+
+  // Usato da JwtStrategy per validare il payload del token
+  async findById(id: string): Promise<User | null> {
+    return this.userRepository.findOneBy({ id });
+  }
+
+  // Usato da AuthService durante il login per recuperare l'utente + password hash
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOneBy({ email });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Endpoint GET /users/me
+  // ---------------------------------------------------------------------------
 
   async getProfile(userId: string): Promise<ResponseUserDto> {
     const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found`); // lancia un 404 se l'utente non viene trovato
-    }
-    const dto = plainToInstance(ResponseUserDto, user);
-    return dto;
+    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+
+    return plainToInstance(ResponseUserDto, user);
   }
 
-  // prettier-ignore
-  async updateProfile( userId: string, updateData: Partial<UpdateUserDto>, ): Promise<ResponseUserDto> {
+  // ---------------------------------------------------------------------------
+  // Endpoint PATCH /users/me
+  // ---------------------------------------------------------------------------
+
+  async updateProfile(
+    userId: string,
+    dto: UpdateUserDto,
+  ): Promise<ResponseUserDto> {
     const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found`); // lancia un 404 se l'utente non viene trovato
-    }
-    Object.assign(user, updateData);
+    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+
+    Object.assign(user, dto);
     await this.userRepository.save(user);
-    const dto = plainToInstance(ResponseUserDto, user);
-    return dto;
-  }
 
-  // la restituzione Course come array è temporanea
-  async listCourses(userId: string): Promise<Course[]> {
-    const instructorProfile = await this.instructorProfileRepository.findOne({
-      where: { userId: userId },
-      relations: ['courses'],
-    });
-
-    if (!instructorProfile) {
-      throw new NotFoundException(`Instructor with id ${userId} not found`);
-    }
-
-    return instructorProfile.courses ?? [];
+    return plainToInstance(ResponseUserDto, user);
   }
 }

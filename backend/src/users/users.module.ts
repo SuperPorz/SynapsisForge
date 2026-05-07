@@ -3,11 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from '../common/entities/users.entity';
-import { InstructorProfile } from '../common/entities/InstructorProfile.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, InstructorProfile])],
+  imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
   providers: [UsersService],
+  // UsersService viene esportato perché AuthModule ne ha bisogno
+  // per findByEmail() (login) e findById() (JwtStrategy).
+  exports: [UsersService],
 })
 export class UsersModule {}

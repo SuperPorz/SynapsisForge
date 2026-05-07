@@ -8,7 +8,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ProductsModule } from './common/test1/products.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ConfigModule } from '@nestjs/config';
@@ -52,7 +51,6 @@ import { AdminModule } from './admin/admin.module';
     UsersModule,
     CoursesModule,
     EnrollmentsModule,
-    ProductsModule,
     ReviewsModule,
     AuthModule,
     CertificatesModule,

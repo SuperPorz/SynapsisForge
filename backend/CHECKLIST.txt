@@ -23,8 +23,8 @@ USERS MODULE
 [x] createUser() — chiamato internamente da register e OAuth callback
 [ ] findById() — usato da JwtStrategy e altri service
 [ ] findByEmail() — usato da AuthService per login
-[ ] GET  /users/me — restituisce profilo utente autenticato
-[ ] PATCH /users/me — aggiorna first_name, last_name, birth_date, country
+[x] GET  /users/me — restituisce profilo utente autenticato
+[x] PATCH /users/me — aggiorna first_name, last_name, birth_date, country
 [ ] GET  /users/me/enrollments — lista iscrizioni studente con progresso
 [ ] GET  /users/me/courses — lista corsi creati dall'instructor autenticato
 [ ] GET  /users/me/certificates — lista certificati conseguiti dallo studente
