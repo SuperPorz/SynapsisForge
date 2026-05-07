@@ -1,5 +1,5 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, RelationId, DeleteDateColumn } from 'typeorm';
 import { Course } from './courses.entity';
 
 @Entity('lessons')
@@ -24,4 +24,11 @@ export class Lesson {
     onDelete: 'CASCADE',
   })
   course!: Course;
+
+  // Espone la FK come campo scalare leggibile, senza colonna aggiuntiva nel DB
+  @RelationId((lesson: Lesson) => lesson.course)
+  courseId!: string;
+
+  @DeleteDateColumn()
+  deleted_at?: Date;
 }

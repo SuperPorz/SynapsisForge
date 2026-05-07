@@ -1,32 +1,143 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { LessonsService } from './lessons.service';
-// prettier-ignore
-import { ApiBadRequestResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid.pipe';
+import { CreateLessonDto } from './dto/create-lesson.dto';
+import { UpdateLessonDto } from './dto/update-lesson.dto';
+import { CreateLessonContentDto } from './dto/create-lesson-content.dto';
+import { UpdateLessonContentDto } from './dto/update-lesson-content.dto';
 
 @ApiTags('lessons')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
-@Controller('lessons')
+// Tutte le rotte sono sotto /courses/:courseId/lessons per rispettare la
+// gerarchia delle risorse: una lezione appartiene sempre a un corso.
+@Controller('courses/:courseId/lessons')
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
+  // ---------------------------------------------------------------------------
+  // GET /courses/:courseId/lessons/:id
+  // Dettaglio lezione: dati PostgreSQL + contenuto MongoDB (video, quiz, ecc.)
+  // [x] già presente, logica spostata nel service
+  // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Get lesson with content by lesson ID' })
-  @ApiResponse({ status: 200, description: 'Lesson retrieved successfully' })
-  @ApiResponse({ status: 404, description: 'Lesson not found' })
-  @Get(':id/content')
-  async getContent(@Param('id', ParseUuidPipe) id: string) {
-    const lesson = await this.lessonsService.findLesson(id);
-    if (!lesson) throw new NotFoundException(`Lesson ${id} non trovata`);
+  @ApiResponse({ status: 200, description: 'Lesson retrieved successfully.' })
+  @ApiNotFoundResponse({ description: 'Lesson not found.' })
+  @Get(':id')
+  async getLesson(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Param('id', ParseUuidPipe) id: string,
+  ) {
+    // ✅ Nessuna logica nel controller: tutto delegato al service.
+    return this.lessonsService.getLessonWithContent(courseId, id);
+  }
 
-    const content = await this.lessonsService.findContent(id);
+  // ---------------------------------------------------------------------------
+  // POST /courses/:courseId/lessons
+  // Crea una nuova lezione nel corso (ruolo: instructor)
+  // ---------------------------------------------------------------------------
+  @ApiOperation({ summary: 'Add a lesson to a course (instructor only)' })
+  @ApiCreatedResponse({ description: 'Lesson created successfully.' })
+  @ApiNotFoundResponse({ description: 'Course not found.' })
+  @Post()
+  async createLesson(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Body() dto: CreateLessonDto,
+  ) {
+    return this.lessonsService.createLesson(courseId, dto);
+  }
 
-    return {
-      id: lesson.id,
-      title: lesson.title,
-      order: lesson.order,
-      duration_seconds: lesson.duration_seconds,
-      course: lesson.course,
-      content: content ?? null, // null se il documento MongoDB non esiste ancora
-    };
+  // ---------------------------------------------------------------------------
+  // PATCH /courses/:courseId/lessons/:id
+  // Aggiorna i metadati di una lezione (ruolo: instructor)
+  // ---------------------------------------------------------------------------
+  @ApiOperation({ summary: 'Update a lesson (instructor only)' })
+  @ApiResponse({ status: 200, description: 'Lesson updated successfully.' })
+  @ApiNotFoundResponse({ description: 'Lesson not found.' })
+  @Patch(':id')
+  async updateLesson(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Param('id', ParseUuidPipe) id: string,
+    @Body() dto: UpdateLessonDto,
+  ) {
+    return this.lessonsService.updateLesson(courseId, id, dto);
+  }
+
+  // ---------------------------------------------------------------------------
+  // DELETE /courses/:courseId/lessons/:id
+  // Soft delete di una lezione (ruolo: instructor o admin)
+  // Risponde 204 No Content — nessun body da restituire.
+  // ---------------------------------------------------------------------------
+  @ApiOperation({ summary: 'Delete a lesson (instructor or admin)' })
+  @ApiNoContentResponse({ description: 'Lesson deleted successfully.' })
+  @ApiNotFoundResponse({ description: 'Lesson not found.' })
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteLesson(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Param('id', ParseUuidPipe) id: string,
+  ): Promise<void> {
+    return this.lessonsService.softDeleteLesson(courseId, id);
+  }
+
+  // ---------------------------------------------------------------------------
+  // POST /courses/:courseId/lessons/:id/content
+  // Crea il documento MongoDB con video, quiz, allegati per una lezione.
+  // Step separato rispetto alla creazione della lezione: l'instructor prima
+  // definisce la struttura del corso (POST /lessons), poi arricchisce ogni
+  // lezione con i contenuti multimediali (POST /lessons/:id/content).
+  // ---------------------------------------------------------------------------
+  @ApiOperation({ summary: 'Create content for a lesson (instructor only)' })
+  @ApiCreatedResponse({ description: 'Lesson content created successfully.' })
+  @ApiNotFoundResponse({ description: 'Lesson not found.' })
+  @Post(':id/content')
+  async createContent(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Param('id', ParseUuidPipe) id: string,
+    @Body() dto: CreateLessonContentDto,
+  ) {
+    // Verifica che la lezione esista in PostgreSQL prima di creare il documento
+    // MongoDB — evita contenuti orfani senza una lezione corrispondente.
+    await this.lessonsService.findLesson(courseId, id);
+    return this.lessonsService.createContent(id, dto);
+  }
+
+  // ---------------------------------------------------------------------------
+  // PATCH /courses/:courseId/lessons/:id/content
+  // Aggiorna parzialmente il documento MongoDB esistente (videoUrl, quiz, ecc.)
+  // ---------------------------------------------------------------------------
+  @ApiOperation({ summary: 'Update content for a lesson (instructor only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lesson content updated successfully.',
+  })
+  @ApiNotFoundResponse({ description: 'Lesson or content not found.' })
+  @Patch(':id/content')
+  async updateContent(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Param('id', ParseUuidPipe) id: string,
+    @Body() dto: UpdateLessonContentDto,
+  ) {
+    //qui verifichiamo solo se la lezione esiste; se si, si procede alla riga successiva
+    await this.lessonsService.findLesson(courseId, id);
+    return this.lessonsService.updateContent(id, dto);
   }
 }

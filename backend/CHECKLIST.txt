@@ -20,7 +20,7 @@ AUTH MODULE
 ------------------------------------------
 USERS MODULE
 ------------------------------------------
-[ ] createUser() — chiamato internamente da register e OAuth callback
+[x] createUser() — chiamato internamente da register e OAuth callback
 [ ] findById() — usato da JwtStrategy e altri service
 [ ] findByEmail() — usato da AuthService per login
 [ ] GET  /users/me — restituisce profilo utente autenticato
@@ -32,21 +32,22 @@ USERS MODULE
 ------------------------------------------
 COURSES MODULE
 ------------------------------------------
-[ ] GET    /courses — lista con filtri (category, price, search) e paginazione
-[ ] GET    /courses/:id — dettaglio corso con lezioni
-[ ] POST   /courses — crea corso (instructor)
-[ ] PATCH  /courses/:id — aggiorna corso (instructor owner o admin)
-[ ] DELETE /courses/:id — soft delete corso (instructor owner o admin)
-[ ] findBySlug() — usato internamente per SEO/URL friendly
+[x] GET    /courses — lista con filtri (category, price, search) e paginazione
+[x] GET    /courses/:id — dettaglio corso con lezioni
+[x] POST   /courses — crea corso (instructor)
+[x] PATCH  /courses/:id — aggiorna corso (instructor owner o admin)
+[x] PATCH  /courses/:id/restore — riattiva corso disattivato
+[x] DELETE /courses/:id — soft delete corso (instructor owner o admin)
+[x] findBySlug() — usato internamente per SEO/URL friendly
 [ ] Cache su findAll() e findBySlug() con Redis (TTL + invalidation)
 
 ------------------------------------------
 LESSONS MODULE
 ------------------------------------------
-[ ] GET    /courses/:courseId/lessons/:id — dettaglio lezione (PostgreSQL + MongoDB)
-[ ] POST   /courses/:courseId/lessons — aggiunge lezione a corso (instructor)
-[ ] PATCH  /courses/:courseId/lessons/:id — aggiorna lezione (instructor)
-[ ] DELETE /courses/:courseId/lessons/:id — elimina lezione (instructor o admin)
+[x] GET    /courses/:courseId/lessons/:id — dettaglio lezione (PostgreSQL + MongoDB)
+[x] POST   /courses/:courseId/lessons — aggiunge lezione a corso (instructor)
+[x] PATCH  /courses/:courseId/lessons/:id — aggiorna lezione (instructor)
+[x] DELETE /courses/:courseId/lessons/:id — elimina lezione (instructor o admin)
 [ ] GET    /lessons/:id/video-url — genera presigned GET URL S3 (verifica iscrizione)
 
 ------------------------------------------
@@ -54,8 +55,8 @@ ENROLLMENTS MODULE
 ------------------------------------------
 [x] enroll() — verifica StudentProfile, corso PUBLISHED, pagamento COMPLETED, no duplicato
 [x] updateProgress() — marca lezione completata su MongoDB, ricalcola progress_percent
-[ ] POST   /enrollments — iscrive studente a corso
-[ ] PATCH  /enrollments/:id/progress — aggiorna progresso con lesson_id
+[x] POST   /enrollments — iscrive studente a corso
+[x] PATCH  /enrollments/:id/progress — aggiorna progresso con lesson_id
 [x] EventEmitter2 — emette "enrollment.completed" quando progress_percent = 100
 [ ] POST   /enrollments/:id/refund — richiede rimborso (student o admin)
 
@@ -74,25 +75,28 @@ PAYMENTS MODULE
 ------------------------------------------
 REVIEWS MODULE
 ------------------------------------------
-[ ] POST   /enrollments/:enrollmentId/reviews — pubblica recensione (solo se enrolled)
-[ ] PATCH  /enrollments/:enrollmentId/reviews — modifica propria recensione
-[ ] DELETE /enrollments/:enrollmentId/reviews — elimina recensione (student o admin)
-[ ] Vincolo una sola recensione per coppia student + course
+[x] POST   /enrollments/:enrollmentId/reviews — pubblica recensione (solo se enrolled)
+[x] PATCH  /enrollments/:enrollmentId/reviews — modifica propria recensione
+[x] DELETE /enrollments/:enrollmentId/reviews — elimina recensione (student o admin)
+[x] Vincolo una sola recensione per coppia student + course
 
 ------------------------------------------
 CERTIFICATES MODULE
 ------------------------------------------
-[ ] Listener su "enrollment.completed" — crea record Certificate
+[x] Listener su "enrollment.completed" — crea record Certificate
 [ ] Job BullMQ generate-certificate — genera PDF con pdfkit, carica su S3
-[ ] GET /certificates/verify/:code — verifica pubblica autenticità certificato
+[x] GET /certificates/verify/:code — verifica pubblica autenticità certificato
+[x] GET /certificates/:id — Recupera un certificato per ID interno
+[x] PATCH /certificate/:id/revoke — Revoca un certificato
 [ ] GET /certificates/:id/download — presigned GET URL S3 per download PDF
 
 ------------------------------------------
 ADMIN MODULE
 ------------------------------------------
-[ ] GET   /admin/users — lista tutti gli utenti con filtri e paginazione
-[ ] PATCH /admin/courses/:id/approve — approva o rifiuta corso
-[ ] GET   /admin/stats — statistiche globali (utenti, corsi, iscrizioni, revenue)
+[x] GET   /admin/users — lista tutti gli utenti con filtri e paginazione
+[x] PATCH /admin/courses/:id/approve — approva corso
+[x] PATCH /admin/courses/:id/approve — rifiuta corso
+[x] GET   /admin/stats — statistiche globali (utenti, corsi, iscrizioni, revenue)
 [ ] GET   /admin/cache-stats — metriche Redis
 [ ] GET   /admin/jobs/stats — statistiche code BullMQ
 [ ] POST  /admin/jobs/weekly-report — trigger manuale report settimanale instructor
@@ -105,10 +109,10 @@ UPLOADS MODULE
 ------------------------------------------
 MONGODB — LessonContent Schema
 ------------------------------------------
-[ ] Schema LessonContent: lessonId, videoUrl, transcript, attachments, quiz, external_links
-[ ] createContent() — crea documento MongoDB per una lezione
-[ ] updateContent() — aggiorna documento MongoDB
-[ ] findByLessonId() — usato da LessonsService per fondere dati PG + Mongo
+[x] Schema LessonContent: lessonId, videoUrl, transcript, attachments, quiz, external_links
+[x] createContent() — crea documento MongoDB per una lezione
+[x] updateContent() — aggiorna documento MongoDB
+[x] findByLessonId() — usato da LessonsService per fondere dati PG + Mongo
 
 ------------------------------------------
 MONGODB — LessonProgress Schema
@@ -120,18 +124,19 @@ MONGODB — LessonProgress Schema
 ------------------------------------------
 INFRASTRUTTURA & TRASVERSALI
 ------------------------------------------
-[ ] ValidationPipe globale (whitelist: true, transform: true)
-[ ] TransformInterceptor globale — wrappa risposta in { data, statusCode, timestamp }
-[ ] LoggingInterceptor — logga method, path, status, tempo risposta
-[ ] TimeoutInterceptor — 504 se endpoint non risponde entro 10s
-[ ] HttpExceptionFilter globale — standardizza tutti gli errori inclusi TypeORM
-[ ] ParseUuidPipe custom — valida UUID v4 su ogni :id param
-[ ] ParsePositiveIntPipe — per params di paginazione
+[x] ValidationPipe globale (whitelist: true, transform: true)
+[x] TransformInterceptor globale — wrappa risposta in { data, statusCode, timestamp }
+[x] LoggingInterceptor — logga method, path, status, tempo risposta
+[x] TimeoutInterceptor — 504 se endpoint non risponde entro 10s
+[x] HttpExceptionFilter globale — standardizza tutti gli errori inclusi TypeORM
+[x] ParseUuidPipe custom — valida UUID v4 su ogni :id param
+[x] ParsePositiveIntPipe — per params di paginazione
 [ ] RolesGuard + decoratore @Roles() — RBAC su ogni endpoint protetto
 [ ] JwtAuthGuard globale + decoratore @Public() per endpoint pubblici
-[ ] Throttler globale con Redis store (rate limiting per IP)
-[ ] EventEmitter2 — bus eventi interno (enrollment.completed → certificate)
+[x] Throttler globale (rate limiting per IP)
+[ ] Redis store
+[x] EventEmitter2 — bus eventi interno (enrollment.completed → certificate)
 [ ] BullMQ — code per email, PDF, digest, cleanup
 [ ] Redis — caching, refresh token storage, rate limiting, Pub/Sub
-[ ] Swagger — ogni endpoint documentato con @ApiOperation, @ApiResponse, @ApiBearerAuth
-[ ] Seed script — dati realistici per demo (utenti, corsi, lezioni, pagamenti)
+[x] Swagger — ogni endpoint documentato con @ApiOperation, @ApiResponse, @ApiBearerAuth
+[x] Seed script — dati realistici per demo (utenti, corsi, lezioni, pagamenti)

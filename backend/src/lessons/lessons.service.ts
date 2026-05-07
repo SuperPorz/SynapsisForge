@@ -4,11 +4,12 @@ import { Model } from 'mongoose';
 // prettier-ignore
 import { LessonContent, LessonContentDocument } from './schemas/lesson-content.schema';
 import { CreateLessonContentDto } from './dto/create-lesson-content.dto';
+import { UpdateLessonContentDto } from './dto/update-lesson-content.dto';
 import { Lesson } from '../common/entities/lessons.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
-type UpdateLessonContentDto = Partial<Omit<CreateLessonContentDto, 'lessonId'>>;
+import { CreateLessonDto } from './dto/create-lesson.dto';
+import { UpdateLessonDto } from './dto/update-lesson.dto';
 
 @Injectable()
 export class LessonsService {
@@ -20,10 +21,96 @@ export class LessonsService {
     private lessonRepository: Repository<Lesson>,
   ) {}
 
+  // ---------------------------------------------------------------------------
+  // PostgreSQL — CRUD lezioni
+  // ---------------------------------------------------------------------------
+
+  async createLesson(courseId: string, dto: CreateLessonDto): Promise<Lesson> {
+    const lesson = this.lessonRepository.create({ ...dto, courseId });
+    return await this.lessonRepository.save(lesson);
+  }
+
+  async updateLesson(
+    courseId: string,
+    id: string,
+    dto: UpdateLessonDto,
+  ): Promise<Lesson> {
+    const lesson = await this.lessonRepository.findOne({
+      where: { id, courseId },
+    });
+    if (!lesson)
+      throw new NotFoundException(
+        `Lezione ${id} non trovata nel corso ${courseId}`,
+      );
+
+    Object.assign(lesson, dto);
+    return await this.lessonRepository.save(lesson);
+  }
+
+  async softDeleteLesson(courseId: string, id: string): Promise<void> {
+    const lesson = await this.lessonRepository.findOne({
+      where: { id, courseId },
+    });
+    if (!lesson)
+      throw new NotFoundException(
+        `Lezione ${id} non trovata nel corso ${courseId}`,
+      );
+
+    await this.lessonRepository.softDelete(id);
+  }
+
+  async findLesson(courseId: string, id: string): Promise<Lesson> {
+    const lesson = await this.lessonRepository.findOne({
+      where: { id, courseId },
+      relations: ['course'],
+    });
+    if (!lesson)
+      throw new NotFoundException(
+        `Lezione ${id} non trovata nel corso ${courseId}`,
+      );
+
+    return lesson;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Aggregato PostgreSQL + MongoDB — dettaglio lezione con contenuto
+  // ---------------------------------------------------------------------------
+
+  async getLessonWithContent(
+    courseId: string,
+    id: string,
+  ): Promise<{
+    id: string;
+    title: string;
+    order: number;
+    duration_seconds: number;
+    course: Lesson['course'];
+    content: LessonContentDocument | null;
+  }> {
+    const lesson = await this.findLesson(courseId, id); // lancia NotFoundException se non esiste
+    const content = await this.lessonContentModel
+      .findOne({ lessonId: id })
+      .exec();
+
+    return {
+      id: lesson.id,
+      title: lesson.title,
+      order: lesson.order,
+      duration_seconds: lesson.duration_seconds,
+      course: lesson.course,
+      content: content ?? null,
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // MongoDB — contenuto lezione
+  // ---------------------------------------------------------------------------
+
   async createContent(
+    lessonId: string,
     dto: CreateLessonContentDto,
   ): Promise<LessonContentDocument> {
-    const doc = new this.lessonContentModel(dto);
+    const doc = new this.lessonContentModel({ ...dto, lessonId });
     return await doc.save();
   }
 
@@ -32,11 +119,7 @@ export class LessonsService {
     dto: UpdateLessonContentDto,
   ): Promise<LessonContentDocument> {
     const updated = await this.lessonContentModel
-      .findOneAndUpdate(
-        { lessonId },
-        { $set: dto },
-        { new: true }, // ritorna il documento aggiornato, non quello precedente
-      )
+      .findOneAndUpdate({ lessonId }, { $set: dto }, { new: true })
       .exec();
 
     if (!updated)
@@ -49,12 +132,5 @@ export class LessonsService {
 
   async findContent(lessonId: string): Promise<LessonContentDocument | null> {
     return await this.lessonContentModel.findOne({ lessonId }).exec();
-  }
-
-  async findLesson(id: string): Promise<Lesson | null> {
-    return await this.lessonRepository.findOne({
-      where: { id },
-      relations: ['course'], // include i dati del corso nella risposta merged
-    });
   }
 }
