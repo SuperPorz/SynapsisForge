@@ -34,6 +34,9 @@ export class User {
   @CreateDateColumn()
   createdAt!: Date;
 
+  @Column({ default: true })
+  is_active!: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   refresh_token_hash!: string | null;
 

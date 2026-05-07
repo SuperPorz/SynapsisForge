@@ -14,6 +14,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { CertificatesModule } from './certificates/certificates.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { CertificatesModule } from './certificates/certificates.module';
     ReviewsModule,
     AuthModule,
     CertificatesModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
