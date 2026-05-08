@@ -1,0 +1,54 @@
+### Certificates – variabili
+@baseUrl         = http://localhost:3000
+@certificateId   = CERTIFICATE_UUID
+@certificateCode = CERTIFICATE_CODE_UUID
+@adminToken      = ADMIN_JWT_TOKEN
+@studentToken    = STUDENT_JWT_TOKEN
+
+# NOTA: La generazione del certificato avviene internamente quando
+# un enrollment raggiunge il 100% di progress — non c'è POST pubblico.
+# Il campo certificate_code è un UUID separato dall'id (usato per
+# verifica pubblica senza esporre l'ID interno).
+
+# ─── GET /certificates/verify/:certificate_code — PUBBLICO ───────────
+
+### 1. Verifica autenticità certificato (endpoint pubblico, no auth)
+GET {{baseUrl}}/certificates/verify/{{certificateCode}}
+
+### 2. Verifica – codice inesistente (atteso 404)
+GET {{baseUrl}}/certificates/verify/00000000-0000-0000-0000-000000000999
+
+### 3. Verifica – codice non UUID (attenzione: non usa ParseUUIDPipe qui)
+GET {{baseUrl}}/certificates/verify/not-a-valid-code
+
+# ─── GET /certificates/:id ────────────────────────────────────────────
+
+### 4. Get certificato per ID interno
+GET {{baseUrl}}/certificates/{{certificateId}}
+Authorization: Bearer {{studentToken}}
+
+### 5. Get certificato – ID inesistente (atteso 404)
+GET {{baseUrl}}/certificates/00000000-0000-0000-0000-000000000999
+Authorization: Bearer {{studentToken}}
+
+### 6. Get certificato – UUID non valido (atteso 400, ParseUUIDPipe)
+GET {{baseUrl}}/certificates/not-a-uuid
+Authorization: Bearer {{studentToken}}
+
+# ─── PATCH /certificates/:id/revoke ──────────────────────────────────
+
+### 7. Revoca certificato valido (richiede admin)
+PATCH {{baseUrl}}/certificates/{{certificateId}}/revoke
+Authorization: Bearer {{adminToken}}
+
+### 8. Revoca – certificato già revocato (atteso 400)
+PATCH {{baseUrl}}/certificates/{{certificateId}}/revoke
+Authorization: Bearer {{adminToken}}
+
+### 9. Revoca – ID inesistente (atteso 404)
+PATCH {{baseUrl}}/certificates/00000000-0000-0000-0000-000000000999/revoke
+Authorization: Bearer {{adminToken}}
+
+### 10. Revoca – UUID non valido (atteso 400, ParseUUIDPipe)
+PATCH {{baseUrl}}/certificates/not-a-uuid/revoke
+Authorization: Bearer {{adminToken}}

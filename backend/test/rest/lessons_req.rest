@@ -1,0 +1,115 @@
+### Lessons – variabili
+@baseUrl         = http://localhost:3000
+@lessonId        = LESSON_UUID
+@courseId        = COURSE_UUID
+@instructorToken = INSTRUCTOR_JWT_TOKEN
+
+# ─── Lesson Content (MongoDB merged) ─────────────────────────────────
+
+### 1. Get Lesson with Content (PostgreSQL + MongoDB merged) — pubblico
+GET {{baseUrl}}/lessons/{{lessonId}}/content
+
+### 2. Create Lesson Content
+POST {{baseUrl}}/lessons/{{lessonId}}/content
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "lessonId": "{{lessonId}}",
+  "videoUrl": "https://example.com/videos/intro-nestjs.mp4",
+  "transcript": "In questa lezione introduciamo NestJS e la sua architettura modulare.",
+  "attachments": [
+    {
+      "name": "Slide introduzione",
+      "url": "https://example.com/attachments/intro-nestjs.pdf",
+      "type": "pdf"
+    },
+    {
+      "name": "Codice sorgente",
+      "url": "https://example.com/attachments/intro-nestjs.zip",
+      "type": "zip"
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Quale decoratore si usa per definire un controller in NestJS?",
+      "options": [
+        { "label": "A", "text": "@Module()" },
+        { "label": "B", "text": "@Controller()" },
+        { "label": "C", "text": "@Injectable()" },
+        { "label": "D", "text": "@Service()" }
+      ],
+      "correctAnswer": "B"
+    },
+    {
+      "question": "Quale ORM viene spesso usato con NestJS per PostgreSQL?",
+      "options": [
+        { "label": "A", "text": "Mongoose" },
+        { "label": "B", "text": "Sequelize" },
+        { "label": "C", "text": "TypeORM" },
+        { "label": "D", "text": "Prisma" }
+      ],
+      "correctAnswer": "C"
+    }
+  ]
+}
+
+### 3. Update Lesson Content – campi parziali (videoUrl + transcript)
+PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "videoUrl": "https://example.com/videos/intro-nestjs-v2.mp4",
+  "transcript": "Trascrizione aggiornata della lezione."
+}
+
+### 4. Update solo quiz
+PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "quiz": [
+    {
+      "question": "Cosa fa il decoratore @Injectable()?",
+      "options": [
+        { "label": "A", "text": "Definisce un controller" },
+        { "label": "B", "text": "Marca una classe come provider iniettabile" },
+        { "label": "C", "text": "Registra un modulo" },
+        { "label": "D", "text": "Crea una route" }
+      ],
+      "correctAnswer": "B"
+    }
+  ]
+}
+
+### 5. Update solo attachments
+PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "attachments": [
+    {
+      "name": "Slide aggiornate",
+      "url": "https://example.com/attachments/intro-nestjs-v2.pdf",
+      "type": "pdf"
+    }
+  ]
+}
+
+# ─── Edge cases ───────────────────────────────────────────────────────
+
+### 6. Get Content – lessonId inesistente (atteso 404)
+GET {{baseUrl}}/lessons/00000000-0000-0000-0000-000000000999/content
+
+### 7. Create Content – UUID non valido (atteso 400)
+POST {{baseUrl}}/lessons/not-a-uuid/content
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "lessonId": "not-a-uuid",
+  "videoUrl": "https://example.com/video.mp4"
+}

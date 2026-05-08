@@ -1,0 +1,159 @@
+### Reviews – variabili
+@baseUrl      = http://localhost:3000
+@reviewId     = REVIEW_UUID
+@enrollmentId = ENROLLMENT_UUID
+@studentToken = STUDENT_JWT_TOKEN
+
+# NOTA: Review è legata 1:1 a un Enrollment (OneToOne).
+# Non esiste GET pubblico delle reviews in questo controller —
+# eventualmente sarà esposto tramite courses o enrollments.
+# UpdateReviewDto = PartialType(OmitType(CreateReviewDto, ['enrollmentId']))
+# → può aggiornare solo rating e/o comment, NON enrollmentId.
+
+# ─── POST /reviews ────────────────────────────────────────────────────
+
+### 1. Crea review – rating e comment
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "enrollmentId": "{{enrollmentId}}",
+  "rating": 5,
+  "comment": "Corso eccellente, spiegazioni chiare e ben strutturato."
+}
+
+### 2. Crea review – solo rating (comment opzionale)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "enrollmentId": "{{enrollmentId}}",
+  "rating": 4
+}
+
+### 3. Crea review – rating 1 (minimo valido)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "enrollmentId": "{{enrollmentId}}",
+  "rating": 1,
+  "comment": "Non soddisfacente."
+}
+
+# ─── PATCH /reviews/:id ───────────────────────────────────────────────
+
+### 4. Update review – aggiorna rating e comment
+PATCH {{baseUrl}}/reviews/{{reviewId}}
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "rating": 3,
+  "comment": "Rivisto il giudizio dopo aver completato tutti i moduli."
+}
+
+### 5. Update review – solo rating
+PATCH {{baseUrl}}/reviews/{{reviewId}}
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "rating": 5
+}
+
+### 6. Update review – solo comment
+PATCH {{baseUrl}}/reviews/{{reviewId}}
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "comment": "Commento aggiornato."
+}
+
+# ─── DELETE /reviews/:id ──────────────────────────────────────────────
+
+### 7. Elimina review (204 No Content)
+DELETE {{baseUrl}}/reviews/{{reviewId}}
+Authorization: Bearer {{studentToken}}
+
+# ─── Edge cases ───────────────────────────────────────────────────────
+
+### 8. Create – rating fuori range (atteso 400)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "enrollmentId": "{{enrollmentId}}",
+  "rating": 6
+}
+
+### 9. Create – enrollmentId non UUID (atteso 400)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "enrollmentId": "not-a-uuid",
+  "rating": 4
+}
+
+### 10. Create – enrollment inesistente (atteso 404)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "enrollmentId": "00000000-0000-0000-0000-000000000999",
+  "rating": 4
+}
+
+### 11. Create – enrollment già recensito (atteso 409, OneToOne)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "enrollmentId": "{{enrollmentId}}",
+  "rating": 5
+}
+
+### 12. Update – tentativo di cambiare enrollmentId (ignorato da UpdateReviewDto)
+PATCH {{baseUrl}}/reviews/{{reviewId}}
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "enrollmentId": "00000000-0000-0000-0000-000000000999",
+  "rating": 2
+}
+
+### 13. Update – UUID non valido nel path (atteso 400, ParseUUIDPipe)
+PATCH {{baseUrl}}/reviews/not-a-uuid
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "rating": 3
+}
+
+### 14. Delete – review di un altro utente (atteso 403)
+DELETE {{baseUrl}}/reviews/{{reviewId}}
+Authorization: Bearer {{studentToken}}
+
+### 15. Delete – UUID non valido (atteso 400, ParseUUIDPipe)
+DELETE {{baseUrl}}/reviews/not-a-uuid
+Authorization: Bearer {{studentToken}}
+
+### 16. Senza token (atteso 401)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+
+{
+  "enrollmentId": "{{enrollmentId}}",
+  "rating": 3
+}

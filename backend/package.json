@@ -18,7 +18,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts",
+    "sync-ids": "ts-node scripts/sync-ids.ts",
+    "reset-db": "psql -U admin -d pg_database -f scripts/reset_db.sql && npm run seed"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

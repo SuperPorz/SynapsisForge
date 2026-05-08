@@ -1,0 +1,60 @@
+### Admin – variabili
+@baseUrl    = http://localhost:3000
+@adminToken = ADMIN_JWT_TOKEN
+@courseId   = COURSE_UUID
+
+# FIX: route corretta è GET /admin/users (non GET /admin)
+# FIX: aggiungere Authorization su tutte le route
+
+# ─── GET /admin/users ────────────────────────────────────────────────
+
+### Lista tutti gli utenti (nessun filtro)
+GET {{baseUrl}}/admin/users
+Authorization: Bearer {{adminToken}}
+
+### Lista utenti filtrati per ruolo STUDENT
+GET {{baseUrl}}/admin/users?role=STUDENT
+Authorization: Bearer {{adminToken}}
+
+### Lista utenti filtrati per ruolo INSTRUCTOR
+GET {{baseUrl}}/admin/users?role=INSTRUCTOR
+Authorization: Bearer {{adminToken}}
+
+### Lista utenti filtrati per stato attivo
+GET {{baseUrl}}/admin/users?is_active=true
+Authorization: Bearer {{adminToken}}
+
+### Lista utenti disattivi
+GET {{baseUrl}}/admin/users?is_active=false
+Authorization: Bearer {{adminToken}}
+
+### Lista utenti con entrambi i filtri
+GET {{baseUrl}}/admin/users?role=INSTRUCTOR&is_active=true
+Authorization: Bearer {{adminToken}}
+
+# ─── PATCH /admin/courses/:id/approve ────────────────────────────────
+
+### Approva un corso in PENDING
+PATCH {{baseUrl}}/admin/courses/{{courseId}}/approve
+Authorization: Bearer {{adminToken}}
+
+### Approva un corso già PUBLISHED (atteso 403)
+# Prima cambia courseId con UUID di un corso PUBLISHED
+PATCH {{baseUrl}}/admin/courses/{{courseId}}/approve
+Authorization: Bearer {{adminToken}}
+
+# ─── PATCH /admin/courses/:id/reject ─────────────────────────────────
+
+### Rifiuta un corso in PENDING
+PATCH {{baseUrl}}/admin/courses/{{courseId}}/reject
+Authorization: Bearer {{adminToken}}
+
+### Rifiuta un corso in DRAFT (atteso 403)
+PATCH {{baseUrl}}/admin/courses/{{courseId}}/reject
+Authorization: Bearer {{adminToken}}
+
+# ─── GET /admin/stats ─────────────────────────────────────────────────
+
+### Statistiche globali
+GET {{baseUrl}}/admin/stats
+Authorization: Bearer {{adminToken}}

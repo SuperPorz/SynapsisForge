@@ -1,0 +1,39 @@
+# ============================================================
+# _variables.rest — Variabili condivise per tutti i file .rest
+# ============================================================
+# NOTA: Il REST Client di VS Code NON supporta variabili cross-file.
+# Questo file serve come riferimento centralizzato: copia i valori
+# nei singoli file, oppure usa lo script `npm run sync-ids` per
+# aggiornarli automaticamente dopo ogni reset del DB.
+# ============================================================
+
+@baseUrl = http://localhost:3000
+
+# ── Auth ────────────────────────────────────────────────────
+# Ottenuti via POST /auth/login — aggiornare dopo ogni login
+@adminToken    = ADMIN_JWT_TOKEN
+@studentToken  = STUDENT_JWT_TOKEN
+@instructorToken = INSTRUCTOR_JWT_TOKEN
+
+# ── Users ───────────────────────────────────────────────────
+@adminId       = ADMIN_UUID
+@studentId     = STUDENT_UUID
+@instructorId  = INSTRUCTOR_UUID
+
+# ── Courses ─────────────────────────────────────────────────
+@courseId      = COURSE_UUID
+@categoryId    = CATEGORY_UUID
+@slug          = SLUG_VALUE
+
+# ── Lessons ─────────────────────────────────────────────────
+@lessonId      = LESSON_UUID
+
+# ── Enrollments ─────────────────────────────────────────────
+@enrollmentId  = ENROLLMENT_UUID
+
+# ── Certificates ────────────────────────────────────────────
+@certificateId   = CERTIFICATE_UUID
+@certificateCode = CERTIFICATE_CODE_UUID
+
+# ── Reviews ─────────────────────────────────────────────────
+@reviewId      = REVIEW_UUID

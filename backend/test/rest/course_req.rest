@@ -1,0 +1,82 @@
+### Courses – variabili
+@baseUrl        = http://localhost:3000
+@courseId       = COURSE_UUID
+@slug           = SLUG_VALUE
+@instructorId   = INSTRUCTOR_UUID
+@categoryId     = CATEGORY_UUID
+@instructorToken = INSTRUCTOR_JWT_TOKEN
+@adminToken     = ADMIN_JWT_TOKEN
+
+# ─── GET (pubblici) ───────────────────────────────────────────────────
+
+### 1. Get All Courses con paginazione
+GET {{baseUrl}}/courses?page=1&limit=10
+
+### 2. Get All Courses filtrati per categoria
+GET {{baseUrl}}/courses?page=1&limit=10&category=Web Development
+
+### 3. Search Courses per keyword
+GET {{baseUrl}}/courses/search?q=typescript
+
+### 4. Get Course by ID
+GET {{baseUrl}}/courses/{{courseId}}
+
+### 5. Get Course by Slug
+GET {{baseUrl}}/courses/slug/{{slug}}
+
+# ─── POST / PATCH / DELETE (protetti) ────────────────────────────────
+
+### 6. Create New Course (richiede auth instructor/admin)
+POST {{baseUrl}}/courses
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "title": "Laravel 13: Guida Completa",
+  "slug": "laravel-13-guida-completa",
+  "description": "Sviluppo backend moderno con PHP 8.4 e Laravel 13.",
+  "price": 54.99,
+  "status": "DRAFT",
+  "category_id": "{{categoryId}}",
+  "instructor_id": "{{instructorId}}",
+  "thumbnail_url": "https://example.com/images/laravel-13.jpg"
+}
+
+### 7. Update Course – solo price
+PATCH {{baseUrl}}/courses/{{courseId}}
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "price": 75.25
+}
+
+### 8. Update Course – cambio status a PENDING (richiede approvazione admin)
+PATCH {{baseUrl}}/courses/{{courseId}}
+Content-Type: application/json
+Authorization: Bearer {{instructorToken}}
+
+{
+  "status": "PENDING"
+}
+
+### 9. Soft Delete Course
+DELETE {{baseUrl}}/courses/{{courseId}}
+Authorization: Bearer {{instructorToken}}
+
+### 10. Restore Course (soft-deleted)
+PATCH {{baseUrl}}/courses/{{courseId}}/restore
+Authorization: Bearer {{adminToken}}
+
+# ─── Edge cases ───────────────────────────────────────────────────────
+
+### 11. Get Course inesistente (atteso 404)
+GET {{baseUrl}}/courses/00000000-0000-0000-0000-000000000999
+
+### 12. Create senza auth (atteso 401)
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{
+  "title": "Test senza token"
+}

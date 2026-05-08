@@ -1,0 +1,89 @@
+### Users – variabili
+@baseUrl      = http://localhost:3000
+@studentToken = STUDENT_JWT_TOKEN
+
+# NOTA: UsersController espone solo GET /users/me e PATCH /users/me.
+# L'userId viene estratto dal JWT — nessun :id nel path per sicurezza.
+# JwtAuthGuard attualmente commentato nel controller, da decommentare
+# quando AuthModule sarà implementato.
+
+# ─── GET /users/me ────────────────────────────────────────────────────
+
+### 1. Get profilo utente autenticato
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{studentToken}}
+
+### 2. Get profilo – senza token (atteso 401 quando guard attivo)
+GET {{baseUrl}}/users/me
+
+# ─── PATCH /users/me ──────────────────────────────────────────────────
+
+### 3. Update profilo – tutti i campi modificabili
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "first_name": "Mario",
+  "last_name": "Rossi",
+  "birth_date": "1992-06-15",
+  "country": "ITALY"
+}
+
+### 4. Update profilo – solo first_name
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "first_name": "Luigi"
+}
+
+### 5. Update profilo – solo country
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "country": "GERMANY"
+}
+
+# ─── Edge cases ───────────────────────────────────────────────────────
+
+### 6. Update – country non valida (atteso 400)
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "country": "MARS"
+}
+
+### 7. Update – birth_date formato errato (atteso 400)
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "birth_date": "non-una-data"
+}
+
+### 8. Update – tentativo di cambiare email (ignorato dal DTO/atteso 400)
+# email è esclusa da UpdateUserDto — il campo verrà ignorato o rifiutato
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "email": "hacker@evil.com",
+  "first_name": "Test"
+}
+
+### 9. Update – tentativo di cambiare role (ignorato dal DTO/atteso 400)
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "role": "ADMIN"
+}

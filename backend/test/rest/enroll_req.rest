@@ -1,0 +1,90 @@
+### Enrollments – variabili
+@baseUrl      = http://localhost:3000
+@enrollmentId = ENROLLMENT_UUID
+@studentId    = STUDENT_UUID
+@courseId     = COURSE_UUID
+@lessonId     = LESSON_UUID
+@studentToken = STUDENT_JWT_TOKEN
+
+# ─── POST /enrollments ────────────────────────────────────────────────
+
+### 1. Enroll student in a course
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "userId": "{{studentId}}",
+  "courseId": "{{courseId}}"
+}
+
+# ─── PATCH /enrollments/:id/progress ─────────────────────────────────
+
+### 2. Update lesson progress
+PATCH {{baseUrl}}/enrollments/{{enrollmentId}}/progress
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "lessonId": "{{lessonId}}"
+}
+
+# ─── Edge cases ───────────────────────────────────────────────────────
+
+### 3. Enroll – corso inesistente (atteso 404)
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "userId": "{{studentId}}",
+  "courseId": "00000000-0000-0000-0000-000000000999"
+}
+
+### 4. Enroll – studente già iscritto (atteso 409)
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "userId": "{{studentId}}",
+  "courseId": "{{courseId}}"
+}
+
+### 5. Enroll – utente non student (atteso 403)
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "userId": "00000000-0000-0000-0000-000000000010",
+  "courseId": "{{courseId}}"
+}
+
+### 6. Update progress – enrollment inesistente (atteso 404)
+PATCH {{baseUrl}}/enrollments/00000000-0000-0000-0000-000000000999/progress
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "lessonId": "{{lessonId}}"
+}
+
+### 7. Update progress – UUID non valido (atteso 400)
+PATCH {{baseUrl}}/enrollments/not-a-valid-uuid/progress
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "lessonId": "{{lessonId}}"
+}
+
+### 8. Enroll – body non valido, userId non UUID (atteso 400)
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+Authorization: Bearer {{studentToken}}
+
+{
+  "userId": "not-a-uuid",
+  "courseId": "{{courseId}}"
+}
