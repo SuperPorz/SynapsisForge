@@ -1,16 +1,17 @@
 ### Lessons – variabili
 @baseUrl         = http://localhost:3000
-@lessonId        = 1f050b31-8a30-4d7f-afdd-0aa3a6443a9e
-@courseId        = 4215d6de-99ee-4d84-8115-decf48ab3e7a
+@courseId        = 31f8fd18-0dad-4190-9613-49750190e882
+@lessonId        = 6bb1d4ea-eb6b-458d-adbc-b5e0505c03da
 @instructorToken = INSTRUCTOR_JWT_TOKEN
 
 # ─── Lesson Content (MongoDB merged) ─────────────────────────────────
 
-### 1. Get Lesson with Content (PostgreSQL + MongoDB merged) — pubblico
-GET {{baseUrl}}/lessons/{{lessonId}}/content
+### 1. Get Lesson with Content (PostgreSQL + MongoDB merged)
+GET {{baseUrl}}/courses/{{courseId}}/lessons/{{lessonId}}
 
 ### 2. Create Lesson Content
-POST {{baseUrl}}/lessons/{{lessonId}}/content
+# Corretta: Aggiunto /courses/{{courseId}}/ prima di /lessons
+POST {{baseUrl}}/courses/{{courseId}}/lessons/{{lessonId}}/content
 Content-Type: application/json
 Authorization: Bearer {{instructorToken}}
 
@@ -40,22 +41,13 @@ Authorization: Bearer {{instructorToken}}
         { "label": "D", "text": "@Service()" }
       ],
       "correctAnswer": "B"
-    },
-    {
-      "question": "Quale ORM viene spesso usato con NestJS per PostgreSQL?",
-      "options": [
-        { "label": "A", "text": "Mongoose" },
-        { "label": "B", "text": "Sequelize" },
-        { "label": "C", "text": "TypeORM" },
-        { "label": "D", "text": "Prisma" }
-      ],
-      "correctAnswer": "C"
     }
   ]
 }
 
 ### 3. Update Lesson Content – campi parziali (videoUrl + transcript)
-PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+# Corretta: Aggiunto /courses/{{courseId}}/
+PATCH {{baseUrl}}/courses/{{courseId}}/lessons/{{lessonId}}/content
 Content-Type: application/json
 Authorization: Bearer {{instructorToken}}
 
@@ -65,7 +57,8 @@ Authorization: Bearer {{instructorToken}}
 }
 
 ### 4. Update solo quiz
-PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+# Corretta: Aggiunto /courses/{{courseId}}/
+PATCH {{baseUrl}}/courses/{{courseId}}/lessons/{{lessonId}}/content
 Content-Type: application/json
 Authorization: Bearer {{instructorToken}}
 
@@ -85,7 +78,8 @@ Authorization: Bearer {{instructorToken}}
 }
 
 ### 5. Update solo attachments
-PATCH {{baseUrl}}/lessons/{{lessonId}}/content
+# Corretta: Aggiunto /courses/{{courseId}}/
+PATCH {{baseUrl}}/courses/{{courseId}}/lessons/{{lessonId}}/content
 Content-Type: application/json
 Authorization: Bearer {{instructorToken}}
 
@@ -102,10 +96,12 @@ Authorization: Bearer {{instructorToken}}
 # ─── Edge cases ───────────────────────────────────────────────────────
 
 ### 6. Get Content – lessonId inesistente (atteso 404)
-GET {{baseUrl}}/lessons/00000000-0000-0000-0000-000000000999/content
+# Corretta: Utilizza la rotta completa gerarchica
+GET {{baseUrl}}/courses/{{courseId}}/lessons/00000000-0000-0000-0000-000000000999
 
 ### 7. Create Content – UUID non valido (atteso 400)
-POST {{baseUrl}}/lessons/not-a-uuid/content
+# Corretta: Struttura URL corretta per attivare il ParseUuidPipe nel controller
+POST {{baseUrl}}/courses/{{courseId}}/lessons/not-a-uuid/content
 Content-Type: application/json
 Authorization: Bearer {{instructorToken}}
 

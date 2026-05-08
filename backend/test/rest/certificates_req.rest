@@ -1,7 +1,7 @@
 ### Certificates – variabili
 @baseUrl         = http://localhost:3000
-@certificateId   = 61fe1610-f9cd-4a8b-a24a-607da34f75ea
-@certificateCode = ff10c8da-e2eb-4209-b88a-363b323ef154
+@certificateId   = 1a3d7581-1c43-42b4-928d-df6792596406
+@certificateCode = 313dd0bc-6170-41d9-b50f-70a33e70a3d4
 @adminToken      = ADMIN_JWT_TOKEN
 @studentToken    = STUDENT_JWT_TOKEN
 

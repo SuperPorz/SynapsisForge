@@ -1,24 +1,23 @@
+// prettier-ignore
+/* eslint-disable */
 /**
  * sync-ids.ts
  * -----------
  * Aggiorna le variabili UUID nei file .rest interrogando PostgreSQL direttamente.
- * Non richiede che il server NestJS sia in esecuzione.
- * Non dipende da guard o token JWT.
+ *
+ * Strategia: per ogni file .rest, sostituisce il VALORE delle righe
+ * "@variabile = ..." con i dati freschi dal DB — indipendentemente dal
+ * valore attuale (UUID vecchio, placeholder testuale, ecc.).
  *
  * Utilizzo:
  *   npm run sync-ids
- *
- * In package.json:
- *   "scripts": {
- *     "sync-ids": "ts-node scripts/sync-ids.ts"
- *   }
  */
 
 import { Client } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// ── Config — stessi valori del seed.ts ──────────────────────────────────────
+// ── Config ───────────────────────────────────────────────────────────────────
 
 const DB_CONFIG = {
   host: 'localhost',
@@ -28,34 +27,25 @@ const DB_CONFIG = {
   database: 'pg_database',
 };
 
-// Cartella dei file .rest — relativa alla root del progetto
 const REST_DIR = path.resolve(process.cwd(), 'test', 'rest');
+const STATE_FILE = path.resolve(process.cwd(), 'scripts', 'sync-ids.json');
 
-// ── Mappa placeholder → valore reale ────────────────────────────────────────
+// ── Tipi ─────────────────────────────────────────────────────────────────────
 
-const ids: Record<string, string> = {
-  ADMIN_UUID: '',
-  STUDENT_UUID: '',
-  INSTRUCTOR_UUID: '',
-  COURSE_UUID: '',
-  CATEGORY_UUID: '',
-  SLUG_VALUE: '',
-  LESSON_UUID: '',
-  ENROLLMENT_UUID: '',
-  CERTIFICATE_UUID: '',
-  CERTIFICATE_CODE_UUID: '',
-  REVIEW_UUID: '',
-  ADMIN_JWT_TOKEN: 'TODO_login_per_token',
-  STUDENT_JWT_TOKEN: 'TODO_login_per_token',
-  INSTRUCTOR_JWT_TOKEN: 'TODO_login_per_token',
-};
+/**
+ * Mappa: nome variabile REST (@adminId, @courseId, …) → valore nuovo.
+ * I valori sono stringhe (UUID o slug).
+ */
+type RestVars = Record<string, string>;
 
-// ── Raccolta UUID dal DB ─────────────────────────────────────────────────────
+// ── Raccolta valori dal DB ────────────────────────────────────────────────────
 
-async function collectIds(client: Client): Promise<void> {
-  console.log('🔍 Raccolta UUID dal database...\n');
+async function collectIds(client: Client): Promise<RestVars> {
+  console.log('🔍 Raccolta valori dal database...\n');
 
-  // ── Users per ruolo ─────────────────────────────────────────────────
+  const vars: RestVars = {};
+
+  // Users
   const usersRes = await client.query<{
     id: string;
     role: string;
@@ -63,27 +53,26 @@ async function collectIds(client: Client): Promise<void> {
   }>(
     `SELECT id, role, email FROM users WHERE is_active = true ORDER BY "createdAt" ASC`,
   );
-
   const admin = usersRes.rows.find((u) => u.role === 'ADMIN');
   const student = usersRes.rows.find((u) => u.role === 'STUDENT');
   const instructor = usersRes.rows.find((u) => u.role === 'INSTRUCTOR');
 
   if (admin) {
-    ids.ADMIN_UUID = admin.id;
-    console.log(`  ✅ adminId:      ${admin.id}  (${admin.email})`);
+    vars.adminId = admin.id;
+    console.log(`  ✅ adminId:        ${admin.id}  (${admin.email})`);
   } else console.warn('  ⚠️  Nessun ADMIN nel DB');
 
   if (student) {
-    ids.STUDENT_UUID = student.id;
-    console.log(`  ✅ studentId:    ${student.id}  (${student.email})`);
+    vars.studentId = student.id;
+    console.log(`  ✅ studentId:      ${student.id}  (${student.email})`);
   } else console.warn('  ⚠️  Nessuno STUDENT nel DB');
 
   if (instructor) {
-    ids.INSTRUCTOR_UUID = instructor.id;
-    console.log(`  ✅ instructorId: ${instructor.id}  (${instructor.email})`);
+    vars.instructorId = instructor.id;
+    console.log(`  ✅ instructorId:   ${instructor.id}  (${instructor.email})`);
   } else console.warn('  ⚠️  Nessun INSTRUCTOR nel DB');
 
-  // ── Primo corso pubblicato ───────────────────────────────────────────
+  // Corso
   const courseRes = await client.query<{
     id: string;
     slug: string;
@@ -92,138 +81,154 @@ async function collectIds(client: Client): Promise<void> {
     `SELECT c.id, c.slug, c."categoryId" AS category_id
      FROM courses c
      WHERE c.status = 'PUBLISHED' AND c.deleted_at IS NULL
-     ORDER BY c.created_at ASC
-     LIMIT 1`,
+     ORDER BY c.created_at ASC LIMIT 1`,
   );
-
   if (courseRes.rows.length > 0) {
-    const course = courseRes.rows[0];
-    ids.COURSE_UUID = course.id;
-    ids.SLUG_VALUE = course.slug ?? '';
-    ids.CATEGORY_UUID = course.category_id ?? '';
-    console.log(`  ✅ courseId:     ${course.id}`);
-    console.log(`  ✅ slug:         ${course.slug}`);
-    console.log(`  ✅ categoryId:   ${course.category_id}`);
+    const c = courseRes.rows[0];
+    vars.courseId = c.id;
+    vars.slug = c.slug ?? '';
+    vars.categoryId = c.category_id ?? '';
+    console.log(`  ✅ courseId:       ${c.id}`);
+    console.log(`  ✅ slug:           ${c.slug}`);
+    console.log(`  ✅ categoryId:     ${c.category_id}`);
   } else {
     console.warn('  ⚠️  Nessun corso PUBLISHED nel DB');
   }
 
-  // ── Prima lezione del corso trovato ─────────────────────────────────
-  if (ids.COURSE_UUID) {
+  // Lezione (prima del corso trovato)
+  if (vars.courseId) {
     const lessonRes = await client.query<{ id: string }>(
-      `SELECT id FROM lessons
-       WHERE "courseId" = $1 AND deleted_at IS NULL
-       ORDER BY "order" ASC
-       LIMIT 1`,
-      [ids.COURSE_UUID],
+      `SELECT id FROM lessons WHERE "courseId" = $1 AND deleted_at IS NULL ORDER BY "order" ASC LIMIT 1`,
+      [vars.courseId],
     );
     if (lessonRes.rows.length > 0) {
-      ids.LESSON_UUID = lessonRes.rows[0].id;
-      console.log(`  ✅ lessonId:     ${lessonRes.rows[0].id}`);
+      vars.lessonId = lessonRes.rows[0].id;
+      console.log(`  ✅ lessonId:       ${vars.lessonId}`);
     } else {
-      console.warn('  ⚠️  Nessuna lezione trovata per il corso');
+      console.warn('  ⚠️  Nessuna lezione trovata');
     }
   }
 
-  // ── Primo enrollment ─────────────────────────────────────────────────
+  // Enrollment
   const enrollRes = await client.query<{ id: string }>(
     `SELECT id FROM enrollments ORDER BY enrolled_at ASC LIMIT 1`,
   );
   if (enrollRes.rows.length > 0) {
-    ids.ENROLLMENT_UUID = enrollRes.rows[0].id;
-    console.log(`  ✅ enrollmentId: ${enrollRes.rows[0].id}`);
+    vars.enrollmentId = enrollRes.rows[0].id;
+    console.log(`  ✅ enrollmentId:   ${vars.enrollmentId}`);
   } else {
     console.warn('  ⚠️  Nessun enrollment nel DB');
   }
 
-  // ── Primo certificato ────────────────────────────────────────────────
+  // Certificato
   const certRes = await client.query<{ id: string; certificate_code: string }>(
     `SELECT id, certificate_code FROM certificates LIMIT 1`,
   );
   if (certRes.rows.length > 0) {
-    ids.CERTIFICATE_UUID = certRes.rows[0].id;
-    ids.CERTIFICATE_CODE_UUID = certRes.rows[0].certificate_code;
-    console.log(`  ✅ certificateId:   ${certRes.rows[0].id}`);
-    console.log(`  ✅ certificateCode: ${certRes.rows[0].certificate_code}`);
+    vars.certificateId = certRes.rows[0].id;
+    vars.certificateCode = certRes.rows[0].certificate_code;
+    console.log(`  ✅ certificateId:  ${vars.certificateId}`);
+    console.log(`  ✅ certificateCode:${vars.certificateCode}`);
   } else {
-    console.warn(
-      '  ⚠️  Nessun certificato nel DB (serve un enrollment al 100%)',
-    );
+    console.warn('  ⚠️  Nessun certificato nel DB');
   }
 
-  // ── Prima review ─────────────────────────────────────────────────────
+  // Review
   const reviewRes = await client.query<{ id: string }>(
     `SELECT id FROM reviews ORDER BY created_at ASC LIMIT 1`,
   );
   if (reviewRes.rows.length > 0) {
-    ids.REVIEW_UUID = reviewRes.rows[0].id;
-    console.log(`  ✅ reviewId:     ${reviewRes.rows[0].id}`);
+    vars.reviewId = reviewRes.rows[0].id;
+    console.log(`  ✅ reviewId:       ${vars.reviewId}`);
   } else {
     console.warn('  ⚠️  Nessuna review nel DB');
   }
+
+  return vars;
 }
 
-// ── Aggiornamento file .rest ─────────────────────────────────────────────────
+// ── Aggiornamento file .rest ──────────────────────────────────────────────────
 
-function updateRestFiles(): void {
+/**
+ * Per ogni riga che inizia con "@nomeVar" (con spazi opzionali prima di "="),
+ * sostituisce il valore dopo "=" con il nuovo valore da DB.
+ *
+ * Esempio:
+ *   @courseId       = 4215d6de-99ee-4d84-8115-decf48ab3e7a
+ *   →
+ *   @courseId       = a59099c7-2956-4d13-b28a-618144d6e64c
+ *
+ * Il padding di spazi tra il nome e "=" viene preservato.
+ */
+function applyVarsToFile(
+  content: string,
+  vars: RestVars,
+): { updated: string; changed: string[] } {
+  const changed: string[] = [];
+
+  const updated = content.replace(
+    /^(@\w+)(\s*=\s*)(.+)$/gm,
+    (match, varDecl: string, eq: string, oldValue: string) => {
+      // varDecl è "@courseId", varName è "courseId"
+      const varName = varDecl.slice(1);
+      const newValue = vars[varName];
+
+      // Aggiorna solo se abbiamo un valore dal DB e il valore è cambiato
+      if (newValue !== undefined && newValue !== oldValue.trim()) {
+        changed.push(varName);
+        return `${varDecl}${eq}${newValue}`;
+      }
+      return match;
+    },
+  );
+
+  return { updated, changed };
+}
+
+function updateRestFiles(vars: RestVars): void {
   console.log(`\n📁 Aggiornamento file .rest in: ${REST_DIR}\n`);
 
   if (!fs.existsSync(REST_DIR)) {
     console.error(`  ❌ Cartella non trovata: ${REST_DIR}`);
-    console.error(
-      '     Verifica il path in REST_DIR o crea la cartella test/rest/',
-    );
     return;
   }
 
   const files = fs.readdirSync(REST_DIR).filter((f) => f.endsWith('.rest'));
-
   if (files.length === 0) {
-    console.warn('  ⚠️  Nessun file .rest trovato in', REST_DIR);
+    console.warn('  ⚠️  Nessun file .rest trovato');
     return;
   }
 
   for (const file of files) {
     const filePath = path.join(REST_DIR, file);
-    let content = fs.readFileSync(filePath, 'utf-8');
-    const changes: string[] = [];
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const { updated, changed } = applyVarsToFile(content, vars);
 
-    for (const [placeholder, value] of Object.entries(ids)) {
-      if (
-        value &&
-        value !== 'TODO_login_per_token' &&
-        content.includes(placeholder)
-      ) {
-        content = content.replaceAll(placeholder, value);
-        changes.push(placeholder);
-      }
-    }
-
-    if (changes.length > 0) {
-      fs.writeFileSync(filePath, content, 'utf-8');
-      console.log(`  ✅ ${file}  →  sostituiti: ${changes.join(', ')}`);
+    if (changed.length > 0) {
+      fs.writeFileSync(filePath, updated, 'utf-8');
+      console.log(`  ✅ ${file}  →  aggiornati: ${changed.join(', ')}`);
     } else {
-      console.log(`  ➖ ${file}  (nessun placeholder trovato)`);
+      console.log(`  ➖ ${file}  (già aggiornato)`);
     }
   }
 }
 
-// ── Stampa riepilogo ─────────────────────────────────────────────────────────
+// ── Stato (solo per riferimento, non più usato per la logica di replace) ──────
 
-function printSummary(): void {
+function saveState(vars: RestVars): void {
+  fs.writeFileSync(STATE_FILE, JSON.stringify(vars, null, 2), 'utf-8');
+  console.log(`\n  💾 Stato salvato in: ${STATE_FILE}`);
+}
+
+// ── Stampa riepilogo ──────────────────────────────────────────────────────────
+
+function printSummary(vars: RestVars): void {
   console.log('\n📋 Riepilogo valori raccolti:');
-  console.log('─'.repeat(58));
-  for (const [key, value] of Object.entries(ids)) {
-    const display =
-      value && value !== 'TODO_login_per_token'
-        ? value
-        : '⚠️  (non trovato — aggiornare manualmente)';
-    console.log(`  ${key.padEnd(28)} ${display}`);
+  console.log('─'.repeat(62));
+  for (const [key, value] of Object.entries(vars)) {
+    console.log(`  ${key.padEnd(20)} ${value}`);
   }
-  console.log('─'.repeat(58));
-  console.log(
-    '\n  ℹ️  Token JWT: da aggiornare manualmente fino a implementazione AuthModule.',
-  );
+  console.log('─'.repeat(62));
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────────
@@ -241,9 +246,10 @@ async function main(): Promise<void> {
     await client.connect();
     console.log('  ✅ Connesso al database\n');
 
-    await collectIds(client);
-    printSummary();
-    updateRestFiles();
+    const vars = await collectIds(client);
+    printSummary(vars);
+    updateRestFiles(vars);
+    saveState(vars);
 
     console.log('\n✅ Fatto!\n');
   } catch (err) {

@@ -16,24 +16,24 @@
 @instructorToken = INSTRUCTOR_JWT_TOKEN
 
 # ── Users ───────────────────────────────────────────────────
-@adminId       = 41543aac-99a2-4503-b03f-83183df90a2c
-@studentId     = 37050184-3d3d-47df-94de-4a327909d348
-@instructorId  = c781d654-2965-4c1b-ad75-0f730abe7a92
+@adminId       = ec64ccee-bcbf-4601-afe2-ef3ee0f938fd
+@studentId     = 63cd992d-994b-4c21-ad29-139f83ff07de
+@instructorId  = 68f32c02-23a0-4352-85e0-a9a93b79403f
 
 # ── Courses ─────────────────────────────────────────────────
-@courseId      = 4215d6de-99ee-4d84-8115-decf48ab3e7a
-@categoryId    = 556c19d1-b9a1-486b-b0d2-8afcf607ea2b
-@slug          = nestjs-a-z
+@courseId      = 31f8fd18-0dad-4190-9613-49750190e882
+@categoryId    = bd9690ff-20a3-43bc-90f2-4f7672ad0694
+@slug          = nestjs-avanzato
 
 # ── Lessons ─────────────────────────────────────────────────
-@lessonId      = 1f050b31-8a30-4d7f-afdd-0aa3a6443a9e
+@lessonId      = 2f8d7e82-353d-471f-985a-ab28845d619e
 
 # ── Enrollments ─────────────────────────────────────────────
-@enrollmentId  = 0558d9cf-c4be-496e-b0dd-13413bcf42b0
+@enrollmentId  = 52cd3914-1425-4296-8c4e-c6ce98899f53
 
 # ── Certificates ────────────────────────────────────────────
-@certificateId   = 61fe1610-f9cd-4a8b-a24a-607da34f75ea
-@certificateCode = ff10c8da-e2eb-4209-b88a-363b323ef154
+@certificateId   = 1a3d7581-1c43-42b4-928d-df6792596406
+@certificateCode = 313dd0bc-6170-41d9-b50f-70a33e70a3d4
 
 # ── Reviews ─────────────────────────────────────────────────
-@reviewId      = 17b86f1b-21df-4543-af14-0d8edfbde191
+@reviewId      = f9359046-1dd7-4091-b1b5-2a57fb7dd62c

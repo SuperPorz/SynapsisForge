@@ -1,9 +1,9 @@
 ### Courses – variabili
 @baseUrl        = http://localhost:3000
-@courseId       = 4215d6de-99ee-4d84-8115-decf48ab3e7a
-@slug           = nestjs-a-z
-@instructorId   = c781d654-2965-4c1b-ad75-0f730abe7a92
-@categoryId     = 556c19d1-b9a1-486b-b0d2-8afcf607ea2b
+@courseId       = 31f8fd18-0dad-4190-9613-49750190e882
+@slug           = nestjs-avanzato
+@instructorId   = 68f32c02-23a0-4352-85e0-a9a93b79403f
+@categoryId     = bd9690ff-20a3-43bc-90f2-4f7672ad0694
 @instructorToken = INSTRUCTOR_JWT_TOKEN
 @adminToken     = ADMIN_JWT_TOKEN
 
@@ -16,7 +16,7 @@ GET {{baseUrl}}/courses?page=1&limit=10
 GET {{baseUrl}}/courses?page=1&limit=10&category=Web Development
 
 ### 3. Search Courses per keyword
-GET {{baseUrl}}/courses/search?q=typescript
+GET {{baseUrl}}/courses/search?q=type
 
 ### 4. Get Course by ID
 GET {{baseUrl}}/courses/{{courseId}}
@@ -70,7 +70,7 @@ Authorization: Bearer {{adminToken}}
 
 # ─── Edge cases ───────────────────────────────────────────────────────
 
-### 11. Get Course inesistente (atteso 404)
+### 11. Get Course inesistente (atteso 404) esce 400 ma per ora va bene
 GET {{baseUrl}}/courses/00000000-0000-0000-0000-000000000999
 
 ### 12. Create senza auth (atteso 401)

@@ -16,7 +16,7 @@ export class CertificatesController {
   @ApiParam({ name: 'certificate_code', description: 'UUID del certificato', type: String })
   @ApiResponse({ status: 200, description: 'Certificato trovato e verificato' })
   @ApiResponse({ status: 404, description: 'Certificato non trovato' })
-  verify(@Param('certificate_code') certificate_code: string) {
+  verify(@Param('certificate_code', ParseUUIDPipe) certificate_code: string) {
     return this.certificatesService.verify(certificate_code);
   }
 
