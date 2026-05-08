@@ -16,7 +16,7 @@
 @instructorToken = INSTRUCTOR_JWT_TOKEN
 
 # ── Users ───────────────────────────────────────────────────
-@adminId       = ADMIN_UUID
+@adminId       = 41543aac-99a2-4503-b03f-83183df90a2c
 @studentId     = 37050184-3d3d-47df-94de-4a327909d348
 @instructorId  = c781d654-2965-4c1b-ad75-0f730abe7a92
 
@@ -26,14 +26,14 @@
 @slug          = nestjs-a-z
 
 # ── Lessons ─────────────────────────────────────────────────
-@lessonId      = LESSON_UUID
+@lessonId      = 1f050b31-8a30-4d7f-afdd-0aa3a6443a9e
 
 # ── Enrollments ─────────────────────────────────────────────
 @enrollmentId  = 0558d9cf-c4be-496e-b0dd-13413bcf42b0
 
 # ── Certificates ────────────────────────────────────────────
-@certificateId   = CERTIFICATE_UUID
-@certificateCode = CERTIFICATE_CODE_UUID
+@certificateId   = 61fe1610-f9cd-4a8b-a24a-607da34f75ea
+@certificateCode = ff10c8da-e2eb-4209-b88a-363b323ef154
 
 # ── Reviews ─────────────────────────────────────────────────
-@reviewId      = REVIEW_UUID
+@reviewId      = 17b86f1b-21df-4543-af14-0d8edfbde191

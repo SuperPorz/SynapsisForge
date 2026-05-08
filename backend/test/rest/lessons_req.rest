@@ -1,6 +1,6 @@
 ### Lessons – variabili
 @baseUrl         = http://localhost:3000
-@lessonId        = LESSON_UUID
+@lessonId        = 1f050b31-8a30-4d7f-afdd-0aa3a6443a9e
 @courseId        = 4215d6de-99ee-4d84-8115-decf48ab3e7a
 @instructorToken = INSTRUCTOR_JWT_TOKEN
 
