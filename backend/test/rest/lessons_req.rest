@@ -1,7 +1,7 @@
 ### Lessons – variabili
 @baseUrl         = http://localhost:3000
 @lessonId        = LESSON_UUID
-@courseId        = COURSE_UUID
+@courseId        = 4215d6de-99ee-4d84-8115-decf48ab3e7a
 @instructorToken = INSTRUCTOR_JWT_TOKEN
 
 # ─── Lesson Content (MongoDB merged) ─────────────────────────────────

@@ -1,7 +1,7 @@
 ### Reviews – variabili
 @baseUrl      = http://localhost:3000
 @reviewId     = REVIEW_UUID
-@enrollmentId = ENROLLMENT_UUID
+@enrollmentId = 0558d9cf-c4be-496e-b0dd-13413bcf42b0
 @studentToken = STUDENT_JWT_TOKEN
 
 # NOTA: Review è legata 1:1 a un Enrollment (OneToOne).

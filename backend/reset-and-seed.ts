@@ -148,11 +148,23 @@ async function seed(): Promise<void> {
     // ── 1. CATEGORIES ────────────────────────────────────────────────────────
     console.log('  📂 Categories...');
     const categoryData = [
-      { name: 'Web Development', description: 'Frontend, backend e fullstack web development' },
-      { name: 'Data Science',    description: 'Analisi dati, machine learning e statistiche' },
-      { name: 'DevOps',          description: 'CI/CD, containerizzazione e cloud infrastructure' },
-      { name: 'Mobile',          description: 'Sviluppo app iOS e Android' },
-      { name: 'Cybersecurity',   description: 'Sicurezza informatica e penetration testing' },
+      {
+        name: 'Web Development',
+        description: 'Frontend, backend e fullstack web development',
+      },
+      {
+        name: 'Data Science',
+        description: 'Analisi dati, machine learning e statistiche',
+      },
+      {
+        name: 'DevOps',
+        description: 'CI/CD, containerizzazione e cloud infrastructure',
+      },
+      { name: 'Mobile', description: 'Sviluppo app iOS e Android' },
+      {
+        name: 'Cybersecurity',
+        description: 'Sicurezza informatica e penetration testing',
+      },
     ];
 
     const categories: any[] = [];
@@ -171,15 +183,78 @@ async function seed(): Promise<void> {
     const hashedPassword = await bcrypt.hash('Password123!', 10);
 
     const usersData = [
-      { email: 'admin@synapsis.dev',          first_name: 'Luca',    last_name: 'Rossi',    birth_date: '1985-03-12', country: Country.ITALY,   role: UserRole.ADMIN },
-      { email: 'mario.bianchi@synapsis.dev',  first_name: 'Mario',   last_name: 'Bianchi',  birth_date: '1988-07-22', country: Country.ITALY,   role: UserRole.INSTRUCTOR },
-      { email: 'jane.smith@synapsis.dev',     first_name: 'Jane',    last_name: 'Smith',    birth_date: '1990-11-05', country: Country.UK,      role: UserRole.INSTRUCTOR },
-      { email: 'carlos.garcia@synapsis.dev',  first_name: 'Carlos',  last_name: 'Garcia',   birth_date: '1987-02-18', country: Country.SPAIN,   role: UserRole.INSTRUCTOR },
-      { email: 'alice@example.com',           first_name: 'Alice',   last_name: 'Dupont',   birth_date: '1999-06-30', country: Country.FRANCE,  role: UserRole.STUDENT },
-      { email: 'bob@example.com',             first_name: 'Bob',     last_name: 'Müller',   birth_date: '2000-01-14', country: Country.GERMANY, role: UserRole.STUDENT },
-      { email: 'chiara@example.com',          first_name: 'Chiara',  last_name: 'Ferrari',  birth_date: '1998-09-08', country: Country.ITALY,   role: UserRole.STUDENT },
-      { email: 'john@example.com',            first_name: 'John',    last_name: 'Taylor',   birth_date: '1995-04-25', country: Country.USA,     role: UserRole.STUDENT },
-      { email: 'sofia@example.com',           first_name: 'Sofia',   last_name: 'Martinez', birth_date: '2001-12-03', country: Country.SPAIN,   role: UserRole.STUDENT },
+      {
+        email: 'admin@synapsis.dev',
+        first_name: 'Luca',
+        last_name: 'Rossi',
+        birth_date: '1985-03-12',
+        country: Country.ITALY,
+        role: UserRole.ADMIN,
+      },
+      {
+        email: 'mario.bianchi@synapsis.dev',
+        first_name: 'Mario',
+        last_name: 'Bianchi',
+        birth_date: '1988-07-22',
+        country: Country.ITALY,
+        role: UserRole.INSTRUCTOR,
+      },
+      {
+        email: 'jane.smith@synapsis.dev',
+        first_name: 'Jane',
+        last_name: 'Smith',
+        birth_date: '1990-11-05',
+        country: Country.UK,
+        role: UserRole.INSTRUCTOR,
+      },
+      {
+        email: 'carlos.garcia@synapsis.dev',
+        first_name: 'Carlos',
+        last_name: 'Garcia',
+        birth_date: '1987-02-18',
+        country: Country.SPAIN,
+        role: UserRole.INSTRUCTOR,
+      },
+      {
+        email: 'alice@example.com',
+        first_name: 'Alice',
+        last_name: 'Dupont',
+        birth_date: '1999-06-30',
+        country: Country.FRANCE,
+        role: UserRole.STUDENT,
+      },
+      {
+        email: 'bob@example.com',
+        first_name: 'Bob',
+        last_name: 'Müller',
+        birth_date: '2000-01-14',
+        country: Country.GERMANY,
+        role: UserRole.STUDENT,
+      },
+      {
+        email: 'chiara@example.com',
+        first_name: 'Chiara',
+        last_name: 'Ferrari',
+        birth_date: '1998-09-08',
+        country: Country.ITALY,
+        role: UserRole.STUDENT,
+      },
+      {
+        email: 'john@example.com',
+        first_name: 'John',
+        last_name: 'Taylor',
+        birth_date: '1995-04-25',
+        country: Country.USA,
+        role: UserRole.STUDENT,
+      },
+      {
+        email: 'sofia@example.com',
+        first_name: 'Sofia',
+        last_name: 'Martinez',
+        birth_date: '2001-12-03',
+        country: Country.SPAIN,
+        role: UserRole.STUDENT,
+      },
     ];
 
     const users: any[] = [];
@@ -187,14 +262,22 @@ async function seed(): Promise<void> {
       const [inserted] = await db.query(
         `INSERT INTO users (id, email, password, first_name, last_name, birth_date, country, role)
          VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [u.email, hashedPassword, u.first_name, u.last_name, u.birth_date, u.country, u.role],
+        [
+          u.email,
+          hashedPassword,
+          u.first_name,
+          u.last_name,
+          u.birth_date,
+          u.country,
+          u.role,
+        ],
       );
       users.push(inserted);
       console.log(`    ✅ ${u.email} (${u.role})`);
     }
 
     const instructorUsers = users.filter((u) => u.role === UserRole.INSTRUCTOR);
-    const studentUsers    = users.filter((u) => u.role === UserRole.STUDENT);
+    const studentUsers = users.filter((u) => u.role === UserRole.STUDENT);
 
     // ── 3. INSTRUCTOR PROFILES ───────────────────────────────────────────────
     console.log('\n  🎓 Instructor profiles...');
@@ -223,30 +306,91 @@ async function seed(): Promise<void> {
     // ── 5. COURSES ───────────────────────────────────────────────────────────
     console.log('\n  📖 Courses...');
     const coursesData = [
-      { title: 'NestJS Avanzato',         description: 'Architetture scalabili con NestJS e TypeORM',       price: 49.99, status: CourseStatus.PUBLISHED, thumbnail_url: 'https://picsum.photos/seed/nestjs/400/300',  instructorEmail: 'mario.bianchi@synapsis.dev', categoryName: 'Web Development' },
-      { title: 'React & TypeScript',       description: 'Sviluppo frontend moderno con React e TS',          price: 39.99, status: CourseStatus.PUBLISHED, thumbnail_url: 'https://picsum.photos/seed/react/400/300',   instructorEmail: 'jane.smith@synapsis.dev',    categoryName: 'Web Development' },
-      { title: 'Python per Data Science',  description: 'Pandas, NumPy e scikit-learn da zero',              price: 59.99, status: CourseStatus.PUBLISHED, thumbnail_url: 'https://picsum.photos/seed/python/400/300',  instructorEmail: 'carlos.garcia@synapsis.dev', categoryName: 'Data Science' },
-      { title: 'Docker e Kubernetes',      description: 'Containerizzazione e orchestrazione in produzione', price: 44.99, status: CourseStatus.PUBLISHED, thumbnail_url: 'https://picsum.photos/seed/docker/400/300',  instructorEmail: 'mario.bianchi@synapsis.dev', categoryName: 'DevOps' },
-      { title: 'Ethical Hacking',          description: 'Penetration testing e sicurezza offensiva',         price: 69.99, status: CourseStatus.PUBLISHED, thumbnail_url: 'https://picsum.photos/seed/hack/400/300',    instructorEmail: 'jane.smith@synapsis.dev',    categoryName: 'Cybersecurity' },
-      { title: 'Flutter per principianti', description: 'Crea app mobile cross-platform con Flutter',        price: 34.99, status: CourseStatus.DRAFT,     thumbnail_url: 'https://picsum.photos/seed/flutter/400/300', instructorEmail: 'carlos.garcia@synapsis.dev', categoryName: 'Mobile' },
+      {
+        title: 'NestJS Avanzato',
+        description: 'Architetture scalabili con NestJS e TypeORM',
+        price: 49.99,
+        status: CourseStatus.PUBLISHED,
+        thumbnail_url: 'https://picsum.photos/seed/nestjs/400/300',
+        instructorEmail: 'mario.bianchi@synapsis.dev',
+        categoryName: 'Web Development',
+      },
+      {
+        title: 'React & TypeScript',
+        description: 'Sviluppo frontend moderno con React e TS',
+        price: 39.99,
+        status: CourseStatus.PUBLISHED,
+        thumbnail_url: 'https://picsum.photos/seed/react/400/300',
+        instructorEmail: 'jane.smith@synapsis.dev',
+        categoryName: 'Web Development',
+      },
+      {
+        title: 'Python per Data Science',
+        description: 'Pandas, NumPy e scikit-learn da zero',
+        price: 59.99,
+        status: CourseStatus.PUBLISHED,
+        thumbnail_url: 'https://picsum.photos/seed/python/400/300',
+        instructorEmail: 'carlos.garcia@synapsis.dev',
+        categoryName: 'Data Science',
+      },
+      {
+        title: 'Docker e Kubernetes',
+        description: 'Containerizzazione e orchestrazione in produzione',
+        price: 44.99,
+        status: CourseStatus.PUBLISHED,
+        thumbnail_url: 'https://picsum.photos/seed/docker/400/300',
+        instructorEmail: 'mario.bianchi@synapsis.dev',
+        categoryName: 'DevOps',
+      },
+      {
+        title: 'Ethical Hacking',
+        description: 'Penetration testing e sicurezza offensiva',
+        price: 69.99,
+        status: CourseStatus.PUBLISHED,
+        thumbnail_url: 'https://picsum.photos/seed/hack/400/300',
+        instructorEmail: 'jane.smith@synapsis.dev',
+        categoryName: 'Cybersecurity',
+      },
+      {
+        title: 'Flutter per principianti',
+        description: 'Crea app mobile cross-platform con Flutter',
+        price: 34.99,
+        status: CourseStatus.DRAFT,
+        thumbnail_url: 'https://picsum.photos/seed/flutter/400/300',
+        instructorEmail: 'carlos.garcia@synapsis.dev',
+        categoryName: 'Mobile',
+      },
     ];
 
     const courses: any[] = [];
     for (const c of coursesData) {
-      const instructorUser    = users.find((u) => u.email === c.instructorEmail);
-      const instructorProfile = instructorProfiles.find((p) => p.userId === instructorUser?.id);
-      const category          = categories.find((cat) => cat.name === c.categoryName);
+      const instructorUser = users.find((u) => u.email === c.instructorEmail);
+      const instructorProfile = instructorProfiles.find(
+        (p) => p.userId === instructorUser?.id,
+      );
+      const category = categories.find((cat) => cat.name === c.categoryName);
 
       const [inserted] = await db.query(
         `INSERT INTO courses (id, title, slug, description, price, status, thumbnail_url, "instructorUserId", "categoryId")
          VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-        [c.title, slugify(c.title), c.description, c.price, c.status, c.thumbnail_url, instructorProfile.userId, category.id],
+        [
+          c.title,
+          slugify(c.title),
+          c.description,
+          c.price,
+          c.status,
+          c.thumbnail_url,
+          instructorProfile.userId,
+          category.id,
+        ],
       );
       courses.push({ ...inserted, _status: c.status });
       console.log(`    ✅ ${c.title} (${c.status})`);
     }
 
-    const publishedCourses = courses.filter((c) => c._status === CourseStatus.PUBLISHED);
+    const publishedCourses = courses.filter(
+      (c) => c._status === CourseStatus.PUBLISHED,
+    );
 
     // ── 6. LESSONS ───────────────────────────────────────────────────────────
     console.log('\n  🎬 Lessons...');
@@ -272,14 +416,16 @@ async function seed(): Promise<void> {
     console.log('\n  📝 Enrollments, payments, reviews, certificates...');
 
     for (const studentProfile of studentProfiles) {
-      const studentUser      = studentUsers.find((u) => u.id === studentProfile.userId);
-      const coursesToEnroll  = publishedCourses.slice(0, randomInt(2, 3));
+      const studentUser = studentUsers.find(
+        (u) => u.id === studentProfile.userId,
+      );
+      const coursesToEnroll = publishedCourses.slice(0, randomInt(2, 3));
 
       for (let ci = 0; ci < coursesToEnroll.length; ci++) {
         const course = coursesToEnroll[ci];
 
         // Il primo corso di ogni studente è sempre al 100% → garantisce certificati
-        const progress  = ci === 0 ? 100 : randomInt(10, 99);
+        const progress = ci === 0 ? 100 : randomInt(10, 99);
         const completed = progress === 100 ? new Date().toISOString() : null;
 
         const [enrollment] = await db.query(
@@ -287,7 +433,9 @@ async function seed(): Promise<void> {
            VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING *`,
           [studentProfile.userId, course.id, progress, completed],
         );
-        console.log(`    ✅ Enrollment: ${studentUser?.email} → ${course.title} (${progress}%)`);
+        console.log(
+          `    ✅ Enrollment: ${studentUser?.email} → ${course.title} (${progress}%)`,
+        );
 
         // Payment
         await db.query(
@@ -305,7 +453,12 @@ async function seed(): Promise<void> {
 
         // Review (solo se progress > 50%)
         if (progress > 50) {
-          const rating = randomElement([Rating.THREE, Rating.FOUR, Rating.FOUR, Rating.FIVE]);
+          const rating = randomElement([
+            Rating.THREE,
+            Rating.FOUR,
+            Rating.FOUR,
+            Rating.FIVE,
+          ]);
           const comment = randomElement([
             'Corso molto ben strutturato, lo consiglio!',
             'Ottimi contenuti, il docente spiega benissimo.',
@@ -325,7 +478,10 @@ async function seed(): Promise<void> {
           await db.query(
             `INSERT INTO certificates (id, "enrollmentId", pdf_url, certificate_code)
              VALUES (gen_random_uuid(), $1, $2, gen_random_uuid())`,
-            [enrollment.id, `https://synapsis.dev/certificates/${enrollment.id}.pdf`],
+            [
+              enrollment.id,
+              `https://synapsis.dev/certificates/${enrollment.id}.pdf`,
+            ],
           );
           console.log(`    ✅ Certificato → ${studentUser?.email}`);
         }
@@ -340,7 +496,9 @@ async function seed(): Promise<void> {
 
 async function main(): Promise<void> {
   console.log('🚀 reset-and-seed — Synapsis/SynapsisForge\n');
-  console.log(`   DB: ${DB_CONFIG.host}:${DB_CONFIG.port}/${DB_CONFIG.database}\n`);
+  console.log(
+    `   DB: ${DB_CONFIG.host}:${DB_CONFIG.port}/${DB_CONFIG.database}\n`,
+  );
   console.log('─'.repeat(55));
 
   try {

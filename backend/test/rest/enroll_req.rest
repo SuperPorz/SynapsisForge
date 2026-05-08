@@ -1,8 +1,8 @@
 ### Enrollments – variabili
 @baseUrl      = http://localhost:3000
-@enrollmentId = ENROLLMENT_UUID
-@studentId    = STUDENT_UUID
-@courseId     = COURSE_UUID
+@enrollmentId = 0558d9cf-c4be-496e-b0dd-13413bcf42b0
+@studentId    = 37050184-3d3d-47df-94de-4a327909d348
+@courseId     = 4215d6de-99ee-4d84-8115-decf48ab3e7a
 @lessonId     = LESSON_UUID
 @studentToken = STUDENT_JWT_TOKEN
 

@@ -17,19 +17,19 @@
 
 # ── Users ───────────────────────────────────────────────────
 @adminId       = ADMIN_UUID
-@studentId     = STUDENT_UUID
-@instructorId  = INSTRUCTOR_UUID
+@studentId     = 37050184-3d3d-47df-94de-4a327909d348
+@instructorId  = c781d654-2965-4c1b-ad75-0f730abe7a92
 
 # ── Courses ─────────────────────────────────────────────────
-@courseId      = COURSE_UUID
-@categoryId    = CATEGORY_UUID
-@slug          = SLUG_VALUE
+@courseId      = 4215d6de-99ee-4d84-8115-decf48ab3e7a
+@categoryId    = 556c19d1-b9a1-486b-b0d2-8afcf607ea2b
+@slug          = nestjs-a-z
 
 # ── Lessons ─────────────────────────────────────────────────
 @lessonId      = LESSON_UUID
 
 # ── Enrollments ─────────────────────────────────────────────
-@enrollmentId  = ENROLLMENT_UUID
+@enrollmentId  = 0558d9cf-c4be-496e-b0dd-13413bcf42b0
 
 # ── Certificates ────────────────────────────────────────────
 @certificateId   = CERTIFICATE_UUID
