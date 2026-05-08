@@ -6,7 +6,7 @@ import { ApiBadRequestResponse, ApiOperation, ApiResponse, ApiTags } from '@nest
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid.pipe';
 import { ParsePositiveIntPipe } from 'src/common/pipes/parse-positive-int.pipe';
 
-@ApiTags('courses')
+@ApiTags('Courses')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
 @Controller('courses')
 export class CoursesController {

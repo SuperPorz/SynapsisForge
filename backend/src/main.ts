@@ -31,7 +31,7 @@ async function bootstrap() {
     .setTitle('SynapsisForge')
     .setDescription('Api documentation')
     .setVersion('1.0')
-    .addTag('api')
+    //.addTag('api')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory);

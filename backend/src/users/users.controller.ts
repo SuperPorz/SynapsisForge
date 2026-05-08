@@ -14,7 +14,7 @@ interface AuthenticatedRequest extends Request {
   user: { userId: string };
 }
 
-@ApiTags('users')
+@ApiTags('Users')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT token.' })
 // @UseGuards(JwtAuthGuard) // decommentare quando JwtAuthGuard è disponibile

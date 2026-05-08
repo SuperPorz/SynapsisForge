@@ -25,7 +25,7 @@ import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { CreateLessonContentDto } from './dto/create-lesson-content.dto';
 import { UpdateLessonContentDto } from './dto/update-lesson-content.dto';
 
-@ApiTags('lessons')
+@ApiTags('Lessons')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
 // Tutte le rotte sono sotto /courses/:courseId/lessons per rispettare la
 // gerarchia delle risorse: una lezione appartiene sempre a un corso.

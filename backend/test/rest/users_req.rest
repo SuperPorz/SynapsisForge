@@ -7,6 +7,9 @@
 # JwtAuthGuard attualmente commentato nel controller, da decommentare
 # quando AuthModule sarà implementato.
 
+# ─── API DOCS test ────────────────────────────────────────────────────
+GET {{baseUrl}}/api/docs
+
 # ─── GET /users/me ────────────────────────────────────────────────────
 
 ### 1. Get profilo utente autenticato
