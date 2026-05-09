@@ -1,8 +1,5 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+// prettier-ignore
+import { ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from 'src/common/entities/courses.entity';
 import { User } from 'src/common/entities/users.entity';
@@ -43,6 +40,7 @@ export class AdminService {
   async approve(filters: CourseActionsDto): Promise<Course> {
     const course = await this.courseRepository.findOne({
       where: { id: filters.id },
+      relations: { instructor: true, category: true },
     });
 
     if (!course) {
@@ -61,6 +59,7 @@ export class AdminService {
   async reject(filters: CourseActionsDto): Promise<Course> {
     const course = await this.courseRepository.findOne({
       where: { id: filters.id },
+      relations: { instructor: true, category: true },
     });
 
     if (!course) {
@@ -110,6 +109,7 @@ export class AdminService {
   async submit(filters: CourseActionsDto): Promise<Course> {
     const course = await this.courseRepository.findOne({
       where: { id: filters.id },
+      relations: { instructor: true, category: true },
     });
 
     if (!course) {

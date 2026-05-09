@@ -20,10 +20,13 @@ export class CertificatesService {
   async create(payload: { enrollmentId: string }): Promise<void> {
     const enrollment = await this.enrollmentRepository.findOne({
       where: { id: payload.enrollmentId },
+      relations: { student: { user: true }, course: true },
     });
 
     if (!enrollment) {
-      throw new NotFoundException(`Enrollment ${payload.enrollmentId} not found`);
+      throw new NotFoundException(
+        `Enrollment ${payload.enrollmentId} not found`,
+      );
     }
 
     const certificate = this.certificateRepository.create({

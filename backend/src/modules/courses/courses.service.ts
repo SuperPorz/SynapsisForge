@@ -1,8 +1,5 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+// prettier-ignore
+import { ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from 'src/common/entities/courses.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -28,7 +25,10 @@ export class CoursesService {
   }
 
   async findOne(id: string): Promise<Course> {
-    const course = await this.coursesRepo.findOneBy({ id });
+    const course = await this.coursesRepo.findOne({
+      where: { id },
+      relations: { instructor: true, category: true },
+    });
     if (!course) throw new NotFoundException(`Course ${id} not found`);
     return course;
   }
@@ -77,6 +77,8 @@ export class CoursesService {
   async search(query: string): Promise<Course[]> {
     return await this.coursesRepo
       .createQueryBuilder('course') //alias della tabella
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('course.category', 'category')
       .where('course.title ILIKE :q', { q: `%${query}%` }) // ILIKE è il LIKE case-insensitive di PostgreSQL, :q (short per query) è un parametro bindato — protegge da SQL injection
       .orWhere('course.description ILIKE :q', { q: `%${query}%` })
       .getMany();
