@@ -1,26 +1,27 @@
 # SynapsisForge
 
-> Full-stack e-learning platform progettata per dimostrare competenze avanzate in backend architecture, frontend engineering, authentication systems, cloud integration e DevOps.
+> Enterprise-oriented full-stack e-learning platform designed to showcase advanced software engineering, backend architecture, frontend engineering, authentication systems, cloud integrations, and DevOps workflows.
 
 ## Overview
 
-**SynapsisForge** è una piattaforma LMS (Learning Management System) moderna costruita con un’architettura enterprise-oriented basata su:
+**SynapsisForge** is a modern Learning Management System (LMS) built using a scalable, production-inspired architecture based on:
 
-* **Frontend:** Angular 18 + Tailwind + PWA
+* **Frontend:** Angular 18 + TailwindCSS + PWA
 * **Backend:** NestJS + TypeScript
-* **Database:** PostgreSQL + MongoDB + Redis
+* **Databases:** PostgreSQL + MongoDB + Redis
 * **Authentication:** JWT + OAuth2 + RBAC
-* **Cloud & Infrastructure:** AWS S3 + Docker + CI/CD
+* **Infrastructure:** Docker + AWS + CI/CD
 * **Payments:** Braintree / PayPal
 
-Il progetto nasce come portfolio project avanzato con focus su:
+The project was conceived as a large-scale portfolio application focused on:
 
-* clean architecture
-* modular backend design
-* scalable APIs
-* authentication flows
+* scalable backend architecture
+* modular monolith patterns
+* secure authentication systems
 * distributed services
-* production-ready patterns
+* cloud-native integrations
+* production-grade engineering practices
+* advanced frontend architecture
 
 ---
 
@@ -46,7 +47,7 @@ Il progetto nasce come portfolio project avanzato con focus su:
 * Mongoose
 * Passport.js
 * JWT Authentication
-* Swagger/OpenAPI
+* Swagger / OpenAPI
 
 ## Databases
 
@@ -55,21 +56,22 @@ Il progetto nasce come portfolio project avanzato con focus su:
 * Redis
 * BullMQ
 
-## DevOps & Cloud
+## Infrastructure & DevOps
 
 * Docker & Docker Compose
 * AWS S3
 * GitLab CI/CD
 * Nginx (planned)
-* HTTPS / Security Headers
+* HTTPS & Security Headers
 
-## Payments & Auth
+## Authentication & Payments
 
+* JWT Access / Refresh Tokens
+* Google OAuth2
+* GitHub OAuth2
+* RBAC Authorization
 * Braintree
 * PayPal
-* OAuth2 Google
-* OAuth2 GitHub
-* RBAC Authorization
 
 ---
 
@@ -77,71 +79,71 @@ Il progetto nasce come portfolio project avanzato con focus su:
 
 ## Authentication System
 
-* JWT Access & Refresh Tokens
-* OAuth2 Login (Google/GitHub)
+* JWT authentication with refresh token rotation
+* OAuth2 login via Google and GitHub
 * Role-Based Access Control (Student / Instructor / Admin)
-* Email verification
+* Email verification workflow
 * Password reset flow
-* Secure HttpOnly cookies
+* Secure HttpOnly cookie handling
 
-## Course Platform
+## Learning Platform
 
-* Course catalog with filters & search
+* Course catalog with advanced filtering
 * Course creation dashboard
-* Video lessons
+* Video lesson management
 * Interactive quizzes
 * Progress tracking
-* Certificates generation
-* Reviews & ratings
+* Certificate generation
+* Reviews & ratings system
 
 ## Student Dashboard
 
-* Enrolled courses
-* Progress monitoring
-* Course history
-* Certificates section
+* Enrolled courses overview
+* Learning progress monitoring
+* Activity history
+* Certificate management
 
 ## Instructor Dashboard
 
-* Course management
+* Course management system
 * Analytics dashboard
-* Lesson builder
-* Quiz editor
-* Video upload flow
+* Lesson editor
+* Quiz builder
+* Media upload workflows
 
 ## Admin Panel
 
 * User management
 * Course moderation
 * Revenue analytics
-* Global platform statistics
+* Platform-wide statistics
 
-## PWA Support
+## Progressive Web App
 
 * Offline support
 * Service Worker caching
-* Installable web app
-* Mobile-first experience
+* Installable app experience
+* Mobile-first responsive design
 
 ---
 
 # Architecture
 
 ```txt
-Angular SPA/PWA
-       │
-       ▼
+Angular SPA / PWA
+        │
+        ▼
 NestJS REST API
-       │
+        │
  ┌───────────────┬───────────────┬───────────────┐
  ▼               ▼               ▼
 PostgreSQL     MongoDB         Redis
-(Relational)   (Lesson Data)   (Cache/Jobs)
-       │
-       ▼
+(Relational)   (Lesson Data)   (Cache / Jobs)
+        │
+        ▼
 AWS S3 Storage
-       │
-       ▼
+        │
+        ▼
 Braintree / PayPal
 ```
 
@@ -168,7 +170,7 @@ Used for:
 * lesson content
 * quizzes
 * transcripts
-* flexible media structures
+* flexible learning structures
 
 ## Redis
 
@@ -187,13 +189,13 @@ Used for:
 * JWT authentication
 * Refresh token rotation
 * Password hashing with bcrypt
+* DTO validation
 * Global validation pipes
+* Exception filters
 * Helmet security headers
 * CORS restrictions
 * Rate limiting
 * RBAC Guards
-* DTO validation
-* Exception filters
 
 ---
 
@@ -237,7 +239,7 @@ SynapsisForge/
 * Advanced analytics
 * Dockerized production deployment
 * CI/CD automation
-* E2E testing
+* End-to-end testing
 * Monitoring & logging stack
 
 ---
@@ -275,7 +277,7 @@ SynapsisForge/
 
 ```bash
 git clone https://github.com/SuperPorz/SynapsisForge.git
-cd synapsisforge
+cd SynapsisForge
 ```
 
 ---
@@ -324,7 +326,7 @@ ng serve
 
 # API Documentation
 
-Swagger documentation available at:
+Swagger documentation will be available at:
 
 ```txt
 /api/docs
@@ -334,16 +336,16 @@ Swagger documentation available at:
 
 # Learning Goals
 
-Questo progetto è stato progettato per consolidare competenze avanzate in:
+This project was designed to strengthen advanced skills in:
 
 * enterprise backend architecture
-* Angular ecosystem
-* authentication & authorization
-* relational vs NoSQL design
-* scalable APIs
+* Angular ecosystem engineering
+* authentication & authorization systems
+* relational vs NoSQL database design
+* scalable REST APIs
 * cloud integrations
 * DevOps workflows
-* production-grade application design
+* production-grade application development
 
 ---
 
@@ -361,4 +363,4 @@ MIT License
 
 # Author
 
-Miguel — aspiring full-stack software developer.
+Michelangelo Stega (SuperPorz) — aspiring full-stack software developer.
