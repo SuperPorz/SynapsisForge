@@ -13,7 +13,7 @@ import { Enrollment } from 'src/common/entities/enrollments.entity';
 import {
   LessonProgress,
   LessonProgressSchema,
-} from 'src/enrollments/schemas/lesson-progress.schema';
+} from 'src/modules/enrollments/schemas/lesson-progress.schema';
 import { Payment } from 'src/common/entities/payments.entity';
 
 @Module({

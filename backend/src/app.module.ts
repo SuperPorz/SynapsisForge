@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { HealthService } from './health/health.service';
-import { UsersModule } from './users/users.module';
+import { HealthService } from './modules/health/health.service';
+import { UsersModule } from './modules/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CoursesModule } from './courses/courses.module';
-import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { CoursesModule } from './modules/courses/courses.module';
+import { EnrollmentsModule } from './modules/enrollments/enrollments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { ReviewsModule } from './reviews/reviews.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './auth/auth.module';
-import { CertificatesModule } from './certificates/certificates.module';
-import { AdminModule } from './admin/admin.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { CertificatesModule } from './modules/certificates/certificates.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [

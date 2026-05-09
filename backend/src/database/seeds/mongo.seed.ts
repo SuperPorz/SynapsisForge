@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { LessonContentSchema } from '../../lessons/schemas/lesson-content.schema';
+import { LessonContentSchema } from '../../modules/lessons/schemas/lesson-content.schema';
 import { v4 as uuidv4 } from 'uuid';
 
 const fakeLessons = [

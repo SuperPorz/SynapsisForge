@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { LessonContent, LessonContentDocument } from './schemas/lesson-content.schema';
 import { CreateLessonContentDto } from './dto/create-lesson-content.dto';
 import { UpdateLessonContentDto } from './dto/update-lesson-content.dto';
-import { Lesson } from '../common/entities/lessons.entity';
+import { Lesson } from '../../common/entities/lessons.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateLessonDto } from './dto/create-lesson.dto';
