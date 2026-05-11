@@ -55,4 +55,9 @@ export class UsersService {
 
     return plainToInstance(ResponseUserDto, user);
   }
+
+  async create(data: Partial<User>): Promise<User> {
+    const user = this.userRepository.create(data); //manca await per ora
+    return await this.userRepository.save(user);
+  }
 }

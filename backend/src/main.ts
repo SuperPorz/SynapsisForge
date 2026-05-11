@@ -6,9 +6,12 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { LoggingInterceptor } from './common/interceptors/loggin.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser()); // serve per abilitare il parse cookie nel modulo Auth
 
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector)), // 1° — trasforma le entità in DTO usando @Exclude e @Expose

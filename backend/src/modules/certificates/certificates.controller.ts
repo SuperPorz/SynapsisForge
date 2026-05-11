@@ -1,7 +1,7 @@
 import { Controller, Get, Patch, Param, ParseUUIDPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { CertificatesService } from './certificates.service';
-import { Public } from 'src/modules/auth/public.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiTags('Certificates')
 @ApiBearerAuth()

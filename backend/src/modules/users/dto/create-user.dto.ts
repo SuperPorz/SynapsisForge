@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { Country, UserRole } from '../../../common/entities/enum/users.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateUsersDto {
+export class CreateUserDto {
   @ApiProperty({
     description: 'The email address of the user',
     example: 'john.doe@example.com',
@@ -24,14 +24,14 @@ export class CreateUsersDto {
     example: 'John',
   })
   @IsString()
-  firstName!: string;
+  first_name!: string;
 
   @ApiProperty({
     description: 'The last name of the user',
     example: 'Doe',
   })
   @IsString()
-  lastName!: string;
+  last_name!: string;
 
   @ApiProperty({
     description: 'The birth date of the user',
@@ -39,11 +39,11 @@ export class CreateUsersDto {
   })
   @IsDate()
   @Type(() => Date)
-  birthDate!: Date;
+  birth_date!: Date;
 
   @ApiProperty({
     description: 'The country of the user',
-    example: 'US',
+    example: 'ITALY',
   })
   @IsEnum(Country)
   country!: Country;

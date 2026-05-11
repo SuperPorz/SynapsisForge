@@ -1,0 +1,120 @@
+# =============================================================
+# SynapsisForge – Auth API
+# Requisiti: REST Client extension (VS Code)
+# =============================================================
+
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+# Copia il valore di accessToken dalla risposta di /register o /login
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlYjAwNGQyYy01ZDI1LTQ5NWUtYWFhNy0zNzIxZGFkYjBlODgiLCJlbWFpbCI6Im1pa3lAc3luYXBzaXNmb3JnZS5kZXYiLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc3ODUzNjUzNSwiZXhwIjoxNzc4NTM3NDM1fQ.hyyBOJBG9lKpZ0vVByTZU9npU8QuVenGuMOlqO2SmGQ
+
+
+# -------------------------------------------------------------
+# 1. REGISTER – crea un nuovo utente
+# -------------------------------------------------------------
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "miky@synapsisforge.dev",
+  "password": "Password123!",
+  "first_name": "Michelangelo",
+  "last_name": "Stega",
+  "birth_date": "1990-01-01",
+  "country": "ITALY",
+  "role": "STUDENT"
+}
+
+
+###
+
+
+# -------------------------------------------------------------
+# 2. LOGIN – ottieni access token + refresh token (cookie)
+# -------------------------------------------------------------
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "miky@synapsisforge.dev",
+  "password": "Password123!"
+}
+
+
+###
+
+
+# -------------------------------------------------------------
+# 3. REFRESH – rinnova l'access token tramite cookie
+#    Il cookie refresh_token viene inviato automaticamente
+#    dal REST Client se hai eseguito /login nella stessa sessione
+# -------------------------------------------------------------
+POST {{baseUrl}}/auth/refresh
+
+
+###
+
+
+# -------------------------------------------------------------
+# 4. LOGOUT – invalida il refresh token e pulisce il cookie
+#    Richiede access token valido nell'header Authorization
+# -------------------------------------------------------------
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+
+###
+
+
+# -------------------------------------------------------------
+# 5. REGISTER DUPLICATO – verifica ConflictException (409)
+# -------------------------------------------------------------
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "miky@synapsisforge.dev",
+  "password": "Password123!",
+  "first_name": "Michelangelo",
+  "last_name": "Stega",
+  "birth_date": "1990-01-01",
+  "country": "ITALY",
+  "role": "STUDENT"
+}
+
+
+###
+
+
+# -------------------------------------------------------------
+# 6. LOGIN CREDENZIALI ERRATE – verifica UnauthorizedException (401)
+# -------------------------------------------------------------
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "miky@synapsisforge.dev",
+  "password": "PasswordSbagliata!"
+}
+
+
+###
+
+
+# -------------------------------------------------------------
+# 7. REFRESH SENZA COOKIE – verifica UnauthorizedException (401)
+#    Apri questa richiesta in una nuova sessione / tab REST Client
+#    così il cookie non è presente
+# -------------------------------------------------------------
+POST {{baseUrl}}/auth/refresh
+Cookie:
+
+
+###
+
+
+# -------------------------------------------------------------
+# 8. LOGOUT SENZA TOKEN – verifica risposta della guard (401)
+# -------------------------------------------------------------
+POST {{baseUrl}}/auth/logout

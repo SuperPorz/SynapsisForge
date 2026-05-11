@@ -14,6 +14,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { CertificatesModule } from './modules/certificates/certificates.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -60,7 +62,14 @@ import { AdminModule } from './modules/admin/admin.module';
   providers: [
     AppService,
     HealthService,
-    { provide: 'APP_GUARD', useClass: ThrottlerGuard }, // Applica il ThrottlerGuard a livello globale,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // Applica il ThrottlerGuard a livello globale,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}
