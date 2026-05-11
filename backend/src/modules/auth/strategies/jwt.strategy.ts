@@ -10,10 +10,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService<EnvironmentVariables, true>,
   ) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const secret = configService.get('JWT_SECRET', { infer: true });
+    const secret = configService.get('JWT_ACCESS_SECRET', { infer: true });
 
     if (!secret) {
-      throw new Error('JWT_SECRET is not defined in environment variables');
+      // prettier-ignore
+      throw new Error('JWT_ACCESS_SECRET is not defined in environment variables');
     }
 
     super({
