@@ -13,6 +13,11 @@ async function bootstrap() {
 
   app.use(cookieParser()); // serve per abilitare il parse cookie nel modulo Auth
 
+  app.enableCors({
+    origin: 'http://localhost:4200', // frontend temporaneo
+    credentials: true,
+  });
+
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector)), // 1° — trasforma le entità in DTO usando @Exclude e @Expose
     new LoggingInterceptor(), // 2° — logga la request in arrivo

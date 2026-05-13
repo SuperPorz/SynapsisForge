@@ -11,6 +11,10 @@
     <button>Login con Google</button>
   </a>
 
+  <button id="logoutBtn" style="display:none; margin-left: 1rem;" onclick="logout()">
+    Logout
+  </button>
+
   <div id="result" style="margin-top: 2rem; font-family: monospace;"></div>
 
   <script>
@@ -20,10 +24,40 @@
     const refreshToken = params.get('refreshToken');
 
     if (accessToken) {
+      // Salva in memoria per usarlo nel logout
+      window._accessToken = accessToken;
+
       document.getElementById('result').innerHTML = `
         <p><strong>accessToken:</strong> ${accessToken}</p>
         <p><strong>refreshToken:</strong> ${refreshToken}</p>
       `;
+
+      document.getElementById('logoutBtn').style.display = 'inline';
+    }
+
+    async function logout() {
+      try {
+        const res = await fetch('http://localhost:3000/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${window._accessToken}`,
+          },
+          credentials: 'include', // invia il cookie refresh_token
+        });
+
+        if (res.ok) {
+          document.getElementById('result').innerHTML = '<p>Logout effettuato ✅</p>';
+          document.getElementById('logoutBtn').style.display = 'none';
+          window._accessToken = null;
+          // Pulisce i query param dall'URL senza ricaricare la pagina
+          window.history.replaceState({}, '', window.location.pathname);
+        } else {
+          const body = await res.json();
+          document.getElementById('result').innerHTML = `<p>Errore logout: ${body.message}</p>`;
+        }
+      } catch (err) {
+        document.getElementById('result').innerHTML = `<p>Errore di rete: ${err.message}</p>`;
+      }
     }
   </script>
 </body>
