@@ -41,9 +41,18 @@ export class AuthService {
   async register(dto: CreateUserDto): Promise<AuthTokens> {
     // 1. Verifica che l'email non sia già in uso
     const existing = await this.usersService.findByEmail(dto.email);
-    if (existing) throw new ConflictException('Email già in uso');
 
-    // 2. Hash della password
+    // 2.1 caso — email OAuth vs email già registrata con password
+    if (existing) {
+      if (!existing.password) {
+        throw new ConflictException(
+          'Email già associata a un account esterno. Accedi con Google o GitHub.',
+        );
+      }
+      throw new ConflictException('Email già in uso');
+    }
+
+    // 2.2 Hash della password
     const password = await bcrypt.hash(dto.password, 10);
 
     // 3. Crea l'utente tramite UsersService
@@ -75,7 +84,14 @@ export class AuthService {
     const user = await this.usersService.findByEmail(dto.email);
     if (!user) throw new UnauthorizedException('Credenziali non valide');
 
-    // 2. Verifica password
+    // 2.1 Utente registrato via OAuth — non ha password
+    if (!user.password) {
+      throw new UnauthorizedException(
+        'Account registrato tramite provider esterno. Usa Google o GitHub per accedere.',
+      );
+    }
+
+    // 2.2 Verifica password
     const passwordMatch = await bcrypt.compare(dto.password, user.password);
     if (!passwordMatch)
       throw new UnauthorizedException('Credenziali non valide');
@@ -132,6 +148,52 @@ export class AuthService {
         'Errore durante il rinnovo del token',
       );
     }
+  }
+
+  async findOrCreateOAuthUser(
+    providerName: string,
+    providerId: string,
+    email: string,
+    firstName: string,
+    lastName: string,
+  ): Promise<AuthTokens> {
+    // 1. Cerca un utente già collegato a questo provider
+    let user = await this.usersService.findByProviderId(
+      providerName,
+      providerId,
+    );
+
+    if (!user) {
+      // 2. Nessun record provider — cerca per email
+      const existingByEmail = await this.usersService.findByEmail(email);
+
+      if (existingByEmail) {
+        // 2a. Utente già registrato con email/password → collega il provider
+        user = await this.usersService.linkProvider(
+          existingByEmail.id,
+          providerName,
+          providerId,
+        );
+      } else {
+        // 2b. Utente nuovo → crea account senza password + collega provider
+        const newUser = await this.usersService.create({
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          password: null,
+        });
+        user = await this.usersService.linkProvider(
+          newUser.id,
+          providerName,
+          providerId,
+        );
+      }
+    }
+
+    // 3. Genera JWT lato app
+    const tokens = await this.generateTokens(user);
+    await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
+    return tokens;
   }
 
   /////////////////////////////////////////////////////////////////////////

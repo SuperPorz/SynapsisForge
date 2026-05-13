@@ -14,4 +14,12 @@ export interface EnvironmentVariables {
   MONGO_USER: string;
   MONGO_PASS: string;
   MONGO_AUTH_SOURCE: string;
+
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_CALLBACK_URL: string;
+
+  GITHUB_CLIENT_ID: string;
+  GITHUB_CLIENT_SECRET: string;
+  GITHUB_CALLBACK_URL: string;
 }

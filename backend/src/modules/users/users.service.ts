@@ -5,12 +5,16 @@ import { User } from 'src/common/entities/users.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
+import { UserProviders } from 'src/common/entities/user_providers.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+
+    @InjectRepository(UserProviders)
+    private userProvidersRepository: Repository<UserProviders>,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -59,5 +63,39 @@ export class UsersService {
   async create(data: Partial<User>): Promise<User> {
     const user = this.userRepository.create(data); //manca await per ora
     return await this.userRepository.save(user);
+  }
+
+  // ---------------------------------------------------------------------------
+  // OAuth 2.0 - find User by provider
+  // ---------------------------------------------------------------------------
+
+  // prettier-ignore
+  async findByProviderId( providerName: string, providerId: string ): Promise<User | null> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.providers', 'provider')
+      .where('provider.provider_name = :providerName', { providerName })
+      .andWhere('provider.provider_id = :providerId', { providerId })
+      .getOne();
+  }
+
+  // collega un utente ad un provider
+  // prettier-ignore
+  async linkProvider(userId: string, providerName: string, providerId: string): Promise<User> {
+    // 1. Crea il record provider
+    const provider = this.userProvidersRepository.create({
+      userId,
+      provider_name: providerName,
+      provider_id: providerId,
+    });
+    await this.userProvidersRepository.save(provider);
+
+    // 2. Ritorna l'utente aggiornato con i provider caricati (PARTE ELIMINABILE)
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['providers'],
+    });
+    if (!user) throw new NotFoundException('Utente non trovato');
+    return user;
   }
 }

@@ -1,12 +1,13 @@
 // prettier-ignore
-import { Body, Controller, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response, Request } from 'express';
 import { LoginDto } from './dto/login.dto';
-import { AuthService } from './auth.service';
+import { AuthService, AuthTokens } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { Public } from 'src/common/decorators/public.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 // Estendi il tipo Request per avere req.user tipizzato
 interface RequestWithUser extends Request {
@@ -65,8 +66,8 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const cookies = req.cookies as Record<string, string | undefined>;
-    const refreshToken = cookies['refresh_token'];
+    const cookies = req.cookies;
+    const refreshToken = cookies['refresh_token'] as string | undefined;
     if (!refreshToken) throw new UnauthorizedException();
 
     const payload = this.jwtService.decode<{ sub: string }>(refreshToken);
@@ -88,5 +89,33 @@ export class AuthController {
     await this.authService.logout(req.user.id);
     res.clearCookie('refresh_token', { path: '/auth/refresh' });
     return { message: 'Logout effettuato' };
+  }
+
+  // google auth passport gestisce tutto il redirect
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleLogin() {
+    // Body non viene mai eseguito: il guard intercetta e fa redirect a Google
+  }
+
+  // 2. google Callback — Google torna qui con il code già scambiato
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  googleCallback(
+    @Req() req: Request & { user: AuthTokens },
+    @Res() res: Response,
+  ): void {
+    const { accessToken, refreshToken } = req.user;
+
+    // Opzione TEMPORANEA dev — query param (non sicuro in prod)
+    res.redirect(
+      `http://localhost:4200/oauth-test.html?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+    );
+
+    // Opzione FUTURA prod — cookie httpOnly
+    // res.cookie('refresh_token', refreshToken, { httpOnly: true, sameSite: 'strict' });
+    // res.redirect('http://localhost:4200/dashboard');
   }
 }

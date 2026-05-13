@@ -10,6 +10,7 @@ import { User } from 'src/common/entities/users.entity';
 import { UsersModule } from '../users/users.module';
 import { StringValue } from 'ms';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, GoogleStrategy],
   exports: [JwtModule],
   controllers: [AuthController],
 })

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>OAuth Test</title>
+</head>
+<body>
+  <h2>Test Google OAuth</h2>
+
+  <a href="http://localhost:3000/auth/google">
+    <button>Login con Google</button>
+  </a>
+
+  <div id="result" style="margin-top: 2rem; font-family: monospace;"></div>
+
+  <script>
+    // Legge i token dai query param se Google ha fatto redirect qui
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get('accessToken');
+    const refreshToken = params.get('refreshToken');
+
+    if (accessToken) {
+      document.getElementById('result').innerHTML = `
+        <p><strong>accessToken:</strong> ${accessToken}</p>
+        <p><strong>refreshToken:</strong> ${refreshToken}</p>
+      `;
+    }
+  </script>
+</body>
+</html>

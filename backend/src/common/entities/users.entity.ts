@@ -4,6 +4,7 @@ import { Country, UserRole } from './enum/users.enum';
 import { Payment } from './payments.entity';
 import { StudentProfile } from './StudentProfile.entity';
 import { InstructorProfile } from './InstructorProfile.entity';
+import { UserProviders } from './user_providers.entity';
 
 @Entity('users')
 export class User {
@@ -13,8 +14,8 @@ export class User {
   @Column({ unique: true })
   email!: string;
 
-  @Column()
-  password!: string;
+  @Column({ type: 'varchar', nullable: true })
+  password!: string | null;
 
   @Column()
   first_name!: string;
@@ -22,11 +23,11 @@ export class User {
   @Column()
   last_name!: string;
 
-  @Column({ type: 'date' })
-  birth_date!: Date;
+  @Column({ type: 'date', nullable: true })
+  birth_date!: Date | null;
 
-  @Column({ type: 'enum', enum: Country })
-  country!: Country;
+  @Column({ type: 'enum', enum: Country, nullable: true })
+  country!: Country | null;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.STUDENT })
   role!: UserRole;
@@ -48,4 +49,7 @@ export class User {
 
   @OneToOne(() => StudentProfile, (profile) => profile.user)
   studentProfile?: StudentProfile;
+
+  @OneToMany(() => UserProviders, (provider) => provider.user)
+  providers?: UserProviders[];
 }
