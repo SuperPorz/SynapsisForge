@@ -1,11 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { User } from 'src/common/entities/users.entity';
 import { Repository } from 'typeorm';
+import { User } from 'src/common/entities/users.entity';
+import { UserProviders } from 'src/common/entities/user_providers.entity';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
-import { UserProviders } from 'src/common/entities/user_providers.entity';
+
+// Tipo dedicato al flusso OAuth — email nullable by design.
+// Non riusa CreateUserDto perché quel DTO ha email @IsEmail() obbligatoria
+// e password @MinLength(8) obbligatoria: due contratti incompatibili.
+interface CreateOAuthUserData {
+  email: string | null;
+  first_name: string;
+  last_name: string;
+}
 
 @Injectable()
 export class UsersService {
@@ -18,8 +28,7 @@ export class UsersService {
   ) {}
 
   // ---------------------------------------------------------------------------
-  // Metodi interni — non hanno endpoint HTTP, vengono chiamati da altri service
-  // tramite dependency injection (AuthService, JwtStrategy, ecc.)
+  // Lettura — usati da JwtStrategy e AuthService
   // ---------------------------------------------------------------------------
 
   // Usato da JwtStrategy per validare il payload del token
@@ -27,7 +36,7 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  // Usato da AuthService durante il login per recuperare l'utente + password hash
+  // Usato da AuthService durante login e findOrCreateOAuthUser
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOneBy({ email });
   }
@@ -38,7 +47,8 @@ export class UsersService {
 
   async getProfile(userId: string): Promise<ResponseUserDto> {
     const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+    if (!user)
+      throw new NotFoundException(`Utente con id ${userId} non trovato`);
 
     return plainToInstance(ResponseUserDto, user);
   }
@@ -52,7 +62,8 @@ export class UsersService {
     dto: UpdateUserDto,
   ): Promise<ResponseUserDto> {
     const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+    if (!user)
+      throw new NotFoundException(`Utente con id ${userId} non trovato`);
 
     Object.assign(user, dto);
     await this.userRepository.save(user);
@@ -60,17 +71,38 @@ export class UsersService {
     return plainToInstance(ResponseUserDto, user);
   }
 
-  async create(data: Partial<User>): Promise<User> {
-    const user = this.userRepository.create(data); //manca await per ora
-    return await this.userRepository.save(user);
+  // ---------------------------------------------------------------------------
+  // Creazione utente — due metodi distinti, due contratti distinti
+  // ---------------------------------------------------------------------------
+
+  // Usato da AuthService.register() — email e password garantite dal DTO.
+  // TypeScript sa che email è string e password è string: nessun nullable qui.
+  async create(dto: CreateUserDto & { password: string }): Promise<User> {
+    const user = this.userRepository.create(dto);
+    return this.userRepository.save(user);
+  }
+
+  // Usato SOLO dal flusso OAuth (Google, GitHub, futuri provider).
+  // email è nullable perché GitHub non garantisce email pubblica.
+  // password è sempre null: gli utenti OAuth non hanno credenziali locali.
+  async createOAuthUser(data: CreateOAuthUserData): Promise<User> {
+    const user = this.userRepository.create({
+      ...data,
+      password: null,
+    });
+    return this.userRepository.save(user);
   }
 
   // ---------------------------------------------------------------------------
-  // OAuth 2.0 - find User by provider
+  // OAuth 2.0 — gestione provider
   // ---------------------------------------------------------------------------
 
-  // prettier-ignore
-  async findByProviderId( providerName: string, providerId: string ): Promise<User | null> {
+  // Cerca un utente già collegato a un provider specifico (es. github, google).
+  // Usato come prima lookup in findOrCreateOAuthUser per evitare duplicati.
+  async findByProviderId(
+    providerName: string,
+    providerId: string,
+  ): Promise<User | null> {
     return this.userRepository
       .createQueryBuilder('user')
       .innerJoin('user.providers', 'provider')
@@ -79,10 +111,14 @@ export class UsersService {
       .getOne();
   }
 
-  // collega un utente ad un provider
-  // prettier-ignore
-  async linkProvider(userId: string, providerName: string, providerId: string): Promise<User> {
-    // 1. Crea il record provider
+  // Collega un provider OAuth a un utente esistente.
+  // Chiamato sia quando si collega un provider a un account email/password già
+  // esistente, sia dopo createOAuthUser per un utente completamente nuovo.
+  async linkProvider(
+    userId: string,
+    providerName: string,
+    providerId: string,
+  ): Promise<User> {
     const provider = this.userProvidersRepository.create({
       userId,
       provider_name: providerName,
@@ -90,7 +126,6 @@ export class UsersService {
     });
     await this.userProvidersRepository.save(provider);
 
-    // 2. Ritorna l'utente aggiornato con i provider caricati (PARTE ELIMINABILE)
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['providers'],

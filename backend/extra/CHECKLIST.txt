@@ -5,24 +5,24 @@ Legenda: [ ] da fare  [x] fatto  [-] non applicabile per ora
 ------------------------------------------
 AUTH MODULE
 ------------------------------------------
-[ ] POST /auth/register — crea utente con password hashata (bcrypt)
+[x] POST /auth/register — crea utente con password hashata (bcrypt)
 [ ] GET  /auth/verify-email/:token — attiva account dopo registrazione
-[ ] POST /auth/login — verifica credenziali, emette access + refresh token
-[ ] POST /auth/refresh — emette nuovo access token da cookie refresh
-[ ] POST /auth/logout — invalida refresh token (Redis o DB)
+[x] POST /auth/login — verifica credenziali, emette access + refresh token
+[x] POST /auth/refresh — emette nuovo access token da cookie refresh
+[x] POST /auth/logout — invalida refresh token (Redis o DB)
 [ ] POST /auth/password/reset — invia email con token reset
 [ ] POST /auth/password/confirm — aggiorna password con token
-[ ] GET  /auth/google — redirect OAuth2 Google
-[ ] GET  /auth/google/callback — callback Google, crea utente se non esiste
-[ ] GET  /auth/github — redirect OAuth2 GitHub
-[ ] GET  /auth/github/callback — callback GitHub, gestisce email assente
+[x] GET  /auth/google — redirect OAuth2 Google
+[x] GET  /auth/google/callback — callback Google, crea utente se non esiste
+[x] GET  /auth/github — redirect OAuth2 GitHub
+[x] GET  /auth/github/callback — callback GitHub, gestisce email assente
 
 ------------------------------------------
 USERS MODULE
 ------------------------------------------
 [x] createUser() — chiamato internamente da register e OAuth callback
-[ ] findById() — usato da JwtStrategy e altri service
-[ ] findByEmail() — usato da AuthService per login
+[x] findById() — usato da JwtStrategy e altri service
+[x] findByEmail() — usato da AuthService per login
 [x] GET  /users/me — restituisce profilo utente autenticato
 [x] PATCH /users/me — aggiorna first_name, last_name, birth_date, country
 [ ] GET  /users/me/enrollments — lista iscrizioni studente con progresso
@@ -132,7 +132,7 @@ INFRASTRUTTURA & TRASVERSALI
 [x] ParseUuidPipe custom — valida UUID v4 su ogni :id param
 [x] ParsePositiveIntPipe — per params di paginazione
 [ ] RolesGuard + decoratore @Roles() — RBAC su ogni endpoint protetto
-[ ] JwtAuthGuard globale + decoratore @Public() per endpoint pubblici
+[x] JwtAuthGuard globale + decoratore @Public() per endpoint pubblici
 [x] Throttler globale (rate limiting per IP)
 [ ] Redis store
 [x] EventEmitter2 — bus eventi interno (enrollment.completed → certificate)

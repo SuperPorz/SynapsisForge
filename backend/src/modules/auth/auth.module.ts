@@ -11,6 +11,7 @@ import { UsersModule } from '../users/users.module';
 import { StringValue } from 'ms';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { GithubStrategy } from './strategies/github.strategy';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { GoogleStrategy } from './strategies/google.strategy';
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, GoogleStrategy],
+  //prettier-ignore
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, GoogleStrategy, GithubStrategy],
   exports: [JwtModule],
   controllers: [AuthController],
 })

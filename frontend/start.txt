@@ -1,0 +1,7 @@
+npx serve .   # nella cartella dove hai l'html, espone su localhost:3000... 
+
+
+OPPURE:
+
+
+npx http-server . -p 4200   # simula esattamente localhost:4200

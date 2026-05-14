@@ -19,7 +19,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 
 export interface JwtPayload {
   sub: string;
-  email: string;
+  email: string | null;
   role: string;
 }
 
@@ -153,7 +153,7 @@ export class AuthService {
   async findOrCreateOAuthUser(
     providerName: string,
     providerId: string,
-    email: string,
+    email: string | null,
     firstName: string,
     lastName: string,
   ): Promise<AuthTokens> {
@@ -165,7 +165,10 @@ export class AuthService {
 
     if (!user) {
       // 2. Nessun record provider — cerca per email
-      const existingByEmail = await this.usersService.findByEmail(email);
+      // Con email null, salta la ricerca per email — vai diretto alla creazione
+      const existingByEmail = email
+        ? await this.usersService.findByEmail(email)
+        : null;
 
       if (existingByEmail) {
         // 2a. Utente già registrato con email/password → collega il provider
@@ -175,12 +178,11 @@ export class AuthService {
           providerId,
         );
       } else {
-        // 2b. Utente nuovo → crea account senza password + collega provider
-        const newUser = await this.usersService.create({
-          email,
+        // 2b. Utente nuovo → crea account senza password o email + collega provider
+        const newUser = await this.usersService.createOAuthUser({
+          email, // string | null — accettato esplicitamente
           first_name: firstName,
           last_name: lastName,
-          password: null,
         });
         user = await this.usersService.linkProvider(
           newUser.id,

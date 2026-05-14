@@ -111,7 +111,33 @@ export class AuthController {
 
     // Opzione TEMPORANEA dev — query param (non sicuro in prod)
     res.redirect(
-      `http://localhost:4200/oauth-test.html?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+      `http://localhost:4200/oauth-test.html?provider=google&accessToken=${accessToken}&refreshToken=${refreshToken}`,
+    );
+
+    // Opzione FUTURA prod — cookie httpOnly
+    // res.cookie('refresh_token', refreshToken, { httpOnly: true, sameSite: 'strict' });
+    // res.redirect('http://localhost:4200/dashboard');
+  }
+
+  // github OAuth
+  @Public()
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  githubLogin(): void {
+    // Body non viene mai eseguito: il guard intercetta e fa redirect a GitHub
+  }
+
+  @Public()
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  githubCallback(
+    @Req() req: Request & { user: AuthTokens },
+    @Res() res: Response,
+  ): void {
+    const { accessToken, refreshToken } = req.user;
+
+    res.redirect(
+      `http://localhost:4200/oauth-test.html?provider=github&accessToken=${accessToken}&refreshToken=${refreshToken}`,
     );
 
     // Opzione FUTURA prod — cookie httpOnly

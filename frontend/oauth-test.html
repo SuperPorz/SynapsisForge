@@ -1,38 +1,113 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>OAuth Test</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }
+
+    .oauth-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .oauth-buttons a {
+      text-decoration: none;
+    }
+
+    button {
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      color: white;
+    }
+
+    .google-btn {
+      background-color: #4285f4;
+    }
+
+    .github-btn {
+      background-color: #24292e;
+    }
+
+    #logoutBtn {
+      background-color: #c0392b;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    #result {
+      margin-top: 2rem;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
+
 <body>
-  <h2>Test Google OAuth</h2>
+  <h2>OAuth Test</h2>
 
-  <a href="http://localhost:3000/auth/google">
-    <button>Login con Google</button>
-  </a>
+  <div class="oauth-buttons">
+    <!-- Google OAuth -->
+    <a href="http://localhost:3000/auth/google">
+      <button class="google-btn">
+        Login con Google
+      </button>
+    </a>
 
-  <button id="logoutBtn" style="display:none; margin-left: 1rem;" onclick="logout()">
+    <!-- GitHub OAuth -->
+    <a href="http://localhost:3000/auth/github">
+      <button class="github-btn">
+        Login con GitHub
+      </button>
+    </a>
+  </div>
+
+  <button id="logoutBtn" onclick="logout()">
     Logout
   </button>
 
-  <div id="result" style="margin-top: 2rem; font-family: monospace;"></div>
+  <div id="result"></div>
 
   <script>
-    // Legge i token dai query param se Google ha fatto redirect qui
+    // Query params ricevuti dal backend dopo redirect OAuth
     const params = new URLSearchParams(window.location.search);
+
     const accessToken = params.get('accessToken');
     const refreshToken = params.get('refreshToken');
 
+    // opzionale per future estensioni
+    const provider = params.get('provider') || 'OAuth';
+
     if (accessToken) {
-      // Salva in memoria per usarlo nel logout
+      // Salva token in memoria
       window._accessToken = accessToken;
 
       document.getElementById('result').innerHTML = `
-        <p><strong>accessToken:</strong> ${accessToken}</p>
-        <p><strong>refreshToken:</strong> ${refreshToken}</p>
+        <p><strong>Provider:</strong> ${provider}</p>
+
+        <p>
+          <strong>accessToken:</strong><br />
+          ${accessToken}
+        </p>
+
+        <p>
+          <strong>refreshToken:</strong><br />
+          ${refreshToken}
+        </p>
       `;
 
-      document.getElementById('logoutBtn').style.display = 'inline';
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+
+      // Pulisce i query params dall'URL senza refresh
+      window.history.replaceState({}, '', window.location.pathname);
     }
 
     async function logout() {
@@ -40,23 +115,29 @@
         const res = await fetch('http://localhost:3000/auth/logout', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${window._accessToken}`,
+            Authorization: `Bearer ${window._accessToken}`,
           },
-          credentials: 'include', // invia il cookie refresh_token
+          credentials: 'include',
         });
 
         if (res.ok) {
-          document.getElementById('result').innerHTML = '<p>Logout effettuato ✅</p>';
+          document.getElementById('result').innerHTML =
+            '<p>Logout effettuato ✅</p>';
+
           document.getElementById('logoutBtn').style.display = 'none';
+
           window._accessToken = null;
-          // Pulisce i query param dall'URL senza ricaricare la pagina
-          window.history.replaceState({}, '', window.location.pathname);
         } else {
           const body = await res.json();
-          document.getElementById('result').innerHTML = `<p>Errore logout: ${body.message}</p>`;
+
+          document.getElementById('result').innerHTML = `
+            <p>Errore logout: ${body.message}</p>
+          `;
         }
       } catch (err) {
-        document.getElementById('result').innerHTML = `<p>Errore di rete: ${err.message}</p>`;
+        document.getElementById('result').innerHTML = `
+          <p>Errore di rete: ${err.message}</p>
+        `;
       }
     }
   </script>
