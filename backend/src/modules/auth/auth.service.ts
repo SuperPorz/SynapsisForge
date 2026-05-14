@@ -1,7 +1,7 @@
 import {
   ConflictException,
+  BadRequestException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,6 +14,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from 'src/common/entities/users.entity';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
+import { PasswordResetDto } from './dto/password-reset.dto';
+import { PasswordConfirmDto } from './dto/password-confirm.dto';
 import { EnvironmentVariables } from 'src/common/types/env';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 
@@ -38,11 +40,12 @@ export class AuthService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async register(dto: CreateUserDto): Promise<AuthTokens> {
-    // 1. Verifica che l'email non sia già in uso
+  // ─────────────────────────────────────────────────────────────────────────────
+  // REGISTER — crea utente e invia link di verifica (nessun JWT emesso)
+  // ─────────────────────────────────────────────────────────────────────────────
+  async register(dto: CreateUserDto): Promise<{ message: string }> {
     const existing = await this.usersService.findByEmail(dto.email);
 
-    // 2.1 caso — email OAuth vs email già registrata con password
     if (existing) {
       if (!existing.password) {
         throw new ConflictException(
@@ -52,104 +55,207 @@ export class AuthService {
       throw new ConflictException('Email già in uso');
     }
 
-    // 2.2 Hash della password
     const password = await bcrypt.hash(dto.password, 10);
+    const user = await this.usersService.create({ ...dto, password });
 
-    // 3. Crea l'utente tramite UsersService
-    let user: User;
-    try {
-      user = await this.usersService.create({ ...dto, password });
-    } catch (error) {
-      console.error('[AuthService.register] Errore creazione utente:', error);
-      throw new InternalServerErrorException(
-        "Errore durante la creazione dell'utente",
-      );
-    }
+    const token = crypto.randomUUID();
+    await this.usersRepository.update(user.id, {
+      email_verification_token: token,
+    });
 
-    // 4. Genera e salva i token
-    try {
-      const tokens = await this.generateTokens(user);
-      await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
-      return tokens;
-    } catch (error) {
-      console.error('[AuthService.register] Errore generazione token:', error);
-      throw new InternalServerErrorException(
-        'Errore durante la generazione dei token',
-      );
-    }
+    // TODO: sostituire con un MailService reale
+    console.log(
+      `[EMAIL] Link verifica: http://localhost:3000/auth/verify-email/${token}`,
+    );
+
+    return { message: 'Registrazione completata. Controlla la tua email.' };
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // VERIFY EMAIL — attiva account ed emette JWT
+  // ─────────────────────────────────────────────────────────────────────────────
+  async verifyEmail(token: string): Promise<AuthTokens> {
+    const user = await this.usersRepository.findOneBy({
+      email_verification_token: token,
+    });
+
+    if (!user) {
+      throw new BadRequestException(
+        'Token di verifica non valido o già utilizzato',
+      );
+    }
+
+    await this.usersRepository.update(user.id, {
+      isVerified: true,
+      email_verification_token: null,
+    });
+
+    // Ricarica l'utente aggiornato prima di generare i token
+    const verifiedUser = await this.usersRepository.findOneByOrFail({
+      id: user.id,
+    });
+
+    const tokens = await this.generateTokens(verifiedUser);
+    await this.saveRefreshTokenHash(verifiedUser.id, tokens.refreshToken);
+    return tokens;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // LOGIN
+  // ─────────────────────────────────────────────────────────────────────────────
   async login(dto: LoginDto): Promise<AuthTokens> {
-    // 1. Trova l'utente
     const user = await this.usersService.findByEmail(dto.email);
     if (!user) throw new UnauthorizedException('Credenziali non valide');
 
-    // 2.1 Utente registrato via OAuth — non ha password
     if (!user.password) {
       throw new UnauthorizedException(
         'Account registrato tramite provider esterno. Usa Google o GitHub per accedere.',
       );
     }
 
-    // 2.2 Verifica password
     const passwordMatch = await bcrypt.compare(dto.password, user.password);
-    if (!passwordMatch)
+    if (!passwordMatch) {
       throw new UnauthorizedException('Credenziali non valide');
-
-    // 3. Genera e salva i token
-    try {
-      const tokens = await this.generateTokens(user);
-      await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
-      return tokens;
-    } catch (error) {
-      console.error('[AuthService.login] Errore generazione token:', error);
-      throw new InternalServerErrorException('Errore durante il login');
     }
+
+    // Utente non verificato — messaggio specifico (403 semanticamente corretto,
+    // ma UnauthorizedException è sufficiente per ora)
+    if (!user.isVerified) {
+      throw new UnauthorizedException(
+        'Email non verificata. Controlla la tua casella di posta.',
+      );
+    }
+
+    const tokens = await this.generateTokens(user);
+    await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
+    return tokens;
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // LOGOUT
+  // ─────────────────────────────────────────────────────────────────────────────
   async logout(userId: string): Promise<void> {
     const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('Utente non trovato');
 
-    try {
-      await this.usersRepository.update(userId, { refresh_token_hash: null });
-    } catch (error) {
-      console.error('[AuthService.logout] Errore invalidazione token:', error);
-      throw new InternalServerErrorException('Errore durante il logout');
-    }
+    await this.usersRepository.update(userId, { refresh_token_hash: null });
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // REFRESH TOKENS
+  // ─────────────────────────────────────────────────────────────────────────────
   async refreshTokens(
     userId: string,
     refreshToken: string,
   ): Promise<AuthTokens> {
     const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('Utente non trovato');
-    if (!user.refresh_token_hash)
+
+    if (!user.refresh_token_hash) {
       throw new UnauthorizedException(
         'Sessione scaduta, effettua nuovamente il login',
       );
+    }
 
-    // Verifica che il refresh token combaci con l'hash salvato
     const tokenMatch = await bcrypt.compare(
       refreshToken,
       user.refresh_token_hash,
     );
-    if (!tokenMatch)
+    if (!tokenMatch) {
       throw new UnauthorizedException('Refresh token non valido');
-
-    try {
-      const tokens = await this.generateTokens(user);
-      await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
-      return tokens;
-    } catch (error) {
-      console.error('[AuthService.refreshTokens] Errore rinnovo token:', error);
-      throw new InternalServerErrorException(
-        'Errore durante il rinnovo del token',
-      );
     }
+
+    const tokens = await this.generateTokens(user);
+    await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
+    return tokens;
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PASSWORD RESET — step 1: richiesta (invia link via console)
+  // ─────────────────────────────────────────────────────────────────────────────
+  async sendPasswordReset(dto: PasswordResetDto): Promise<{ message: string }> {
+    const email: string = dto.email;
+    const user = await this.usersService.findByEmail(email);
+
+    // Risposta identica sia che l'utente esista o meno (anti-enumeration)
+    if (!user) {
+      return {
+        message:
+          'Se questa email è registrata, riceverai un link per reimpostare la password.',
+      };
+    }
+
+    // Utente OAuth senza password — non ha senso il reset
+    if (!user.password) {
+      return {
+        message:
+          'Se questa email è registrata, riceverai un link per reimpostare la password.',
+      };
+    }
+
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minuti
+
+    await this.usersRepository.update(user.id, {
+      password_reset_token: token,
+      password_reset_expires_at: expiresAt,
+    });
+
+    // TODO: sostituire con un MailService reale
+    console.log(
+      `[EMAIL] Link reset password: http://localhost:4200/reset-password?token=${token}`,
+    );
+
+    return {
+      message:
+        'Se questa email è registrata, riceverai un link per reimpostare la password.',
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PASSWORD RESET — step 2: conferma con token + nuova password
+  // ─────────────────────────────────────────────────────────────────────────────
+  async confirmPasswordReset(
+    dto: PasswordConfirmDto,
+  ): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOneBy({
+      password_reset_token: dto.token,
+    });
+
+    if (!user) {
+      throw new BadRequestException('Token non valido o già utilizzato');
+    }
+
+    if (
+      !user.password_reset_expires_at ||
+      user.password_reset_expires_at < new Date()
+    ) {
+      // Pulisci il token scaduto
+      await this.usersRepository.update(user.id, {
+        password_reset_token: null,
+        password_reset_expires_at: null,
+      });
+      throw new BadRequestException(
+        'Token scaduto. Richiedi un nuovo link di reset.',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    // Salva nuova password, invalida token reset e sessioni attive
+    await this.usersRepository.update(user.id, {
+      password: hashedPassword,
+      password_reset_token: null,
+      password_reset_expires_at: null,
+      refresh_token_hash: null, // forza re-login su tutti i dispositivi
+    });
+
+    return { message: 'Password aggiornata. Effettua nuovamente il login.' };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // OAUTH — trova o crea utente tramite provider esterno
+  // ─────────────────────────────────────────────────────────────────────────────
   async findOrCreateOAuthUser(
     providerName: string,
     providerId: string,
@@ -157,30 +263,25 @@ export class AuthService {
     firstName: string,
     lastName: string,
   ): Promise<AuthTokens> {
-    // 1. Cerca un utente già collegato a questo provider
     let user = await this.usersService.findByProviderId(
       providerName,
       providerId,
     );
 
     if (!user) {
-      // 2. Nessun record provider — cerca per email
-      // Con email null, salta la ricerca per email — vai diretto alla creazione
       const existingByEmail = email
         ? await this.usersService.findByEmail(email)
         : null;
 
       if (existingByEmail) {
-        // 2a. Utente già registrato con email/password → collega il provider
         user = await this.usersService.linkProvider(
           existingByEmail.id,
           providerName,
           providerId,
         );
       } else {
-        // 2b. Utente nuovo → crea account senza password o email + collega provider
         const newUser = await this.usersService.createOAuthUser({
-          email, // string | null — accettato esplicitamente
+          email,
           first_name: firstName,
           last_name: lastName,
         });
@@ -192,15 +293,14 @@ export class AuthService {
       }
     }
 
-    // 3. Genera JWT lato app
     const tokens = await this.generateTokens(user);
     await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
     return tokens;
   }
 
-  /////////////////////////////////////////////////////////////////////////
-  /////////////////////////--- helpers privati ---////////////////////////
-  ////////////////////////////////////////////////////////////////////////
+  // ─────────────────────────────────────────────────────────────────────────────
+  // HELPERS PRIVATI
+  // ─────────────────────────────────────────────────────────────────────────────
 
   private async generateTokens(user: User): Promise<AuthTokens> {
     const payload: JwtPayload = {

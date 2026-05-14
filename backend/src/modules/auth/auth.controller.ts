@@ -1,26 +1,26 @@
 // prettier-ignore
-import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response, Request } from 'express';
 import { LoginDto } from './dto/login.dto';
+import { PasswordResetDto } from './dto/password-reset.dto';
+import { PasswordConfirmDto } from './dto/password-confirm.dto';
 import { AuthService, AuthTokens } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
-// Estendi il tipo Request per avere req.user tipizzato
 interface RequestWithUser extends Request {
   user: { id: string; email: string; role: string };
 }
 
-// questo è l'oggetto per salvare il cookie di tipo 'http-only'
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production', // HTTPS solo in prod
+  secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict' as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 giorni in ms
-  path: '/auth/refresh', // il cookie viene inviato SOLO a questa rotta
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/auth/refresh',
 };
 
 @ApiTags('auth')
@@ -31,14 +31,22 @@ export class AuthController {
     private readonly jwtService: JwtService,
   ) {}
 
-  @Public() // ← fondamentale: senza questo la guardia globale blocca il login
+  @Public()
   @Post('/register')
-  @ApiOperation({ summary: 'Crea utente e restituisce access token' })
-  async register(
-    @Body() body: CreateUserDto,
+  @ApiOperation({ summary: 'Crea utente e invia email di verifica' })
+  async register(@Body() body: CreateUserDto) {
+    return this.authService.register(body);
+  }
+
+  @Public()
+  @Get('/verify-email/:token')
+  @ApiOperation({ summary: 'Verifica email e restituisce access token' })
+  async verifyEmail(
+    @Param('token', ParseUUIDPipe) token: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken } = await this.authService.register(body);
+    const { accessToken, refreshToken } =
+      await this.authService.verifyEmail(token);
     res.cookie('refresh_token', refreshToken, REFRESH_COOKIE_OPTIONS);
     return { accessToken };
   }
@@ -66,8 +74,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const cookies = req.cookies;
-    const refreshToken = cookies['refresh_token'] as string | undefined;
+    const refreshToken = req.cookies['refresh_token'] as string | undefined;
     if (!refreshToken) throw new UnauthorizedException();
 
     const payload = this.jwtService.decode<{ sub: string }>(refreshToken);
@@ -91,15 +98,27 @@ export class AuthController {
     return { message: 'Logout effettuato' };
   }
 
-  // google auth passport gestisce tutto il redirect
+  @Public()
+  @Post('/password/reset')
+  @ApiOperation({ summary: 'Richiede link di reset password via email' })
+  async passwordReset(@Body() body: PasswordResetDto) {
+    return this.authService.sendPasswordReset(body);
+  }
+
+  @Public()
+  @Post('/password/confirm')
+  @ApiOperation({ summary: 'Conferma reset password con token' })
+  async passwordConfirm(@Body() body: PasswordConfirmDto) {
+    return this.authService.confirmPasswordReset(body);
+  }
+
+  // ── OAuth Google ──────────────────────────────────────────────────────────
+
   @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  googleLogin() {
-    // Body non viene mai eseguito: il guard intercetta e fa redirect a Google
-  }
+  googleLogin() {}
 
-  // 2. google Callback — Google torna qui con il code già scambiato
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
@@ -108,24 +127,17 @@ export class AuthController {
     @Res() res: Response,
   ): void {
     const { accessToken, refreshToken } = req.user;
-
-    // Opzione TEMPORANEA dev — query param (non sicuro in prod)
     res.redirect(
       `http://localhost:4200/oauth-test.html?provider=google&accessToken=${accessToken}&refreshToken=${refreshToken}`,
     );
-
-    // Opzione FUTURA prod — cookie httpOnly
-    // res.cookie('refresh_token', refreshToken, { httpOnly: true, sameSite: 'strict' });
-    // res.redirect('http://localhost:4200/dashboard');
   }
 
-  // github OAuth
+  // ── OAuth GitHub ──────────────────────────────────────────────────────────
+
   @Public()
   @Get('github')
   @UseGuards(AuthGuard('github'))
-  githubLogin(): void {
-    // Body non viene mai eseguito: il guard intercetta e fa redirect a GitHub
-  }
+  githubLogin(): void {}
 
   @Public()
   @Get('github/callback')
@@ -135,13 +147,8 @@ export class AuthController {
     @Res() res: Response,
   ): void {
     const { accessToken, refreshToken } = req.user;
-
     res.redirect(
       `http://localhost:4200/oauth-test.html?provider=github&accessToken=${accessToken}&refreshToken=${refreshToken}`,
     );
-
-    // Opzione FUTURA prod — cookie httpOnly
-    // res.cookie('refresh_token', refreshToken, { httpOnly: true, sameSite: 'strict' });
-    // res.redirect('http://localhost:4200/dashboard');
   }
 }

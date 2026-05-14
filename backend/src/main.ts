@@ -7,6 +7,7 @@ import { LoggingInterceptor } from './common/interceptors/loggin.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import cookieParser from 'cookie-parser';
+import { TypeOrmExceptionFilter } from './common/filters/typeorm-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -33,7 +34,10 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(
+    new TypeOrmExceptionFilter(), // ← prima: più specifico
+    new HttpExceptionFilter(), // ← dopo: cattura il resto
+  );
 
   const config = new DocumentBuilder()
     .setTitle('SynapsisForge')

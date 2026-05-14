@@ -21,7 +21,7 @@ interface CreateOAuthUserData {
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private usersRepository: Repository<User>,
 
     @InjectRepository(UserProviders)
     private userProvidersRepository: Repository<UserProviders>,
@@ -33,12 +33,12 @@ export class UsersService {
 
   // Usato da JwtStrategy per validare il payload del token
   async findById(id: string): Promise<User | null> {
-    return this.userRepository.findOneBy({ id });
+    return this.usersRepository.findOneBy({ id });
   }
 
   // Usato da AuthService durante login e findOrCreateOAuthUser
   async findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOneBy({ email });
+    return this.usersRepository.findOneBy({ email });
   }
 
   // ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ export class UsersService {
   // ---------------------------------------------------------------------------
 
   async getProfile(userId: string): Promise<ResponseUserDto> {
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user)
       throw new NotFoundException(`Utente con id ${userId} non trovato`);
 
@@ -61,12 +61,12 @@ export class UsersService {
     userId: string,
     dto: UpdateUserDto,
   ): Promise<ResponseUserDto> {
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user)
       throw new NotFoundException(`Utente con id ${userId} non trovato`);
 
     Object.assign(user, dto);
-    await this.userRepository.save(user);
+    await this.usersRepository.save(user);
 
     return plainToInstance(ResponseUserDto, user);
   }
@@ -78,19 +78,19 @@ export class UsersService {
   // Usato da AuthService.register() — email e password garantite dal DTO.
   // TypeScript sa che email è string e password è string: nessun nullable qui.
   async create(dto: CreateUserDto & { password: string }): Promise<User> {
-    const user = this.userRepository.create(dto);
-    return this.userRepository.save(user);
+    const user = this.usersRepository.create(dto);
+    return this.usersRepository.save(user);
   }
 
   // Usato SOLO dal flusso OAuth (Google, GitHub, futuri provider).
   // email è nullable perché GitHub non garantisce email pubblica.
   // password è sempre null: gli utenti OAuth non hanno credenziali locali.
   async createOAuthUser(data: CreateOAuthUserData): Promise<User> {
-    const user = this.userRepository.create({
+    const user = this.usersRepository.create({
       ...data,
       password: null,
     });
-    return this.userRepository.save(user);
+    return this.usersRepository.save(user);
   }
 
   // ---------------------------------------------------------------------------
@@ -103,7 +103,7 @@ export class UsersService {
     providerName: string,
     providerId: string,
   ): Promise<User | null> {
-    return this.userRepository
+    return this.usersRepository
       .createQueryBuilder('user')
       .innerJoin('user.providers', 'provider')
       .where('provider.provider_name = :providerName', { providerName })
@@ -126,7 +126,7 @@ export class UsersService {
     });
     await this.userProvidersRepository.save(provider);
 
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { id: userId },
       relations: ['providers'],
     });

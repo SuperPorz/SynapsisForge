@@ -38,8 +38,20 @@ export class User {
   @Column({ default: true })
   is_active!: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  isVerified!: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   refresh_token_hash!: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  email_verification_token!: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  password_reset_token!: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  password_reset_expires_at!: Date | null;
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments?: Payment[];
