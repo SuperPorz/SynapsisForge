@@ -8,6 +8,7 @@ import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import cookieParser from 'cookie-parser';
 import { TypeOrmExceptionFilter } from './common/filters/typeorm-exception.filter';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,6 +19,12 @@ async function bootstrap() {
     origin: 'http://localhost:4200', // frontend temporaneo
     credentials: true,
   });
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: process.env.NODE_ENV === 'production', // disabilita CSP solo per l'env di sviluppo
+    }),
+  );
 
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector)), // 1° — trasforma le entità in DTO usando @Exclude e @Expose
