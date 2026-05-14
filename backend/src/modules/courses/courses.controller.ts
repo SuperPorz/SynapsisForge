@@ -5,6 +5,9 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { ApiBadRequestResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid.pipe';
 import { ParsePositiveIntPipe } from 'src/common/pipes/parse-positive-int.pipe';
+import { UserRole } from 'src/common/entities/enum/users.enum';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiTags('Courses')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
@@ -12,6 +15,7 @@ import { ParsePositiveIntPipe } from 'src/common/pipes/parse-positive-int.pipe';
 export class CoursesController {
   constructor(private readonly CoursesService: CoursesService) {}
 
+  @Public()
   @ApiOperation({ summary: 'Get all courses with pagination and optional category filter' })
   @ApiResponse({ status: 200, description: 'List of courses retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'No courses found for the given criteria.' })
@@ -24,6 +28,7 @@ export class CoursesController {
     return this.CoursesService.findAll(page, limit, category);
   }
 
+  @Public()
   @ApiOperation({ summary: 'Search for courses by title or description' })
   @ApiResponse({ status: 200, description: 'Matching courses found.' })
   @ApiResponse({ status: 404, description: 'No courses found for the given search query.' })
@@ -32,6 +37,7 @@ export class CoursesController {
     return this.CoursesService.search(query);
   }
 
+  @Public()
   @ApiOperation({ summary: 'Get a course by its ID' })
   @ApiResponse({ status: 200, description: 'Course retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
@@ -40,6 +46,7 @@ export class CoursesController {
     return this.CoursesService.findOne(id);
   }
 
+  @Public()
   @ApiOperation({ summary: 'Find a course by its slug' })
   @ApiResponse({ status: 200, description: 'Course found by slug.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
@@ -48,6 +55,9 @@ export class CoursesController {
     return this.CoursesService.findBySlug(slug);
   }
 
+  // CREAZIONE/MODIFICA/CANCELLAZIONE CORSO
+
+  @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Create a new course' })
   @ApiResponse({ status: 201, description: 'Course created successfully.' })
   @ApiResponse({ status: 409, description: 'Course already exists.' })
@@ -56,6 +66,7 @@ export class CoursesController {
     return this.CoursesService.create(dto);
   }
 
+  @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Update an existing course' })
   @ApiResponse({ status: 200, description: 'Course updated successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
@@ -64,6 +75,7 @@ export class CoursesController {
     return this.CoursesService.update(id, dto);
   }
 
+  @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Delete a course' })
   @ApiResponse({ status: 200, description: 'Course deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
@@ -72,6 +84,7 @@ export class CoursesController {
     return this.CoursesService.delete(id);
   }
 
+  @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Restore a deactivated course' })
   @ApiResponse({ status: 200, description: 'Course restored successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })

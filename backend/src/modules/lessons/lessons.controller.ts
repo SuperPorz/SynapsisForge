@@ -24,6 +24,8 @@ import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { CreateLessonContentDto } from './dto/create-lesson-content.dto';
 import { UpdateLessonContentDto } from './dto/update-lesson-content.dto';
+import { UserRole } from 'src/common/entities/enum/users.enum';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('Lessons')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
@@ -54,6 +56,7 @@ export class LessonsController {
   // POST /courses/:courseId/lessons
   // Crea una nuova lezione nel corso (ruolo: instructor)
   // ---------------------------------------------------------------------------
+  @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Add a lesson to a course (instructor only)' })
   @ApiCreatedResponse({ description: 'Lesson created successfully.' })
   @ApiNotFoundResponse({ description: 'Course not found.' })
@@ -69,6 +72,7 @@ export class LessonsController {
   // PATCH /courses/:courseId/lessons/:id
   // Aggiorna i metadati di una lezione (ruolo: instructor)
   // ---------------------------------------------------------------------------
+  @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Update a lesson (instructor only)' })
   @ApiResponse({ status: 200, description: 'Lesson updated successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
@@ -86,6 +90,7 @@ export class LessonsController {
   // Soft delete di una lezione (ruolo: instructor o admin)
   // Risponde 204 No Content — nessun body da restituire.
   // ---------------------------------------------------------------------------
+  @Roles(UserRole.INSTRUCTOR, UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete a lesson (instructor or admin)' })
   @ApiNoContentResponse({ description: 'Lesson deleted successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
@@ -105,6 +110,7 @@ export class LessonsController {
   // definisce la struttura del corso (POST /lessons), poi arricchisce ogni
   // lezione con i contenuti multimediali (POST /lessons/:id/content).
   // ---------------------------------------------------------------------------
+  @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Create content for a lesson (instructor only)' })
   @ApiCreatedResponse({ description: 'Lesson content created successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
@@ -124,6 +130,7 @@ export class LessonsController {
   // PATCH /courses/:courseId/lessons/:id/content
   // Aggiorna parzialmente il documento MongoDB esistente (videoUrl, quiz, ecc.)
   // ---------------------------------------------------------------------------
+  @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Update content for a lesson (instructor only)' })
   @ApiResponse({
     status: 200,

@@ -12,6 +12,8 @@ import {
 import { AdminService } from './admin.service';
 import { FilterUsersDto } from './dto/filter-users.dto';
 import { CourseActionsDto } from './dto/course-actions.dto';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { UserRole } from 'src/common/entities/enum/users.enum';
 
 @ApiTags('Admin')
 @ApiUnauthorizedResponse({
@@ -20,9 +22,8 @@ import { CourseActionsDto } from './dto/course-actions.dto';
 @ApiForbiddenResponse({
   description: 'Accesso negato - Permessi admin insufficienti.',
 })
+@Roles(UserRole.ADMIN) // ← protegge tutti gli endpoint del controller
 @Controller('admin')
-// TODO: @UseGuards(JwtAuthGuard, RolesGuard)
-// TODO: @Roles('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

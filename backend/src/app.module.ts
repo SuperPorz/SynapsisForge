@@ -16,6 +16,7 @@ import { CertificatesModule } from './modules/certificates/certificates.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
   imports: [
@@ -68,7 +69,11 @@ import { APP_GUARD } from '@nestjs/core';
     },
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard,
+      useClass: JwtAuthGuard, // 1° — autentica e popola req.user
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard, // 2° — legge req.user e controlla il ruolo
     },
   ],
 })
