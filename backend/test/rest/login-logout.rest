@@ -1,0 +1,316 @@
+### ============================================================
+### SYNAPSIS — Auth Integration Tests
+### Prerequisiti: REST Client extension (VS Code)
+### Server: http://localhost:3000
+### ============================================================
+### FLUSSO COMPLETO:
+###  1. Register          → copia il token dalla console NestJS
+###  2. Verify Email      → ottieni accessToken
+###  3. Endpoint protetto → verifica con token
+###  4. Refresh           → rinnova access token via cookie
+###  5. Password Reset    → test flusso reset
+###  6. Logout            → invalida sessione
+###  7. Endpoint protetto → verifica 401 post-logout
+### ============================================================
+
+@baseUrl = http://localhost:3000
+
+### ── Variabili manuali ──────────────────────────────────────
+### Dopo lo step 2 (verifyEmail) copia qui l'accessToken
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjBjMGVlNy02OWQxLTQwYWItOWY0Zi03OTQwNTBkNjE0OGUiLCJlbWFpbCI6InN0dWRlbnRAc3luYXBzaXMudGVzdCIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzc4ODgwMjcxLCJleHAiOjE3Nzg4ODExNzF9.v8mRMya4zMY_EXgz8SOGoOF_rkLpp1AmLiPwnNyvRyw
+
+### Dopo il register, copia il token UUID dalla console NestJS:
+### [EMAIL] Link verifica: http://localhost:3000/auth/verify-email/<UUID>
+@verifyToken = c5d50c71-b184-4b10-9135-4d4620c61f46
+
+### Dopo /password/reset, copia il token dalla console:
+### [EMAIL] Link reset password: http://localhost:4200/reset-password?token=<UUID>
+@resetToken = 97d5af4c-5da5-435b-bc32-fb0fbb127772
+
+
+
+### ============================================================
+### 1. REGISTER
+### Atteso: 201 { message: "Registrazione completata..." }
+### Poi: controlla la console NestJS per il link di verifica
+### ============================================================
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "student@synapsis.test",
+  "password": "Password123!",
+  "first_name": "Mario",
+  "last_name": "Rossi",
+  "birth_date": "1995-06-15",
+  "country": "ITALY",
+  "role": "STUDENT"
+}
+
+###
+
+### ── Caso errore: email già in uso ──────────────────────────
+### Atteso: 409 { message: "Email già in uso" }
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "student@synapsis.test",
+  "password": "Password123!",
+  "first_name": "Mario",
+  "last_name": "Rossi",
+  "birth_date": "1995-06-15",
+  "country": "ITALY",
+  "role": "STUDENT"
+}
+
+###
+
+### ── Caso errore: payload invalido ─────────────────────────
+### Atteso: 400 (class-validator errors)
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "non-una-email",
+  "password": "123"
+}
+
+
+
+### ============================================================
+### 2. VERIFY EMAIL
+### Prima: copia @verifyToken dalla console NestJS (vedi sopra)
+### Atteso: 200 { accessToken: "eyJ..." }
+###         + cookie httpOnly: refresh_token (path=/auth/refresh)
+### Poi: copia accessToken in @accessToken sopra
+### ============================================================
+
+GET {{baseUrl}}/auth/verify-email/{{verifyToken}}
+
+###
+
+### ── Caso errore: token inesistente ─────────────────────────
+### Atteso: 400 "Token di verifica non valido o già utilizzato"
+
+GET {{baseUrl}}/auth/verify-email/00000000-0000-0000-0000-000000000000
+
+
+
+### ============================================================
+### 3. LOGIN (utente già verificato)
+### Atteso: 200 { accessToken: "eyJ..." }
+###         + Set-Cookie: refresh_token (httpOnly, path=/auth/refresh)
+### ============================================================
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "student@synapsis.test",
+  "password": "Password123!"
+}
+
+###
+
+### ── Caso errore: credenziali errate ────────────────────────
+### Atteso: 401 "Credenziali non valide"
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "student@synapsis.test",
+  "password": "PasswordSbagliata!"
+}
+
+###
+
+### ── Caso errore: account OAuth privo di password ───────────
+### Atteso: 401 "Account registrato tramite provider esterno..."
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "oauth-user@gmail.com",
+  "password": "qualsiasi"
+}
+
+
+
+### ============================================================
+### 4. ENDPOINT PROTETTO — GET /users/me
+### Prerequisito: @accessToken valorizzato (step 2 o 3)
+### Atteso: 200 { id, email, first_name, last_name, role, ... }
+### ============================================================
+
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ── Senza token ─────────────────────────────────────────────
+### Atteso: 401 Unauthorized
+
+GET {{baseUrl}}/users/me
+
+###
+
+### ── Token malformato ────────────────────────────────────────
+### Atteso: 401 Unauthorized
+
+GET {{baseUrl}}/users/me
+Authorization: Bearer token.non.valido
+
+
+
+### ============================================================
+### 5. REFRESH TOKEN
+### Il cookie refresh_token viene inviato automaticamente
+### se il client REST supporta i cookie (es. REST Client con
+### "rest-client.enableTelemetry": false e cookie jar attivo).
+### In alternativa: testa questo step da browser/Postman.
+### Atteso: 200 { accessToken: "eyJ..." (nuovo) }
+###         + nuovo Set-Cookie: refresh_token
+### ============================================================
+
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+###
+
+### ── Senza cookie ─────────────────────────────────────────────
+### Atteso: 401 Unauthorized
+
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+
+
+### ============================================================
+### 6. PASSWORD RESET — step 1: richiesta
+### Atteso: 200 { message: "Se questa email è registrata..." }
+###         (risposta identica sia per email esistente che non)
+### Poi: copia @resetToken dalla console NestJS
+### ============================================================
+
+POST {{baseUrl}}/auth/password/reset
+Content-Type: application/json
+
+{
+  "email": "student@synapsis.test"
+}
+
+###
+
+### ── Email inesistente (anti-enumeration) ────────────────────
+### Atteso: 200 (stesso messaggio — non deve rivelare se esiste)
+
+POST {{baseUrl}}/auth/password/reset
+Content-Type: application/json
+
+{
+  "email": "nonesiste@synapsis.test"
+}
+
+
+
+### ============================================================
+### 7. PASSWORD RESET — step 2: conferma
+### Prima: copia @resetToken dalla console (step 6)
+### Atteso: 200 { message: "Password aggiornata. Effettua nuovamente il login." }
+### ============================================================
+
+POST {{baseUrl}}/auth/password/confirm
+Content-Type: application/json
+
+{
+  "token": "{{resetToken}}",
+  "newPassword": "NuovaPassword123!"
+}
+
+###
+
+### ── Token scaduto / inesistente ─────────────────────────────
+### Atteso: 400 "Token non valido o già utilizzato"
+
+POST {{baseUrl}}/auth/password/confirm
+Content-Type: application/json
+
+{
+  "token": "00000000-0000-0000-0000-000000000000",
+  "newPassword": "NuovaPassword123!"
+}
+
+###
+
+### ── Verifica che il vecchio refresh_token sia invalidato ────
+### Dopo il confirm, il refresh_token_hash viene azzerato.
+### Atteso: 401 (sessione invalidata)
+
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+
+
+### ============================================================
+### 8. LOGIN con nuova password (verifica step 7 ok)
+### Atteso: 200 { accessToken }
+### ============================================================
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "student@synapsis.test",
+  "password": "NuovaPassword123!"
+}
+
+
+
+### ============================================================
+### 9. LOGOUT
+### Prerequisito: @accessToken valorizzato
+### Atteso: 200 { message: "Logout effettuato" }
+###         + cookie refresh_token rimosso
+### ============================================================
+
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ── Verifica sessione invalidata post-logout ─────────────────
+### Atteso: 401 (il refresh_token_hash è stato azzerato nel DB)
+
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+###
+
+### ── Verifica che il token JWT sia ancora sintatticamente valido
+### ma la sessione non permette più operazioni con side-effect.
+### Nota: l'accessToken rimane valido fino a scadenza (stateless JWT)
+### — questo è il comportamento atteso con questa architettura.
+### Atteso: 200 (il JWT non è blacklistato — by design)
+
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{accessToken}}
+
+
+
+### ============================================================
+### 10. OAUTH — solo redirect manuale (non testabile via .rest)
+### Apri nel browser:
+###   Google:  http://localhost:3000/auth/google
+###   GitHub:  http://localhost:3000/auth/github
+### Il callback redirige a:
+###   http://localhost:4200/oauth-test.html?provider=...&accessToken=...&refreshToken=...
+### Copia accessToken dall'URL e usalo negli step successivi.
+### ============================================================
+
+### (nessuna request REST — flusso browser-only)

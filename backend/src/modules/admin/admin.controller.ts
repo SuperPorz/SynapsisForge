@@ -8,6 +8,7 @@ import {
   ApiForbiddenResponse,
   ApiBadRequestResponse,
   ApiParam,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { FilterUsersDto } from './dto/filter-users.dto';
@@ -15,6 +16,7 @@ import { CourseActionsDto } from './dto/course-actions.dto';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/common/entities/enum/users.enum';
 
+@ApiBearerAuth()
 @ApiTags('Admin')
 @ApiUnauthorizedResponse({
   description: 'Non autorizzato - JWT mancante o invalido.',

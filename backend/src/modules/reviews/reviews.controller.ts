@@ -5,19 +5,18 @@ import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
+@ApiBearerAuth()
 @ApiTags('Reviews')
 @Controller('reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Post()
-  @ApiBearerAuth()
   create(@Body() dto: CreateReviewDto) {
     return this.reviewsService.create(dto);
   }
 
   @Patch(':id')
-  @ApiBearerAuth()
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateReviewDto,
@@ -28,7 +27,6 @@ export class ReviewsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBearerAuth()
   remove(
     @Param('id', ParseUUIDPipe) id: string,
     @Request() req: { user: { sub: string } },

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { ApiBadRequestResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid.pipe';
 import { ParsePositiveIntPipe } from 'src/common/pipes/parse-positive-int.pipe';
 import { UserRole } from 'src/common/entities/enum/users.enum';
@@ -57,6 +57,7 @@ export class CoursesController {
 
   // CREAZIONE/MODIFICA/CANCELLAZIONE CORSO
 
+  @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Create a new course' })
   @ApiResponse({ status: 201, description: 'Course created successfully.' })
@@ -66,6 +67,7 @@ export class CoursesController {
     return this.CoursesService.create(dto);
   }
 
+  @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Update an existing course' })
   @ApiResponse({ status: 200, description: 'Course updated successfully.' })
@@ -75,6 +77,7 @@ export class CoursesController {
     return this.CoursesService.update(id, dto);
   }
 
+  @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Delete a course' })
   @ApiResponse({ status: 200, description: 'Course deleted successfully.' })
@@ -84,6 +87,7 @@ export class CoursesController {
     return this.CoursesService.delete(id);
   }
 
+  @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Restore a deactivated course' })
   @ApiResponse({ status: 200, description: 'Course restored successfully.' })

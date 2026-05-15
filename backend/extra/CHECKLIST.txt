@@ -6,12 +6,12 @@ Legenda: [ ] da fare  [x] fatto  [-] non applicabile per ora
 AUTH MODULE
 ------------------------------------------
 [x] POST /auth/register — crea utente con password hashata (bcrypt)
-[ ] GET  /auth/verify-email/:token — attiva account dopo registrazione
+[x] GET  /auth/verify-email/:token — attiva account dopo registrazione
 [x] POST /auth/login — verifica credenziali, emette access + refresh token
 [x] POST /auth/refresh — emette nuovo access token da cookie refresh
 [x] POST /auth/logout — invalida refresh token (Redis o DB)
-[ ] POST /auth/password/reset — invia email con token reset
-[ ] POST /auth/password/confirm — aggiorna password con token
+[x] POST /auth/password/reset — invia email con token reset
+[x] POST /auth/password/confirm — aggiorna password con token
 [x] GET  /auth/google — redirect OAuth2 Google
 [x] GET  /auth/google/callback — callback Google, crea utente se non esiste
 [x] GET  /auth/github — redirect OAuth2 GitHub
@@ -131,7 +131,7 @@ INFRASTRUTTURA & TRASVERSALI
 [x] HttpExceptionFilter globale — standardizza tutti gli errori inclusi TypeORM
 [x] ParseUuidPipe custom — valida UUID v4 su ogni :id param
 [x] ParsePositiveIntPipe — per params di paginazione
-[ ] RolesGuard + decoratore @Roles() — RBAC su ogni endpoint protetto
+[x] RolesGuard + decoratore @Roles() — RBAC su ogni endpoint protetto
 [x] JwtAuthGuard globale + decoratore @Public() per endpoint pubblici
 [x] Throttler globale (rate limiting per IP)
 [ ] Redis store

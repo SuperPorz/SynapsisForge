@@ -12,6 +12,7 @@ import {
 import { LessonsService } from './lessons.service';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -38,8 +39,8 @@ export class LessonsController {
   // ---------------------------------------------------------------------------
   // GET /courses/:courseId/lessons/:id
   // Dettaglio lezione: dati PostgreSQL + contenuto MongoDB (video, quiz, ecc.)
-  // [x] già presente, logica spostata nel service
   // ---------------------------------------------------------------------------
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get lesson with content by lesson ID' })
   @ApiResponse({ status: 200, description: 'Lesson retrieved successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })

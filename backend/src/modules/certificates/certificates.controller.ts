@@ -21,6 +21,7 @@ export class CertificatesController {
   }
 
   // ─── GET /certificates/:id ────────────────────────────────────────────────
+  @ApiBearerAuth()
   @Get(':id')
   @ApiOperation({ summary: 'Recupera un certificato per ID interno' })
   @ApiParam({ name: 'id', description: 'UUID del certificato', type: String })
@@ -31,6 +32,7 @@ export class CertificatesController {
   }
 
   // ─── PATCH /certificates/:id/revoke ──────────────────────────────────────
+  @ApiBearerAuth()
   @Patch(':id/revoke')
   @ApiOperation({ summary: 'Revoca un certificato' })
   @ApiParam({ name: 'id', description: 'UUID del certificato', type: String })

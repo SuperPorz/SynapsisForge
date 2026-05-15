@@ -58,6 +58,7 @@ export class EnrollmentsController {
   }
 
   // ─── PATCH /enrollments/:id/progress ─────────────────────────────────────
+  @ApiBearerAuth()
   @Patch(':id/progress')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Aggiorna il progresso di una lezione completata' })
