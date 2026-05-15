@@ -7,6 +7,7 @@ import { UserProviders } from 'src/common/entities/user_providers.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
+import { StudentProfile } from 'src/common/entities/StudentProfile.entity';
 
 // Tipo dedicato al flusso OAuth — email nullable by design.
 // Non riusa CreateUserDto perché quel DTO ha email @IsEmail() obbligatoria
@@ -25,6 +26,9 @@ export class UsersService {
 
     @InjectRepository(UserProviders)
     private userProvidersRepository: Repository<UserProviders>,
+
+    @InjectRepository(StudentProfile)
+    private studentProfileRepository: Repository<StudentProfile>,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -79,7 +83,15 @@ export class UsersService {
   // TypeScript sa che email è string e password è string: nessun nullable qui.
   async create(dto: CreateUserDto & { password: string }): Promise<User> {
     const user = this.usersRepository.create(dto);
-    return this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+
+    // Crea automaticamente il profilo student
+    const studentProfile = this.studentProfileRepository.create({
+      userId: savedUser.id,
+    });
+    await this.studentProfileRepository.save(studentProfile);
+
+    return savedUser;
   }
 
   // Usato SOLO dal flusso OAuth (Google, GitHub, futuri provider).
@@ -90,7 +102,15 @@ export class UsersService {
       ...data,
       password: null,
     });
-    return this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+
+    // Crea automaticamente il profilo student
+    const studentProfile = this.studentProfileRepository.create({
+      userId: savedUser.id,
+    });
+    await this.studentProfileRepository.save(studentProfile);
+
+    return savedUser;
   }
 
   // ---------------------------------------------------------------------------

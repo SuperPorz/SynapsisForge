@@ -1,10 +1,10 @@
 ### Courses – variabili
 @baseUrl        = http://localhost:3000
-@courseId       = 31f8fd18-0dad-4190-9613-49750190e882
-@slug           = nestjs-avanzato
+@courseId       = b69b0a98-c86c-460f-bb02-64f4697415f0
+@slug           = react--typescript
 @instructorId   = 68f32c02-23a0-4352-85e0-a9a93b79403f
 @categoryId     = bd9690ff-20a3-43bc-90f2-4f7672ad0694
-@instructorToken = INSTRUCTOR_JWT_TOKEN
+@instructorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2M2NkOTkyZC05OTRiLTRjMjEtYWQyOS0xMzlmODNmZjA3ZGUiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3Nzg4NjI5NzAsImV4cCI6MTc3ODg2Mzg3MH0.Gllj8RUDPTkrThFTUCKyuClxBPHHYAcd9_C4hHchqbw
 @adminToken     = ADMIN_JWT_TOKEN
 
 # ─── GET (pubblici) ───────────────────────────────────────────────────

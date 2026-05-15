@@ -4,9 +4,10 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from '../../common/entities/users.entity';
 import { UserProviders } from 'src/common/entities/user_providers.entity';
+import { StudentProfile } from 'src/common/entities/StudentProfile.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserProviders])],
+  imports: [TypeOrmModule.forFeature([User, UserProviders, StudentProfile])],
   controllers: [UsersController],
   providers: [UsersService],
   // UsersService viene esportato perché AuthModule ne ha bisogno

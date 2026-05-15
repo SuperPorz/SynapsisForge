@@ -1,6 +1,15 @@
 ### Users – variabili
 @baseUrl      = http://localhost:3000
-@studentToken = STUDENT_JWT_TOKEN
+@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2M2NkOTkyZC05OTRiLTRjMjEtYWQyOS0xMzlmODNmZjA3ZGUiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3Nzg4NjI5NzAsImV4cCI6MTc3ODg2Mzg3MH0.Gllj8RUDPTkrThFTUCKyuClxBPHHYAcd9_C4hHchqbw
+
+### 0. Login – ottieni access token (alice dupont)
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "Password123!"
+}
 
 # NOTA: UsersController espone solo GET /users/me e PATCH /users/me.
 # L'userId viene estratto dal JWT — nessun :id nel path per sicurezza.

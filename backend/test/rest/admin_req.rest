@@ -1,7 +1,7 @@
 ### Admin – variabili
 @baseUrl    = http://localhost:3000
 @adminToken = ADMIN_JWT_TOKEN
-@courseId   = 31f8fd18-0dad-4190-9613-49750190e882
+@courseId   = b69b0a98-c86c-460f-bb02-64f4697415f0
 
 # FIX: route corretta è GET /admin/users (non GET /admin)
 # FIX: aggiungere Authorization su tutte le route

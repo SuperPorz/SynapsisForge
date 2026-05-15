@@ -21,12 +21,12 @@
 @instructorId  = 68f32c02-23a0-4352-85e0-a9a93b79403f
 
 # ── Courses ─────────────────────────────────────────────────
-@courseId      = 31f8fd18-0dad-4190-9613-49750190e882
+@courseId      = b69b0a98-c86c-460f-bb02-64f4697415f0
 @categoryId    = bd9690ff-20a3-43bc-90f2-4f7672ad0694
-@slug          = nestjs-avanzato
+@slug          = react--typescript
 
 # ── Lessons ─────────────────────────────────────────────────
-@lessonId      = 2f8d7e82-353d-471f-985a-ab28845d619e
+@lessonId      = 6f447f07-71aa-4ee9-a4aa-84c902814d65
 
 # ── Enrollments ─────────────────────────────────────────────
 @enrollmentId  = 52cd3914-1425-4296-8c4e-c6ce98899f53

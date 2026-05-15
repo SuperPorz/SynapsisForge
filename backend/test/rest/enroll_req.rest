@@ -2,8 +2,8 @@
 @baseUrl      = http://localhost:3000
 @enrollmentId = 52cd3914-1425-4296-8c4e-c6ce98899f53
 @studentId    = 63cd992d-994b-4c21-ad29-139f83ff07de
-@courseId     = 31f8fd18-0dad-4190-9613-49750190e882
-@lessonId     = 2f8d7e82-353d-471f-985a-ab28845d619e
+@courseId     = b69b0a98-c86c-460f-bb02-64f4697415f0
+@lessonId     = 6f447f07-71aa-4ee9-a4aa-84c902814d65
 @studentToken = STUDENT_JWT_TOKEN
 
 # ─── POST /enrollments ────────────────────────────────────────────────
