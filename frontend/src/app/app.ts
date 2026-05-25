@@ -1,10 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ApiService } from './core/services/api.service';
+import { SignalCounter } from './signal-counter/signal-counter';
+import { ObservableHttp } from './observable-http/observable-http';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, SignalCounter, ObservableHttp],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
