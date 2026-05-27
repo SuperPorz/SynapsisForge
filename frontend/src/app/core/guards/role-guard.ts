@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '../services/auth';
+import { AuthService } from '../services/auth.service';
 
 export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
@@ -13,7 +13,7 @@ export const roleGuard: CanActivateFn = (route, state) => {
   
   //step 2: leggo i ruoli richiesti dalla route e quelli dell'utente
   const requiredRoles = route.data['roles'];
-  const userRole = authService.getRole();
+  const userRole = authService.role();
 
   //step 3: verifico se l'utente ha almeno uno dei ruoli richiesti, se non li ha, reindirizzo alla pagina di accesso negato
   if (requiredRoles && !userRole) {
