@@ -35,7 +35,7 @@ export const routes: Routes = [
       import('./features/courses/course-detail/course-detail').then((m) => m.CourseDetail),
   },
 
-  // ROTTE DASHBOARD
+  /////////////////////// ROTTE DASHBOARD /////////////////////////////////
 
   {
     path: 'dashboard',

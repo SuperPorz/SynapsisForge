@@ -54,12 +54,10 @@ export class AuthService {
   // poi pulisce lo stato locale
   // ─────────────────────────────────────────────────────────────────────────────
   logout(): void {
-    this.http
-      .post(`${this.API}/auth/logout`, {}, { withCredentials: true })
-      .subscribe({
-        complete: () => this.clearSessionAndRedirect(),
-        error: () => this.clearSessionAndRedirect(), // pulisce anche in caso di errore
-      });
+    this.http.post(`${this.API}/auth/logout`, {}, { withCredentials: true }).subscribe({
+      complete: () => this.clearSessionAndRedirect(),
+      error: () => this.clearSessionAndRedirect(), // pulisce anche in caso di errore
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -156,4 +154,19 @@ export class AuthService {
       return null;
     }
   }
+
+  /* 
+  fake jwt
+
+  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAiLCJlbWFpbCI6InRlc3RAc3luYXBzaXMuY29tIiwicm9sZSI6Imluc3RydWN0b3IiLCJleHAiOjk5OTk5OTk5OTl9.LwYkVAibXIb58CEibBOVgS7sG2_OO7CGKFZhcKEy-UM
+
+  {
+    "sub": "123e4567-e89b-12d3-a456-426614174000",
+    "email": "test@synapsis.com",
+    "role": "instructor",
+    "exp": 9999999999
+  }
+
+  localStorage.setItem('access_token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAiLCJlbWFpbCI6InRlc3RAc3luYXBzaXMuY29tIiwicm9sZSI6Imluc3RydWN0b3IiLCJleHAiOjk5OTk5OTk5OTl9.LwYkVAibXIb58CEibBOVgS7sG2_OO7CGKFZhcKEy-UM')
+  */
 }
