@@ -1,9 +1,153 @@
-<p>register works!</p>
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-10">
+  <div class="w-full max-w-lg bg-white rounded-2xl shadow-md p-8">
 
-<input type="text" placeholder="username">
-<input type="password" placeholder="password">
-<input type="date" placeholder="date of birth">
-<button>Register</button>
-<hr>
+    <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Crea un account</h1>
 
-<p>Already have an account? <a routerLink="/auth/login">Login here</a></p>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="space-y-4">
+
+      <!-- Nome e Cognome -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+          <input
+            formControlName="first_name"
+            type="text"
+            placeholder="Mario"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          @if (f.first_name.invalid && f.first_name.touched) {
+            <p class="text-red-500 text-xs mt-1">Minimo 2 caratteri.</p>
+          }
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Cognome</label>
+          <input
+            formControlName="last_name"
+            type="text"
+            placeholder="Rossi"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          @if (f.last_name.invalid && f.last_name.touched) {
+            <p class="text-red-500 text-xs mt-1">Minimo 2 caratteri.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="mario@example.com"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        @if (f.email.invalid && f.email.touched) {
+          <p class="text-red-500 text-xs mt-1">Inserisci un'email valida.</p>
+        }
+      </div>
+
+      <!-- Data di nascita -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Data di nascita</label>
+        <input
+          formControlName="birth_date"
+          type="date"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        @if (f.birth_date.invalid && f.birth_date.touched) {
+          <p class="text-red-500 text-xs mt-1">Data obbligatoria.</p>
+        }
+      </div>
+
+      <!-- Paese -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Paese</label>
+        <select
+          formControlName="country"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="" disabled>Seleziona un paese</option>
+          @for (c of countries; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+        @if (f.country.invalid && f.country.touched) {
+          <p class="text-red-500 text-xs mt-1">Paese obbligatorio.</p>
+        }
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input
+          formControlName="password"
+          type="password"
+          placeholder="••••••••"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        @if (f.password.invalid && f.password.touched) {
+          <p class="text-red-500 text-xs mt-1">Minimo 8 caratteri.</p>
+        }
+      </div>
+
+      <!-- Conferma Password -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Conferma password</label>
+        <input
+          formControlName="confirmPassword"
+          type="password"
+          placeholder="••••••••"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        @if (passwordMismatch) {
+          <p class="text-red-500 text-xs mt-1">Le password non coincidono.</p>
+        }
+      </div>
+
+      <!-- Submit -->
+      <button
+        type="submit"
+        [disabled]="form.invalid"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-2 rounded-lg transition"
+      >
+        Registrati
+      </button>
+
+      <!-- Divisore OAuth -->
+      <div class="relative my-4">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-200"></div>
+        </div>
+        <div class="relative flex justify-center text-xs text-gray-400">
+          <span class="bg-white px-2">oppure continua con</span>
+        </div>
+      </div>
+
+      <!-- OAuth Buttons -->
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          (click)="navigateToGoogle()"
+          class="flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+        >
+          Google
+        </button>
+        <button
+          type="button"
+          (click)="navigateToGithub()"
+          class="flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+        >
+          GitHub
+        </button>
+      </div>
+
+      <!-- Link login -->
+      <p class="text-center text-sm text-gray-500 mt-4">
+        Hai già un account?
+        <a routerLink="/login" class="text-indigo-600 font-medium hover:underline">Accedi</a>
+      </p>
+
+    </form>
+  </div>
+</div>
