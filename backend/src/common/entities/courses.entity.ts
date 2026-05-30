@@ -44,4 +44,7 @@ export class Course {
 
   @DeleteDateColumn()
   deleted_at?: Date;
+
+  @Column({ default: false })
+  featured?: boolean;
 }

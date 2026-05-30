@@ -1,14 +1,14 @@
 import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
-import { Homepage } from './features/homepage/homepage';
 import { Register } from './features/auth/register/register';
 import { roleGuard } from './core/guards/role-guard';
 import { authGuard } from './core/guards/auth-guard';
+import { Home } from './features/home/home';
 
 export const routes: Routes = [
   {
     path: '',
-    component: Homepage,
+    component: Home,
   },
   {
     path: 'login',

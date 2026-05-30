@@ -1,0 +1,32 @@
+<!-- STATO: LOADING — 3 skeleton card -->
+@if (isLoading) {
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    @for (_ of [1, 2, 3]; track $index) {
+      <div class="w-full bg-neutral-primary-soft p-6 border border-default rounded-base shadow-xs animate-pulse">
+        <div class="w-full h-48 bg-neutral-secondary-soft rounded-base mb-6"></div>
+        <div class="h-4 bg-neutral-secondary-soft rounded w-3/4 mb-3"></div>
+        <div class="h-4 bg-neutral-secondary-soft rounded w-1/2 mb-6"></div>
+        <div class="flex items-center justify-between">
+          <div class="h-8 bg-neutral-secondary-soft rounded w-20"></div>
+          <div class="h-9 bg-neutral-secondary-soft rounded w-28"></div>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- STATO: ERRORE -->
+@else if (error) {
+  <div class="rounded-base border border-error-subtle bg-error-softer p-4 text-fg-error text-sm">
+    {{ error }}
+  </div>
+}
+
+<!-- STATO: DATI -->
+@else {
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    @for (course of courses; track course.id) {
+      <app-course-card [course]="course" />
+    }
+  </div>
+}

@@ -1,0 +1,11 @@
+<div>
+    <h3>Platform Stats</h3>
+    <div class="grid grid-cols-3">
+        @for (stat of stats; track stat.id) {
+            <a href="#" class="bg-neutral-primary-soft block max-w-sm p-6 border border-default rounded-base shadow-xs hover:bg-neutral-secondary-medium">
+                <h5 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">{{ stat.value }}</h5>
+                <p class="text-body">{{ stat.label }}</p>
+            </a>
+        }
+    </div>
+</div>

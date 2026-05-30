@@ -13,15 +13,21 @@ export class CoursesService {
     private readonly coursesRepo: Repository<Course>,
   ) {}
 
-  async findAll(page: number, limit: number, category?: string) {
+  //prettier-ignore
+  async findAll(page: number, limit: number, category?: string, featured?: boolean) {
     const where: FindOptionsWhere<Course> = {};
+
     if (category) where.category = { name: category };
-    return await this.coursesRepo.findAndCount({
+    if (featured !== undefined) where.featured = featured;
+
+    const [data, total] = await this.coursesRepo.findAndCount({
       where,
       skip: (page - 1) * limit,
       take: limit,
-      relations: ['instructor', 'category'],
+      relations: ['instructor', 'instructor.user', 'category'],
     });
+
+    return { data, total };
   }
 
   async findOne(id: string): Promise<Course> {

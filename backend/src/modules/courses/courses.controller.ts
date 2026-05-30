@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, ParseBoolPipe, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -8,6 +8,8 @@ import { ParsePositiveIntPipe } from 'src/common/pipes/parse-positive-int.pipe';
 import { UserRole } from 'src/common/entities/enum/users.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
+import { CourseResponseDto } from './dto/response-course.dto';
+import { plainToInstance } from 'class-transformer';
 
 @ApiTags('Courses')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
@@ -19,13 +21,20 @@ export class CoursesController {
   @ApiOperation({ summary: 'Get all courses with pagination and optional category filter' })
   @ApiResponse({ status: 200, description: 'List of courses retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'No courses found for the given criteria.' })
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  findAll(
+  async findAll(
     @Query('page', ParsePositiveIntPipe) page: number = 1,
     @Query('limit', ParsePositiveIntPipe) limit: number = 10,
     @Query('category') category?: string,
+    @Query('featured', new ParseBoolPipe({ optional: true })) featured?: boolean,
   ) {
-    return this.CoursesService.findAll(page, limit, category);
+    const { data, total } = await this.CoursesService.findAll(page, limit, category, featured);
+
+    return {
+      data: plainToInstance(CourseResponseDto, data, { excludeExtraneousValues: true }),
+      total,
+    };
   }
 
   @Public()
