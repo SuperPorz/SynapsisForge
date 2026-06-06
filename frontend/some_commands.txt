@@ -1,0 +1,10 @@
+bash per lista files:
+
+find . -not -path '*/.*' | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-- \1/" > directory_list.txt
+
+
+
+
+powershell per lista files:
+
+tree /F /A > directory_list.txt

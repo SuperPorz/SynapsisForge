@@ -41,6 +41,7 @@ export class CourseResponseDto {
   @Expose()
   description: string;
 
+  @Type(() => Number)
   @Expose()
   price: number;
 

@@ -1,1 +1,257 @@
-<p>course-list works!</p>
+<div class="min-h-screen bg-page">
+
+  <!-- Page Header -->
+  <div class="border-b border-default bg-surface">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold text-heading mb-1">Esplora i corsi</h1>
+      <p class="text-muted text-sm">Scopri il catalogo completo e inizia a imparare oggi</p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+
+      <!-- ═══════════════════════════════════════════
+           SIDEBAR FILTRI
+      ════════════════════════════════════════════ -->
+      <aside class="w-full lg:w-64 shrink-0">
+        <div class="bg-surface border border-default rounded-base p-5 lg:sticky lg:top-6">
+
+          <!-- Header sidebar -->
+          <div class="flex items-center justify-between mb-5">
+            <span class="text-sm font-semibold text-heading">Filtri</span>
+            <button
+              type="button"
+              class="text-xs text-fg-brand hover:text-fg-brand-strong font-medium transition-colors"
+            >
+              Azzera tutto
+            </button>
+          </div>
+
+          <!-- Filtro: Categoria -->
+          <div class="mb-6">
+            <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Categoria</p>
+            <div class="space-y-2">
+              @for (category of categories; track category.id) {
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    class="w-4 h-4 rounded accent-brand cursor-pointer"
+                    [value]="category.id"
+                  />
+                  <span class="text-sm text-body group-hover:text-heading transition-colors">
+                    {{ category.name }}
+                  </span>
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-default mb-6"></div>
+
+          <!-- Filtro: Livello -->
+          <div class="mb-6">
+            <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Livello</p>
+            <div class="space-y-2">
+              @for (level of levels; track level.value) {
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="level"
+                    class="w-4 h-4 accent-brand cursor-pointer"
+                    [value]="level.value"
+                  />
+                  <span class="text-sm text-body group-hover:text-heading transition-colors">
+                    {{ level.label }}
+                  </span>
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-default mb-6"></div>
+
+          <!-- Filtro: Prezzo -->
+          <div>
+            <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Prezzo</p>
+            <div class="space-y-2">
+              @for (range of priceRanges; track range.label) {
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="price"
+                    class="w-4 h-4 accent-brand cursor-pointer"
+                    [value]="range.value"
+                  />
+                  <span class="text-sm text-body group-hover:text-heading transition-colors">
+                    {{ range.label }}
+                  </span>
+                </label>
+              }
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- ═══════════════════════════════════════════
+           CONTENUTO PRINCIPALE
+      ════════════════════════════════════════════ -->
+      <div class="flex-1 min-w-0">
+
+        <!-- Barra ricerca + contatore risultati -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+
+          <!-- Search input -->
+          <div class="relative flex-1">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <!-- Icona lente o spinner a seconda dello stato -->
+              @if (isSearching()) {
+                <svg class="w-4 h-4 text-muted animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              } @else {
+                <svg class="w-4 h-4 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+              }
+            </div>
+            <input
+              type="text"
+              [formControl]="searchControl"
+              placeholder="Cerca corsi, argomenti, istruttori..."
+              class="w-full pl-9 pr-9 py-2.5 text-sm bg-surface border border-default rounded-base text-body placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-brand-subtle focus:border-brand-subtle transition-colors"
+            />
+            <!-- Clear button -->
+            @if (searchControl.value) {
+              <button
+                type="button"
+                (click)="clearSearch()"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted hover:text-heading transition-colors"
+              >
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            }
+          </div>
+
+          <!-- Contatore risultati -->
+          @if (!isLoading()) {
+            <div class="flex items-center shrink-0">
+              <span class="text-sm text-muted">
+                <span class="font-semibold text-heading">{{ total() }}</span> corsi trovati
+              </span>
+            </div>
+          }
+
+        </div>
+
+        <!-- ── STATO: LOADING ── -->
+        @if (isLoading()) {
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+              <div class="w-full bg-neutral-primary-soft p-6 border border-default rounded-base shadow-xs animate-pulse">
+                <div class="w-full h-48 bg-neutral-secondary-soft rounded-base mb-6"></div>
+                <div class="h-4 bg-neutral-secondary-soft rounded w-3/4 mb-3"></div>
+                <div class="h-4 bg-neutral-secondary-soft rounded w-1/2 mb-6"></div>
+                <div class="flex items-center justify-between">
+                  <div class="h-8 bg-neutral-secondary-soft rounded w-20"></div>
+                  <div class="h-9 bg-neutral-secondary-soft rounded w-28"></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ── STATO: ERRORE ── -->
+        @else if (error()) {
+          <div class="rounded-base border border-error-subtle bg-error-softer p-4 text-fg-error text-sm">
+            {{ error() }}
+          </div>
+        }
+
+        <!-- ── STATO: NESSUN RISULTATO ── -->
+        @else if (courses.length === 0) {
+          <div class="flex flex-col items-center justify-center py-20 text-center">
+            <svg class="w-12 h-12 text-muted mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <p class="text-heading font-semibold mb-1">Nessun corso trovato</p>
+            <p class="text-muted text-sm">Prova a modificare i filtri o la ricerca</p>
+            <button
+              type="button"
+              (click)="resetFilters()"
+              class="mt-4 text-sm text-fg-brand hover:text-fg-brand-strong font-medium transition-colors"
+            >
+              Azzera tutti i filtri
+            </button>
+          </div>
+        }
+
+        <!-- ── STATO: GRIGLIA CORSI ── -->
+        @else {
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            @for (course of courses(); track course.id) {
+              <app-course-card [course]="course" />
+            }
+          </div>
+
+          <!-- Paginazione numerica -->
+          @if (totalPages() > 1) {
+            <div class="flex items-center justify-center gap-1 mt-10">
+
+              <!-- Precedente -->
+              <button
+                type="button"
+                [disabled]="currentPage() === 1"
+                (click)="goToPage(currentPage() - 1)"
+                class="inline-flex items-center justify-center w-9 h-9 rounded-base border border-default text-muted hover:text-heading hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+
+              <!-- Pagine numerate -->
+              @for (page of visiblePages(); track page) {
+                @if (page === -1) {
+                  <!-- Ellipsis -->
+                  <span class="inline-flex items-center justify-center w-9 h-9 text-muted text-sm">…</span>
+                } @else {
+                  <button
+                    type="button"
+                    (click)="goToPage(page)"
+                    [class]="page === currentPage()
+                      ? 'inline-flex items-center justify-center w-9 h-9 rounded-base text-sm font-semibold bg-brand text-white border border-brand shadow-xs'
+                      : 'inline-flex items-center justify-center w-9 h-9 rounded-base text-sm text-body border border-default hover:bg-surface-hover hover:text-heading transition-colors'"
+                  >
+                    {{ page }}
+                  </button>
+                }
+              }
+
+              <!-- Successivo -->
+              <button
+                type="button"
+                [disabled]="currentPage === totalPages"
+                (click)="goToPage(currentPage() + 1)"
+                class="inline-flex items-center justify-center w-9 h-9 rounded-base border border-default text-muted hover:text-heading hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+
+            </div>
+          }
+        }
+
+      </div>
+    </div>
+  </div>
+
+</div>

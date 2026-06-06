@@ -10,6 +10,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { CourseResponseDto } from './dto/response-course.dto';
 import { plainToInstance } from 'class-transformer';
+import { SearchFilterDto } from './dto/search-filter.dto';
 
 @ApiTags('Courses')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
@@ -105,5 +106,21 @@ export class CoursesController {
   @Patch(':id/restore')
   restore(@Param('id', ParseUuidPipe) id: string) {
     return this.CoursesService.restore(id);
+  }
+
+  @Public()
+  @ApiOperation({ summary: 'Get all available course categories' })
+  @ApiResponse({ status: 200, description: 'Categories retrieved successfully.' })
+  @Get('categories')
+  getCategories() {
+    return this.CoursesService.getCategories();
+  }
+
+  @ApiOperation({ summary: 'Search for courses with filters' })
+  @ApiResponse({ status: 200, description: 'Filtered courses found.' })
+  @ApiResponse({ status: 404, description: 'No courses found for the given filters.' })
+  @Get('search/filter')
+  searchFilter(@Query() filters: SearchFilterDto) {
+    return this.CoursesService.searchFilter(filters);
   }
 }

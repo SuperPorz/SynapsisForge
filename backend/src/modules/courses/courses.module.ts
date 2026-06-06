@@ -3,9 +3,10 @@ import { CoursesController } from './courses.controller';
 import { Course } from 'src/common/entities/courses.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoursesService } from './courses.service';
+import { Category } from 'src/common/entities/categories.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course])], // serve per iniettare il repository di Course nei service di questo modulo
+  imports: [TypeOrmModule.forFeature([Course, Category])], // serve per iniettare il repository di Course e Category nei service di questo modulo
   controllers: [CoursesController],
   providers: [CoursesService],
 })

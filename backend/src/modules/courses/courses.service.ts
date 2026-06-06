@@ -5,12 +5,16 @@ import { Course } from 'src/common/entities/courses.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { Category } from 'src/common/entities/categories.entity';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private readonly coursesRepo: Repository<Course>,
+
+    @InjectRepository(Category)
+    private readonly categoriesRepo: Repository<Category>,
   ) {}
 
   //prettier-ignore
@@ -81,13 +85,19 @@ export class CoursesService {
   }
 
   async search(query: string): Promise<Course[]> {
-    return await this.coursesRepo
-      .createQueryBuilder('course') //alias della tabella
+    const courses = await this.coursesRepo
+      .createQueryBuilder('course')
       .leftJoinAndSelect('course.instructor', 'instructor')
       .leftJoinAndSelect('course.category', 'category')
-      .where('course.title ILIKE :q', { q: `%${query}%` }) // ILIKE è il LIKE case-insensitive di PostgreSQL, :q (short per query) è un parametro bindato — protegge da SQL injection
+      .where('course.title ILIKE :q', { q: `%${query}%` })
       .orWhere('course.description ILIKE :q', { q: `%${query}%` })
       .getMany();
+
+    if (courses.length === 0) {
+      throw new NotFoundException(`No courses found for query "${query}"`);
+    }
+
+    return courses;
   }
 
   async restore(id: string): Promise<{ message: string }> {
@@ -102,5 +112,38 @@ export class CoursesService {
     return {
       message: `Course "${course.title}" has been restored successfully`,
     };
+  }
+
+  async getCategories(): Promise<Category[]> {
+    return await this.categoriesRepo.find();
+  }
+
+  async searchFilter(filters: { q?: string; minPrice?: number; maxPrice?: number }): Promise<Course[]> {
+    const qb = this.coursesRepo
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.category', 'category');
+
+    if (filters.q) {
+      qb.andWhere(
+        '(course.title ILIKE :q OR course.description ILIKE :q)',
+        { q: `%${filters.q}%` }
+      );
+    }
+
+    if (filters.minPrice !== undefined) {
+      qb.andWhere('course.price >= :minPrice', { minPrice: filters.minPrice });
+    }
+
+    if (filters.maxPrice !== undefined) {
+      qb.andWhere('course.price <= :maxPrice', { maxPrice: filters.maxPrice });
+    }
+
+    const courses = await qb.getMany();
+
+    if (courses.length === 0) {
+      throw new NotFoundException('No courses found for the given filters');
+    }
+
+    return courses;
   }
 }

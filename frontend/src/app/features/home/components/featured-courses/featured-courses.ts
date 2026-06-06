@@ -2,11 +2,12 @@ import { Component, inject, OnInit, DestroyRef, ChangeDetectorRef } from '@angul
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CourseService } from '../../../../core/services/courses.service';
 import { Course } from '../../../../core/models/course-model';
-import { CourseCard } from '../course-card/course-card';
+import { CourseCard } from '../../../../shared/components/course-card/course-card';
+import { FEATURED_COURSES_LIMIT } from '../../../../core/costants/pagination';
 
 @Component({
   selector: 'app-featured-courses',
-  imports: [CourseCard ],
+  imports: [ CourseCard ],
   templateUrl: './featured-courses.html',
   styleUrl: './featured-courses.css',
 })
@@ -17,25 +18,23 @@ export class FeaturedCourses implements OnInit {
 
   private coursesService = inject(CourseService);
   private destroyRef = inject(DestroyRef);
-  private changeDetectorRef = inject(ChangeDetectorRef)
+  private changeDetectorRef = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.coursesService
-      .getFeaturedCourses()
+      .getCourses({ featured: true, page: 1, limit: FEATURED_COURSES_LIMIT })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           this.courses = response.data.data;
           this.isLoading = false;
-          this.changeDetectorRef.detectChanges()
-          console.log(this.isLoading);
-
+          this.changeDetectorRef.detectChanges();
         },
         error: (err) => {
           console.error(err);
           this.error = 'Impossibile caricare i corsi in evidenza.';
           this.isLoading = false;
-          this.changeDetectorRef.detectChanges()
+          this.changeDetectorRef.detectChanges();
         },
       });
   }
