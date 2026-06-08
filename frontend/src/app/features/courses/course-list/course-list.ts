@@ -1,14 +1,7 @@
-import {
-  Component,
-  OnInit,
-  DestroyRef,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
+//prettier-ignore
+import { Component, OnInit, DestroyRef, inject, signal, computed, } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -52,15 +45,6 @@ const PRICE_RANGES: PriceRangeOption[] = [
   { value: '60+', label: 'Oltre $60' },
 ];
 
-// Categorie hardcodate finché non c'è un endpoint dedicato
-const CATEGORIES = [
-  { id: 'web-development', name: 'Web Development' },
-  { id: 'data-science', name: 'Data Science' },
-  { id: 'mobile', name: 'Mobile' },
-  { id: 'devops', name: 'DevOps' },
-  { id: 'design', name: 'Design' },
-];
-
 @Component({
   selector: 'app-course-list',
   imports: [CourseCard, ReactiveFormsModule],
@@ -72,12 +56,11 @@ export class CourseList implements OnInit {
   // ── Dipendenze ────────────────────────────────────────────────
   private coursesService = inject(CourseService);
   private destroyRef = inject(DestroyRef);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
 
   // ── Dati ──────────────────────────────────────────────────────
   courses = signal<Course[]>([]);
   total = signal(0);
+  categories = signal([] as { id: string; name: string }[]);
 
   // ── UI state ──────────────────────────────────────────────────
   isLoading = signal(true);
@@ -96,15 +79,12 @@ export class CourseList implements OnInit {
   searchControl = new FormControl('');
 
   // ── Opzioni statiche per il template ─────────────────────────
-  categories = CATEGORIES;
   levels = LEVELS;
   priceRanges = PRICE_RANGES;
 
   // ── Paginazione (computed) ────────────────────────────────────
   currentPage = computed(() => this.filters().page);
-
   totalPages = computed(() => Math.ceil(this.total() / ITEMS_PER_PAGE));
-
   visiblePages = computed(() => {
     const current = this.currentPage();
     const total = this.totalPages();
@@ -129,8 +109,25 @@ export class CourseList implements OnInit {
 
   // ── Lifecycle ─────────────────────────────────────────────────
   ngOnInit(): void {
+    this.loadCategories();
     this.loadCourses();
     this.initSearchDebounce();
+  }
+
+  // ── Caricamento categorie ─────────────────────────────────────
+  private loadCategories(): void {
+    this.coursesService
+      .getCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.categories.set(response.data);
+        },
+        error: (err) => {
+          console.error(err);
+          this.error.set('Impossibile caricare le categorie. Riprova più tardi.');
+        },
+      });
   }
 
   // ── Caricamento corsi ─────────────────────────────────────────
@@ -208,12 +205,29 @@ export class CourseList implements OnInit {
   }
 
   onPriceChange(range: string): void {
-    this.filters.update((f) => ({
-      ...f,
-      priceRange: range === 'all' ? null : range,
-      page: 1,
-    }));
-    // loadCourses() quando il backend supporterà il filtro prezzo
+    if (range === 'all') {
+      this.filters.update((f) => ({ ...f, priceRange: null, page: 1 }));
+      this.loadCourses();
+    } else {
+      const parsed_range = this.parsePriceRange(range);
+      this.filters.update((f) => ({ ...f, priceRange: range, page: 1 }));
+      this.isLoading.set(true);
+      this.coursesService
+        .searchFilter( {minPrice: parsed_range.min, maxPrice: parsed_range.max} )
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (response) => {
+            this.courses.set(response.data);
+            this.total.set(response.data.length);
+            this.isLoading.set(false);
+          },
+          error: (err) => {
+            console.error(err);
+            this.error.set('Impossibile applicare il filtro prezzo. Riprova più tardi.');
+            this.isLoading.set(false);
+          },
+        });
+    }
   }
 
   // ── Paginazione ───────────────────────────────────────────────
@@ -249,4 +263,15 @@ export class CourseList implements OnInit {
   isPriceActive(range: string): boolean {
     return (this.filters().priceRange ?? 'all') === range;
   }
+
+  // ── parsing price range ───────────────────────────────────────────────
+  parsePriceRange(range: string): { min?: number; max?: number } {
+    if (range === 'all') return {};
+    if (range.endsWith('+')) {
+      return { min: parseInt(range.slice(0, -1), 10) };
+    }
+    const [min, max] = range.split('-').map((v) => parseInt(v, 10));
+    return { min, max };
+  }
+
 }

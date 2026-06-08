@@ -5,18 +5,8 @@ export interface Course {
   description: string;
   price: number;
   thumbnail_url: string;
-  category: {
-          id: string;
-          name: string;
-          slug: string;
-        }
-  instructor: {
-    user: {
-      first_name: string;
-      last_name: string;
-      email: string;
-    };
-  };
+  category: { id: string; name: string; slug: string};
+  instructor: { user: { first_name: string; last_name: string; email: string } | null } | null;
   rating?: number;
 }
 

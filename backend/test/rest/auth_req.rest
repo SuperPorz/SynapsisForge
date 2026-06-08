@@ -37,7 +37,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "miky@synapsisforge.dev",
+  "email": "bob@example.com",
   "password": "Password123!"
 }
 

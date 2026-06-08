@@ -21,6 +21,7 @@
           <div class="flex items-center justify-between mb-5">
             <span class="text-sm font-semibold text-heading">Filtri</span>
             <button
+              (click)="resetFilters()"
               type="button"
               class="text-xs text-fg-brand hover:text-fg-brand-strong font-medium transition-colors"
             >
@@ -32,9 +33,11 @@
           <div class="mb-6">
             <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Categoria</p>
             <div class="space-y-2">
-              @for (category of categories; track category.id) {
+              @for (category of categories(); track category.id) {
                 <label class="flex items-center gap-2.5 cursor-pointer group">
                   <input
+                    (change)="onCategoryChange(category.id)"
+                    [checked]="isCategoryActive(category.id)"
                     type="checkbox"
                     class="w-4 h-4 rounded accent-brand cursor-pointer"
                     [value]="category.id"
@@ -57,6 +60,8 @@
               @for (level of levels; track level.value) {
                 <label class="flex items-center gap-2.5 cursor-pointer group">
                   <input
+                    (change)="onLevelChange(level.value)"
+                    [checked]="isLevelActive(level.value)"
                     type="radio"
                     name="level"
                     class="w-4 h-4 accent-brand cursor-pointer"
@@ -80,6 +85,8 @@
               @for (range of priceRanges; track range.label) {
                 <label class="flex items-center gap-2.5 cursor-pointer group">
                   <input
+                    (change)="onPriceChange(range.value)"
+                    [checked]="isPriceActive(range.value)"
                     type="radio"
                     name="price"
                     class="w-4 h-4 accent-brand cursor-pointer"
@@ -175,7 +182,7 @@
         }
 
         <!-- ── STATO: NESSUN RISULTATO ── -->
-        @else if (courses.length === 0) {
+        @else if (courses().length === 0) {
           <div class="flex flex-col items-center justify-center py-20 text-center">
             <svg class="w-12 h-12 text-muted mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
@@ -209,7 +216,7 @@
                 type="button"
                 [disabled]="currentPage() === 1"
                 (click)="goToPage(currentPage() - 1)"
-                class="inline-flex items-center justify-center w-9 h-9 rounded-base border border-default text-muted hover:text-heading hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                class="cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-base border border-default text-muted hover:text-heading hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -226,8 +233,8 @@
                     type="button"
                     (click)="goToPage(page)"
                     [class]="page === currentPage()
-                      ? 'inline-flex items-center justify-center w-9 h-9 rounded-base text-sm font-semibold bg-brand text-white border border-brand shadow-xs'
-                      : 'inline-flex items-center justify-center w-9 h-9 rounded-base text-sm text-body border border-default hover:bg-surface-hover hover:text-heading transition-colors'"
+                      ? 'cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-base text-sm font-semibold bg-brand text-white border border-brand shadow-xs'
+                      : 'cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-base text-sm text-body border border-default hover:bg-surface-hover hover:text-heading transition-colors'"
                   >
                     {{ page }}
                   </button>
@@ -237,9 +244,9 @@
               <!-- Successivo -->
               <button
                 type="button"
-                [disabled]="currentPage === totalPages"
+                [disabled]="currentPage() === totalPages()"
                 (click)="goToPage(currentPage() + 1)"
-                class="inline-flex items-center justify-center w-9 h-9 rounded-base border border-default text-muted hover:text-heading hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                class="cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-base border border-default text-muted hover:text-heading hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />

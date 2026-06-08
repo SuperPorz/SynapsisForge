@@ -39,6 +39,14 @@ export class CoursesController {
   }
 
   @Public()
+  @ApiOperation({ summary: 'Get all available course categories' })
+  @ApiResponse({ status: 200, description: 'Categories retrieved successfully.' })
+  @Get('categories')
+  getCategories() {
+    return this.CoursesService.getCategories();
+  }
+
+  @Public()
   @ApiOperation({ summary: 'Search for courses by title or description' })
   @ApiResponse({ status: 200, description: 'Matching courses found.' })
   @ApiResponse({ status: 404, description: 'No courses found for the given search query.' })
@@ -106,14 +114,6 @@ export class CoursesController {
   @Patch(':id/restore')
   restore(@Param('id', ParseUuidPipe) id: string) {
     return this.CoursesService.restore(id);
-  }
-
-  @Public()
-  @ApiOperation({ summary: 'Get all available course categories' })
-  @ApiResponse({ status: 200, description: 'Categories retrieved successfully.' })
-  @Get('categories')
-  getCategories() {
-    return this.CoursesService.getCategories();
   }
 
   @ApiOperation({ summary: 'Search for courses with filters' })

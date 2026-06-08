@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.develop';
 import { Course, PaginatedCoursesResponse, SearchCoursesResponse } from '../models/course-model';
 import { Category } from '../models/category-model';
 

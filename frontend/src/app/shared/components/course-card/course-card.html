@@ -42,7 +42,7 @@
 
     <!-- Istruttore -->
     <p class="text-sm text-muted mb-4">
-      {{ course().instructor.user.first_name }} {{ course().instructor.user.last_name }}
+      {{ course().instructor?.user?.first_name }} {{ course().instructor?.user?.last_name }}
     </p>
 
     <!-- Prezzo + CTA -->
