@@ -1,5 +1,5 @@
 <div class="w-full bg-neutral-primary-soft p-6 border border-default rounded-base shadow-xs">
-  <a [routerLink]="['/courses', course().slug]">
+  <a [routerLink]="['/courses', course().id]">
     <img
       class="rounded-base mb-6 w-full h-48 object-cover"
       [src]="course().thumbnail_url"
@@ -34,7 +34,7 @@
     }
 
     <!-- Titolo -->
-    <a [routerLink]="['/courses', course().slug]">
+    <a [routerLink]="['/courses', course().id]">
       <h5 class="text-lg font-semibold text-heading tracking-tight mb-1 line-clamp-2">
         {{ course().title }}
       </h5>

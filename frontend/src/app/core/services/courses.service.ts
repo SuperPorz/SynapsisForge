@@ -10,15 +10,19 @@ export class CourseService {
   private http = inject(HttpClient);
   private readonly API = environment.apiUrl;
 
+  getCourseById(id: string): Observable<{ data: Course; statusCode: number; timestamp: string }> {
+    return this.http.get<{ data: Course; statusCode: number; timestamp: string }>(
+      `${this.API}/courses/${id}`,
+    );
+  }
+
   getCourses(filters: {
     featured?: boolean;
     category?: string;
     page: number;
     limit: number;
   }): Observable<PaginatedCoursesResponse> {
-    let params = new HttpParams()
-      .set('page', filters.page)
-      .set('limit', filters.limit);
+    let params = new HttpParams().set('page', filters.page).set('limit', filters.limit);
 
     if (filters.featured !== undefined) params = params.set('featured', filters.featured);
     if (filters.category) params = params.set('category', filters.category);
@@ -45,6 +49,8 @@ export class CourseService {
   }
 
   getCategories(): Observable<{ data: Category[]; statusCode: number; timestamp: string }> {
-    return this.http.get<{ data: Category[]; statusCode: number; timestamp: string }>(`${this.API}/courses/categories`);
+    return this.http.get<{ data: Category[]; statusCode: number; timestamp: string }>(
+      `${this.API}/courses/categories`,
+    );
   }
 }

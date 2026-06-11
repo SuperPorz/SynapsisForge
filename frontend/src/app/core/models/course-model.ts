@@ -8,6 +8,7 @@ export interface Course {
   category: { id: string; name: string; slug: string};
   instructor: { user: { first_name: string; last_name: string; email: string } | null } | null;
   rating?: number;
+  sections?: Section[];
 }
 
 export interface PaginatedCoursesResponse {
@@ -20,4 +21,18 @@ export interface SearchCoursesResponse {
   data: Course[];
   statusCode: number;
   timestamp: string;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  order: number;
+  duration_seconds: number;
+}
+
+export interface Section {
+  id: string;
+  title: string;
+  order: number;
+  lessons: Lesson[];
 }
