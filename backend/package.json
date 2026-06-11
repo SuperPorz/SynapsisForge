@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "reset": "ts-node scripts/reset-and-seed.ts",
     "seed": "ts-node scripts/seed.ts",
-    "sync-ids": "ts-node scripts/sync-ids.ts"
+    "sync-ids": "ts-node scripts/sync-ids.ts",
+    "seed:sections": "ts-node -r tsconfig-paths/register src/database/seeds/sections.seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

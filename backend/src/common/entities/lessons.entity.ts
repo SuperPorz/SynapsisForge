@@ -1,6 +1,7 @@
 // prettier-ignore
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, RelationId, DeleteDateColumn } from 'typeorm';
 import { Course } from './courses.entity';
+import { Section } from './section.entity';
 
 @Entity('lessons')
 export class Lesson {
@@ -31,4 +32,10 @@ export class Lesson {
 
   @DeleteDateColumn()
   deleted_at?: Date;
+
+  @ManyToOne(() => Section, (section) => section.lessons, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  section?: Section | null;
 }

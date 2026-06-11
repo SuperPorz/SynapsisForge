@@ -6,6 +6,8 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Category } from 'src/common/entities/categories.entity';
+import { CourseDetailResponseDto } from './dto/course-detail-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CoursesService {
@@ -34,13 +36,24 @@ export class CoursesService {
     return { data, total };
   }
 
-  async findOne(id: string): Promise<Course> {
-    const course = await this.coursesRepo.findOne({
-      where: { id },
-      relations: { instructor: true, category: true },
-    });
+  //prettier-ignore
+  async findOne(id: string): Promise<CourseDetailResponseDto> {
+    const course = await this.coursesRepo
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'user')
+      .leftJoinAndSelect('course.sections', 'sections')
+      .leftJoinAndSelect('sections.lessons', 'lessons')
+      .where('course.id = :id', { id })
+      .orderBy('sections.order', 'ASC')
+      .addOrderBy('lessons.order', 'ASC')
+      .getOne();
+
     if (!course) throw new NotFoundException(`Course ${id} not found`);
-    return course;
+    return plainToInstance(CourseDetailResponseDto, course, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async findBySlug(slug: string): Promise<Course> {
@@ -70,9 +83,16 @@ export class CoursesService {
     }
   }
 
-  async update(id: string, dto: UpdateCourseDto): Promise<Course> {
+  // metodi per l'update
+  private async findOneEntity(id: string): Promise<Course | null> {
+    const course = await this.coursesRepo.findOne({ where: { id } });
+    if (!course) throw new NotFoundException(`Course ${id} not found`);
+    return course;
+  }
+
+  async update(id: string, dto: UpdateCourseDto): Promise<Course | null> {
     await this.coursesRepo.update({ id }, dto);
-    return await this.findOne(id);
+    return await this.findOneEntity(id);
   }
 
   async delete(id: string): Promise<{ message: string }> {
@@ -118,16 +138,19 @@ export class CoursesService {
     return await this.categoriesRepo.find();
   }
 
-  async searchFilter(filters: { q?: string; minPrice?: number; maxPrice?: number }): Promise<Course[]> {
+  async searchFilter(filters: {
+    q?: string;
+    minPrice?: number;
+    maxPrice?: number;
+  }): Promise<Course[]> {
     const qb = this.coursesRepo
       .createQueryBuilder('course')
       .leftJoinAndSelect('course.category', 'category');
 
     if (filters.q) {
-      qb.andWhere(
-        '(course.title ILIKE :q OR course.description ILIKE :q)',
-        { q: `%${filters.q}%` }
-      );
+      qb.andWhere('(course.title ILIKE :q OR course.description ILIKE :q)', {
+        q: `%${filters.q}%`,
+      });
     }
 
     if (filters.minPrice !== undefined) {

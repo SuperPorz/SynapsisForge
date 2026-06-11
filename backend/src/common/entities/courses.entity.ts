@@ -4,6 +4,7 @@ import { Status } from './enum/courses.enum';
 import { Category } from './categories.entity';
 import { Lesson } from './lessons.entity';
 import { InstructorProfile } from './InstructorProfile.entity';
+import { Section } from './section.entity';
 
 @Entity('courses')
 export class Course {
@@ -47,4 +48,7 @@ export class Course {
 
   @Column({ default: false })
   featured?: boolean;
+
+  @OneToMany(() => Section, (section) => section.course)
+  sections?: Section[];
 }

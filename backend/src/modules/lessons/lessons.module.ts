@@ -6,10 +6,11 @@ import { Lesson } from '../../common/entities/lessons.entity';
 import { Module } from '@nestjs/common';
 import { LessonsController } from './lessons.controller';
 import { LessonsService } from './lessons.service';
+import { Section } from 'src/common/entities/section.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Lesson]),
+    TypeOrmModule.forFeature([Lesson, Section]),
     MongooseModule.forFeature([
       { name: LessonContent.name, schema: LessonContentSchema },
     ]),

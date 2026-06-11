@@ -1,4 +1,5 @@
-// src/data-source.ts
+// questo file serve per configurare la connessione al database e definire le entità che TypeORM deve gestire.
+// Viene utilizzato da NestJS per creare il modulo di connessione al database e per eseguire le migrazioni.
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { User } from './common/entities/users.entity';
@@ -11,6 +12,8 @@ import { Review } from './common/entities/reviews.entity';
 import { Certificate } from './common/entities/certificate.entity';
 import { InstructorProfile } from './common/entities/InstructorProfile.entity';
 import { StudentProfile } from './common/entities/StudentProfile.entity';
+import { Section } from './common/entities/section.entity';
+import { UserProviders } from './common/entities/user_providers.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -30,6 +33,8 @@ export const AppDataSource = new DataSource({
     Certificate,
     InstructorProfile,
     StudentProfile,
+    Section,
+    UserProviders,
   ],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: false,

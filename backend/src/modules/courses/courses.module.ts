@@ -4,9 +4,10 @@ import { Course } from 'src/common/entities/courses.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoursesService } from './courses.service';
 import { Category } from 'src/common/entities/categories.entity';
+import { Section } from 'src/common/entities/section.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, Category])], // serve per iniettare il repository di Course e Category nei service di questo modulo
+  imports: [TypeOrmModule.forFeature([Course, Category, Section])],
   controllers: [CoursesController],
   providers: [CoursesService],
 })
