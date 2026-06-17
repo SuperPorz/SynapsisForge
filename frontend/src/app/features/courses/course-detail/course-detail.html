@@ -18,7 +18,7 @@
 @else {
   @let c = course()!;
 
-  <!-- ══ BLOCCO 1: HERO ══ -->
+  <!-- ══ HERO ══ -->
   <div class="relative h-72 bg-gray-900">
     @if (c.thumbnail_url) {
       <img
@@ -27,26 +27,26 @@
         class="absolute inset-0 h-full w-full object-cover opacity-40"
       />
     }
-    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"
+    ></div>
 
     <div class="relative z-10 flex h-full flex-col justify-end px-4 pb-8 max-w-6xl mx-auto">
-      <!-- Badge categoria -->
-      <span class="mb-2 inline-block w-fit rounded-full bg-blue-600 px-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
+      <span
+        class="mb-2 inline-block w-fit rounded-full bg-blue-600 px-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-white"
+      >
         {{ c.category.name }}
       </span>
 
       <h1 class="text-3xl font-bold text-white lg:text-4xl">{{ c.title }}</h1>
 
-      <!-- Meta row -->
       <div class="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-300">
-        <!-- Rating HARDCODATO visivo -->
         <span class="flex items-center gap-1">
           <span class="text-yellow-400">★★★★☆</span>
           <span class="font-semibold text-white">4.5</span>
           <span class="text-gray-400">(1.2k studenti)</span>
         </span>
 
-        <!-- Istruttore -->
         @if (c.instructor?.user) {
           <span>
             Docente:
@@ -56,33 +56,29 @@
           </span>
         }
 
-        <!-- Contatori -->
         <span>{{ totalLessons() }} lezioni</span>
         <span>{{ formatDuration(totalDuration()) }} totali</span>
       </div>
     </div>
   </div>
 
-  <!-- ══ BLOCCO 3: LAYOUT TWO-COLUMN ══ -->
+  <!-- ══ LAYOUT TWO-COLUMN ══ -->
   <div class="mx-auto max-w-6xl px-4 py-8">
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-
       <!-- ── COLONNA SINISTRA ── -->
       <div class="lg:col-span-2 space-y-10">
-
         <!-- Descrizione -->
         <section>
           <h2 class="mb-3 text-xl font-bold text-gray-900">Descrizione</h2>
           <p class="leading-relaxed text-gray-700">{{ c.description }}</p>
         </section>
 
-        <!-- ══ BLOCCO 4: ACCORDION CURRICULUM ══ -->
+        <!-- ══ ACCORDION CURRICULUM ══ -->
         <section>
           <h2 class="mb-4 text-xl font-bold text-gray-900">Curriculum</h2>
 
           <div class="overflow-hidden rounded-xl border border-gray-200">
             @for (section of c.sections ?? []; track section.id; let last = $last) {
-
               <!-- Header sezione -->
               <button
                 type="button"
@@ -91,7 +87,6 @@
                 [class.border-b]="!last || isSectionExpanded(section.id)"
               >
                 <div class="flex items-center gap-3">
-                  <!-- Freccia rotante -->
                   <span
                     class="text-gray-500 transition-transform duration-200"
                     [class.rotate-90]="isSectionExpanded(section.id)"
@@ -105,14 +100,22 @@
                 </span>
               </button>
 
-              <!-- Lezioni (accordion body) -->
+              <!-- Lezioni -->
               @if (isSectionExpanded(section.id)) {
                 <ul class="divide-y divide-gray-100 bg-white" [class.border-b]="!last">
                   @for (lesson of section.lessons; track lesson.id) {
-                    <li class="flex items-center justify-between px-5 py-3 text-sm text-gray-700">
+                    <li
+                      class="flex items-center justify-between px-5 py-3 text-sm text-gray-700"
+                      [class.cursor-pointer]="isEnrolled()"
+                      (click)="isEnrolled() && navigateToLesson(lesson.id)"
+                    >
                       <div class="flex items-center gap-3">
-                        <span class="text-gray-400">🔒</span>
-                        <span>{{ lesson.title }}</span>
+                        @if (isEnrolled()) {
+                          <span class="text-blue-500">▶</span>
+                        } @else {
+                          <span class="text-gray-400">🔒</span>
+                        }
+                        <span [class.text-blue-600]="isEnrolled()">{{ lesson.title }}</span>
                       </div>
                       <span class="shrink-0 text-xs text-gray-400 ml-4">
                         {{ formatDuration(lesson.duration_seconds) }}
@@ -125,42 +128,37 @@
           </div>
         </section>
 
-        <!-- ══ BLOCCO 5: SEZIONE ISTRUTTORE ══ -->
+        <!-- ══ SEZIONE ISTRUTTORE ══ -->
         @if (c.instructor?.user) {
           <section>
             <h2 class="mb-4 text-xl font-bold text-gray-900">Il tuo istruttore</h2>
-
             <div class="flex items-start gap-4">
-              <!-- Avatar con iniziali -->
-              <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-700">
+              <div
+                class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-700"
+              >
                 {{ c.instructor!.user!.first_name[0] }}{{ c.instructor!.user!.last_name[0] }}
               </div>
-
               <div>
                 <p class="font-semibold text-gray-900">
                   {{ c.instructor!.user!.first_name }} {{ c.instructor!.user!.last_name }}
                 </p>
                 <p class="mt-1 text-sm leading-relaxed text-gray-600">
-                  ...descrizione docente da aggiungere in futuro, per ora è solo un placeholder statico.
+                  ...descrizione docente da aggiungere in futuro, per ora è solo un placeholder
+                  statico.
                 </p>
               </div>
             </div>
           </section>
         }
-
       </div>
 
       <!-- ── COLONNA DESTRA: SIDEBAR STICKY ── -->
       <aside class="lg:col-span-1">
-        <div class="sticky top-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
-
-          <!-- Thumbnail sidebar -->
+        <div
+          class="sticky top-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg"
+        >
           @if (c.thumbnail_url) {
-            <img
-              [src]="c.thumbnail_url"
-              [alt]="c.title"
-              class="h-44 w-full object-cover"
-            />
+            <img [src]="c.thumbnail_url" [alt]="c.title" class="h-44 w-full object-cover" />
           } @else {
             <div class="flex h-44 items-center justify-center bg-gray-100 text-gray-400 text-sm">
               Nessuna anteprima
@@ -177,15 +175,37 @@
               }
             </p>
 
-            <!-- CTA acquisto (placeholder) -->
-            <button
-              type="button"
-              class="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 active:bg-blue-800"
-            >
-              Acquista ora
-            </button>
+            <!-- CTA condizionale -->
+            @if (isEnrolled()) {
+              <button
+                type="button"
+                (click)="firstLessonId() && navigateToLesson(firstLessonId()!)"
+                class="w-full rounded-xl bg-green-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-green-700 active:bg-green-800"
+              >
+                Continua a studiare →
+              </button>
+            } @else if (isFree()) {
+              <button
+                type="button"
+                (click)="enroll()"
+                [disabled]="enrolling()"
+                class="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                @if (enrolling()) {
+                  Iscrizione in corso...
+                } @else {
+                  Iscriviti gratis
+                }
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 active:bg-blue-800"
+              >
+                Acquista ora
+              </button>
+            }
 
-            <!-- Stats divider -->
             <hr class="border-gray-100" />
 
             <ul class="space-y-2 text-sm text-gray-600">
@@ -209,7 +229,6 @@
           </div>
         </div>
       </aside>
-
     </div>
   </div>
 }

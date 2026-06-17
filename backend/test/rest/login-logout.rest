@@ -110,7 +110,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "student@synapsis.test",
+  "email": "alice@example.com",
   "password": "Password123!"
 }
 

@@ -13,6 +13,12 @@ export class LessonProgress {
 
   @Prop({ default: Date.now })
   completedAt!: Date;
+
+  @Prop({ type: Number, default: 0 })
+  last_position_seconds!: number;
+
+  @Prop({ type: Boolean, default: false })
+  completed!: boolean;
 }
 
 // Generazione dello schema fisico di Mongoose

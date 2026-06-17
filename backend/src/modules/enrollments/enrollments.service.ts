@@ -5,7 +5,7 @@ import { Course } from 'src/common/entities/courses.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { Repository } from 'typeorm';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
-import { StudentProfile } from 'src/common/entities/StudentProfile.entity';
+import { StudentProfile } from 'src/common/entities/student-profile.entity';
 import { Status as CourseStatus } from '../../common/entities/enum/courses.enum';
 import { Status as PaymentStatus } from '../../common/entities/enum/payments.enum';
 import { Payment } from 'src/common/entities/payments.entity';
@@ -45,6 +45,13 @@ export class EnrollmentsService {
     });
   }
 
+  async findById(enrollmentId: string): Promise<Enrollment | null> {
+    return await this.enrollmentRepository.findOne({
+      where: { id: enrollmentId },
+      relations: ['course'], // aggiunto per il lesson-service
+    });
+  }
+
   async enroll(dto: CreateEnrollmentDto): Promise<ResponseEnrollmentDto> {
     // 1. Verifica che lo StudentProfile esista
     const studentProfile = await this.studentProfileRepository.findOne({
@@ -70,17 +77,19 @@ export class EnrollmentsService {
     }
 
     // 3. Verifica che esista un pagamento completato per questo corso
-    const payment = await this.paymentRepository.findOne({
-      where: {
-        user: { id: dto.userId },
-        course: { id: dto.courseId },
-        status: PaymentStatus.COMPLETED,
-      },
-    });
-    if (!payment) {
-      throw new ForbiddenException(
-        `No completed payment found for this course`,
-      );
+    if (course.price > 0) {
+      const payment = await this.paymentRepository.findOne({
+        where: {
+          user: { id: dto.userId },
+          course: { id: dto.courseId },
+          status: PaymentStatus.COMPLETED,
+        },
+      });
+      if (!payment) {
+        throw new ForbiddenException(
+          `No completed payment found for this course`,
+        );
+      }
     }
 
     // 4. Verifica che non esista già un'iscrizione (duplicato)
@@ -106,7 +115,7 @@ export class EnrollmentsService {
   }
   ///////////////////////////////////// UPDATE PROGRESS ///////////////////////////////////////////
   // prettier-ignore
-  async updateProgress(enrollmentId: string, lessonId: string): Promise<ResponseEnrollmentDto> {
+  async updateProgress(enrollmentId: string): Promise<ResponseEnrollmentDto> {
     // 1. Carica l'enrollment con le relazioni necessarie
     const enrollment = await this.enrollmentRepository.findOne({
       where: { id: enrollmentId },
@@ -122,11 +131,13 @@ export class EnrollmentsService {
     }
 
     // 2. Salva la lezione completata in MongoDB (upsert — evita duplicati)
-    await this.lessonProgressModel.updateOne(
+    // rimosso perchè va nel modulo lessons
+    
+    /* await this.lessonProgressModel.updateOne(
       { enrollmentId, lessonId },
       { enrollmentId, lessonId, completedAt: new Date() },
       { upsert: true },
-    );
+    ); */
 
     // 3. Conta le lezioni completate per questo enrollment
     const completedCount = await this.lessonProgressModel.countDocuments({ enrollmentId });
@@ -143,5 +154,21 @@ export class EnrollmentsService {
 
     const saved = await this.enrollmentRepository.save(enrollment);
     return this.toDto(saved);
+  }
+
+  //////// get specific enrollment ///////////////
+  async findMyEnrollment(
+    userId: string,
+    courseId: string,
+  ): Promise<ResponseEnrollmentDto | null> {
+    const query = this.enrollmentRepository
+      .createQueryBuilder('enrollment')
+      .innerJoin('enrollment.student', 'student')
+      .innerJoin('enrollment.course', 'course')
+      .where('student.userId = :userId', { userId })
+      .andWhere('course.id = :courseId', { courseId });
+
+    const enrollment = await query.getOne();
+    return enrollment ? this.toDto(enrollment) : null;
   }
 }

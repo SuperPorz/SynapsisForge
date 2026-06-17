@@ -1,32 +1,32 @@
-import {
-  Body,
-  Controller,
-  Param,
-  Patch,
-  Post,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-} from '@nestjs/swagger';
-
+//prettier-ignore
+import { Body, Controller, Param, Patch, Post, HttpCode, HttpStatus, ParseUUIDPipe, Get, Req, Query } from '@nestjs/common';
+//prettier-ignore
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody, ApiQuery, } from '@nestjs/swagger';
 import { EnrollmentsService } from './enrollments.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
-import { UpdateProgressDto } from './dto/update-progress.dto';
 import { ResponseEnrollmentDto } from './dto/response-enrollment.dto';
+import { Request } from 'express';
 
 @ApiTags('Enrollments')
 @ApiBearerAuth()
 @Controller('enrollments')
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
+
+  // ─── GET  ────────────────────────────────────────────────────
+  @Get('my')
+  @ApiOperation({
+    summary: "Restituisce l'enrollment dell'utente per un corso specifico",
+  })
+  @ApiQuery({ name: 'courseId', required: true, type: String })
+  @ApiResponse({ status: 200, description: 'Enrollment trovato o null' })
+  async getMyEnrollment(
+    @Query('courseId') courseId: string,
+    @Req() req: Request & { user: { id: string } },
+  ): Promise<ResponseEnrollmentDto | null> {
+    const userId = req.user['id'];
+    return this.enrollmentsService.findMyEnrollment(userId, courseId);
+  }
 
   // ─── POST /enrollments ────────────────────────────────────────────────────
   @Post()
@@ -63,7 +63,6 @@ export class EnrollmentsController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Aggiorna il progresso di una lezione completata' })
   @ApiParam({ name: 'id', description: "UUID dell'enrollment", type: String })
-  @ApiBody({ type: UpdateProgressDto })
   @ApiResponse({
     status: 200,
     description: 'Progresso aggiornato',
@@ -73,8 +72,7 @@ export class EnrollmentsController {
   @ApiResponse({ status: 404, description: 'Enrollment non trovato' })
   async updateProgress(
     @Param('id', ParseUUIDPipe) enrollmentId: string,
-    @Body() dto: UpdateProgressDto,
   ): Promise<ResponseEnrollmentDto> {
-    return this.enrollmentsService.updateProgress(enrollmentId, dto.lessonId);
+    return this.enrollmentsService.updateProgress(enrollmentId);
   }
 }

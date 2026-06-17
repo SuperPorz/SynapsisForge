@@ -2,8 +2,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne } from 'typeorm';
 import { Country, UserRole } from './enum/users.enum';
 import { Payment } from './payments.entity';
-import { StudentProfile } from './StudentProfile.entity';
-import { InstructorProfile } from './InstructorProfile.entity';
+import { StudentProfile } from './student-profile.entity';
+import { InstructorProfile } from './instructor-profile.entity';
 import { UserProviders } from './user_providers.entity';
 
 @Entity('users')

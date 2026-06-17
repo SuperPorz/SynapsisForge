@@ -16,24 +16,24 @@
 @instructorToken = INSTRUCTOR_JWT_TOKEN
 
 # ── Users ───────────────────────────────────────────────────
-@adminId       = ec64ccee-bcbf-4601-afe2-ef3ee0f938fd
-@studentId     = 63cd992d-994b-4c21-ad29-139f83ff07de
-@instructorId  = 68f32c02-23a0-4352-85e0-a9a93b79403f
+@adminId       = b91876be-49ee-4424-afbc-cb45eb7ba404
+@studentId     = 0f057dad-6bcf-41dd-a7c8-0d30551ee3f0
+@instructorId  = 68c6c796-4c2d-45cb-8f95-9cea8ab3f0c2
 
 # ── Courses ─────────────────────────────────────────────────
-@courseId      = b69b0a98-c86c-460f-bb02-64f4697415f0
-@categoryId    = bd9690ff-20a3-43bc-90f2-4f7672ad0694
-@slug          = react--typescript
+@courseId      = c00bf7ce-8bc2-4fec-9bbc-989859765080
+@categoryId    = 329870f4-3552-463d-bdbd-71c2e61bcca1
+@slug          = react-typescript-from-scratch
 
 # ── Lessons ─────────────────────────────────────────────────
-@lessonId      = 6f447f07-71aa-4ee9-a4aa-84c902814d65
+@lessonId      = ce9089b2-416d-4035-ab89-14d9338459cb
 
 # ── Enrollments ─────────────────────────────────────────────
-@enrollmentId  = 52cd3914-1425-4296-8c4e-c6ce98899f53
+@enrollmentId  = 767d906c-1aed-4292-aa0e-5b1dcbafc41f
 
 # ── Certificates ────────────────────────────────────────────
-@certificateId   = 1a3d7581-1c43-42b4-928d-df6792596406
-@certificateCode = 313dd0bc-6170-41d9-b50f-70a33e70a3d4
+@certificateId   = c9940f32-1810-43cb-8fd4-caa908d6e4b1
+@certificateCode = 9e92eaa1-8065-42be-a3a8-398b5cff8cfc
 
 # ── Reviews ─────────────────────────────────────────────────
-@reviewId      = f9359046-1dd7-4091-b1b5-2a57fb7dd62c
+@reviewId      = 9856b1d7-2f99-4d56-ad68-2abcdc030715

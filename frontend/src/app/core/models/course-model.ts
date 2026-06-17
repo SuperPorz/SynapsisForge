@@ -5,22 +5,20 @@ export interface Course {
   description: string;
   price: number;
   thumbnail_url: string;
-  category: { id: string; name: string; slug: string};
+  category: { id: string; name: string; slug: string };
   instructor: { user: { first_name: string; last_name: string; email: string } | null } | null;
   rating?: number;
   sections?: Section[];
 }
 
 export interface PaginatedCoursesResponse {
-  data: { data: Course[]; total: number };
-  statusCode: number;
-  timestamp: string;
+  data: Course[];
+  total: number;
 }
 
 export interface SearchCoursesResponse {
   data: Course[];
-  statusCode: number;
-  timestamp: string;
+  total: number;
 }
 
 export interface Lesson {
@@ -35,4 +33,16 @@ export interface Section {
   title: string;
   order: number;
   lessons: Lesson[];
+}
+
+export interface LessonVideoResponse {
+  videoUrl: string;
+  last_position_seconds: number;
+  sections: Section[];
+  completedLessonIds: string[];
+}
+
+export interface UpdateProgressPayload {
+  last_position_seconds: number;
+  completed?: boolean;
 }

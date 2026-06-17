@@ -10,8 +10,8 @@ import { Enrollment } from './common/entities/enrollments.entity';
 import { Payment } from './common/entities/payments.entity';
 import { Review } from './common/entities/reviews.entity';
 import { Certificate } from './common/entities/certificate.entity';
-import { InstructorProfile } from './common/entities/InstructorProfile.entity';
-import { StudentProfile } from './common/entities/StudentProfile.entity';
+import { InstructorProfile } from './common/entities/instructor-profile.entity';
+import { StudentProfile } from './common/entities/student-profile.entity';
 import { Section } from './common/entities/section.entity';
 import { UserProviders } from './common/entities/user_providers.entity';
 

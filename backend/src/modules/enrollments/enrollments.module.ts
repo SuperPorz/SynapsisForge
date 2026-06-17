@@ -6,7 +6,7 @@ import { EnrollmentsController } from './enrollments.controller';
 
 // Entities
 import { Course } from 'src/common/entities/courses.entity';
-import { StudentProfile } from 'src/common/entities/StudentProfile.entity';
+import { StudentProfile } from 'src/common/entities/student-profile.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
 
 // Mongoose Schema
@@ -26,5 +26,6 @@ import { Payment } from 'src/common/entities/payments.entity';
   ],
   providers: [EnrollmentsService],
   controllers: [EnrollmentsController],
+  exports: [EnrollmentsService],
 })
 export class EnrollmentsModule {}

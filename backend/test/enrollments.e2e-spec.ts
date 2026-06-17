@@ -12,7 +12,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EnrollmentsModule } from '../src/modules/enrollments/enrollments.module';
 import { Enrollment } from '../src/common/entities/enrollments.entity';
 import { Course } from '../src/common/entities/courses.entity';
-import { StudentProfile } from '../src/common/entities/StudentProfile.entity';
+import { StudentProfile } from '../src/common/entities/student-profile.entity';
 import { Payment } from '../src/common/entities/payments.entity';
 import { LessonProgress } from '../src/modules/enrollments/schemas/lesson-progress.schema';
 import { TransformInterceptor } from '../src/common/interceptors/transform.interceptor';

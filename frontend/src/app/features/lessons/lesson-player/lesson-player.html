@@ -1,0 +1,126 @@
+<div class="min-h-screen bg-surface">
+  <!-- HEADER -->
+  <header class="bg-surface-alt border-b border-gray-200 px-6 py-4 flex items-center gap-4">
+    <a
+      routerLink="/dashboard/my-courses"
+      class="flex items-center gap-2 text-fg-muted hover:text-fg transition-colors"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-5 h-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Torna ai miei corsi
+    </a>
+    <span class="text-fg-muted">|</span>
+    <h1 class="text-heading font-semibold truncate">
+      {{ currentLesson()?.title ?? 'Caricamento...' }}
+    </h1>
+  </header>
+
+  <!-- LOADING -->
+  @if (loading()) {
+    <div class="flex items-center justify-center h-96">
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-4 border-fg-brand border-t-transparent"
+      ></div>
+    </div>
+  }
+
+  <!-- ERROR -->
+  @if (error()) {
+    <div class="flex items-center justify-center h-96">
+      <p class="text-red-500 text-lg">{{ error() }}</p>
+    </div>
+  }
+
+  <!-- MAIN CONTENT -->
+  @if (!loading() && !error()) {
+    <div class="grid grid-cols-1 lg:grid-cols-3 h-[calc(100vh-65px)]">
+      <!-- VIDEO AREA — occupa 2/3 su desktop -->
+      <main class="lg:col-span-2 overflow-y-auto p-6 flex flex-col gap-6">
+        <!-- Player -->
+        <div class="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+          <video
+            #videoPlayer
+            class="w-full h-full"
+            controls
+            [src]="videoUrl()"
+            (ended)="onVideoEnded()"
+          ></video>
+        </div>
+
+        <!-- Info lezione -->
+        <div class="flex flex-col gap-2">
+          <h2 class="text-2xl font-bold text-heading">
+            {{ currentLesson()?.title }}
+          </h2>
+          <p class="text-fg-muted text-sm">
+            Durata: {{ formatDuration(currentLesson()?.duration_seconds ?? 0) }}
+          </p>
+        </div>
+      </main>
+
+      <!-- SIDEBAR — occupa 1/3 su desktop -->
+      <aside
+        class="lg:col-span-1 border-l border-gray-200 overflow-y-auto bg-surface-alt sticky top-0 max-h-[calc(100vh-65px)]"
+      >
+        <div class="p-4 border-b border-gray-200">
+          <h3 class="font-semibold text-heading text-sm uppercase tracking-wide">
+            Contenuti del corso
+          </h3>
+        </div>
+
+        @for (section of sections(); track section.id) {
+          <div class="border-b border-gray-100">
+            <!-- Titolo sezione -->
+            <div class="px-4 py-3 bg-surface">
+              <p class="text-sm font-semibold text-fg-muted uppercase tracking-wide">
+                {{ section.title }}
+              </p>
+            </div>
+
+            <!-- Lezioni della sezione -->
+            @for (lesson of section.lessons; track lesson.id) {
+              <button
+                class="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-surface transition-colors cursor-pointer border-b border-gray-50 last:border-0"
+                [class.bg-surface-alt]="lesson.id === activeLessonId()"
+                [class.border-l-2]="lesson.id === activeLessonId()"
+                [class.border-l-fg-brand]="lesson.id === activeLessonId()"
+                (click)="navigateToLesson(lesson.id)"
+              >
+                <!-- Icona stato -->
+                <span class="flex-shrink-0 w-5 text-center">
+                  @if (isCompleted(lesson.id)) {
+                    <span class="text-green-500 text-sm">✅</span>
+                  } @else if (lesson.id === activeLessonId()) {
+                    <span class="text-fg-brand text-sm">▶</span>
+                  } @else {
+                    <span class="text-fg-muted text-sm">○</span>
+                  }
+                </span>
+
+                <!-- Titolo + durata -->
+                <span class="flex flex-col min-w-0">
+                  <span
+                    class="text-sm text-fg truncate"
+                    [class.font-semibold]="lesson.id === activeLessonId()"
+                  >
+                    {{ lesson.title }}
+                  </span>
+                  <span class="text-xs text-fg-muted">
+                    {{ formatDuration(lesson.duration_seconds) }}
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</div>

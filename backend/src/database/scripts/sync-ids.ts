@@ -13,22 +13,31 @@
  *   npm run sync-ids
  */
 
+import 'dotenv/config';
 import { Client } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
+function requireEnv(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Variabile ${key} non definita in .env`);
+  }
+  return value;
+}
+
 const DB_CONFIG = {
-  host: 'localhost',
-  port: 5432,
-  user: 'admin',
-  password: 'qwerty',
-  database: 'pg_database',
+  host: requireEnv('DB_HOST'),
+  port: parseInt(requireEnv('DB_PORT'), 10),
+  user: requireEnv('DB_USER'),
+  password: requireEnv('DB_PASS'),
+  database: requireEnv('DB_NAME'),
 };
 
 const REST_DIR = path.resolve(process.cwd(), 'test', 'rest');
-const STATE_FILE = path.resolve(process.cwd(), 'scripts', 'sync-ids.json');
+const STATE_FILE = path.resolve(__dirname, 'sync-ids.json');
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 

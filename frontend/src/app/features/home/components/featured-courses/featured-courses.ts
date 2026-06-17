@@ -7,7 +7,7 @@ import { FEATURED_COURSES_LIMIT } from '../../../../core/costants/pagination';
 
 @Component({
   selector: 'app-featured-courses',
-  imports: [ CourseCard ],
+  imports: [CourseCard],
   templateUrl: './featured-courses.html',
   styleUrl: './featured-courses.css',
 })
@@ -26,7 +26,7 @@ export class FeaturedCourses implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
-          this.courses = response.data.data;
+          this.courses = response.data;
           this.isLoading = false;
           this.changeDetectorRef.detectChanges();
         },

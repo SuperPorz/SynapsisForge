@@ -7,15 +7,26 @@ import { Module } from '@nestjs/common';
 import { LessonsController } from './lessons.controller';
 import { LessonsService } from './lessons.service';
 import { Section } from 'src/common/entities/section.entity';
+import { EnrollmentsModule } from '../enrollments/enrollments.module';
+// prettier-ignore
+import { LessonPlayerController } from './lesson-player.controller';
+// prettier-ignore
+import { LessonProgress, LessonProgressSchema } from '../enrollments/schemas/lesson-progress.schema';
+import { Enrollment } from 'src/common/entities/enrollments.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Lesson, Section]),
-    MongooseModule.forFeature([
-      { name: LessonContent.name, schema: LessonContentSchema },
-    ]),
+    TypeOrmModule.forFeature([Lesson, Section, Enrollment]),
+    MongooseModule.forFeature(
+      [
+        { name: LessonContent.name, schema: LessonContentSchema },
+        { name: LessonProgress.name, schema: LessonProgressSchema }, // ← aggiunto
+      ],
+      'mongo_synapsis',
+    ), // <--- DEVE ESSERE IDENTICO al connectionName in AppModule),
+    EnrollmentsModule,
   ],
-  controllers: [LessonsController],
+  controllers: [LessonsController, LessonPlayerController],
   providers: [LessonsService],
 })
 export class LessonsModule {}

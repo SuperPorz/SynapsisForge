@@ -7,7 +7,7 @@ import { UserProviders } from 'src/common/entities/user_providers.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
-import { StudentProfile } from 'src/common/entities/StudentProfile.entity';
+import { StudentProfile } from 'src/common/entities/student-profile.entity';
 
 // Tipo dedicato al flusso OAuth — email nullable by design.
 // Non riusa CreateUserDto perché quel DTO ha email @IsEmail() obbligatoria

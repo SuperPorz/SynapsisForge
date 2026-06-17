@@ -34,6 +34,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/courses/course-detail/course-detail').then((m) => m.CourseDetail),
   },
+  {
+  path: 'enrollments/:enrollmentId/lessons/:lessonId',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./features/lessons/lesson-player/lesson-player').then(
+      (m) => m.LessonPlayer,
+    ),
+},
 
   /////////////////////// ROTTE DASHBOARD /////////////////////////////////
 

@@ -10,10 +10,8 @@ export class CourseService {
   private http = inject(HttpClient);
   private readonly API = environment.apiUrl;
 
-  getCourseById(id: string): Observable<{ data: Course; statusCode: number; timestamp: string }> {
-    return this.http.get<{ data: Course; statusCode: number; timestamp: string }>(
-      `${this.API}/courses/${id}`,
-    );
+  getCourseById(id: string): Observable<Course> {
+    return this.http.get<Course>(`${this.API}/courses/${id}`);
   }
 
   getCourses(filters: {
@@ -48,9 +46,7 @@ export class CourseService {
     return this.http.get<SearchCoursesResponse>(`${this.API}/courses/search?q=${query}`);
   }
 
-  getCategories(): Observable<{ data: Category[]; statusCode: number; timestamp: string }> {
-    return this.http.get<{ data: Category[]; statusCode: number; timestamp: string }>(
-      `${this.API}/courses/categories`,
-    );
+  getCategories(): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.API}/courses/categories`);
   }
 }

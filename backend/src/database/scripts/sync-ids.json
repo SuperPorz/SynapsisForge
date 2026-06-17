@@ -1,0 +1,13 @@
+{
+  "adminId": "b91876be-49ee-4424-afbc-cb45eb7ba404",
+  "studentId": "0f057dad-6bcf-41dd-a7c8-0d30551ee3f0",
+  "instructorId": "68c6c796-4c2d-45cb-8f95-9cea8ab3f0c2",
+  "courseId": "c00bf7ce-8bc2-4fec-9bbc-989859765080",
+  "slug": "react-typescript-from-scratch",
+  "categoryId": "329870f4-3552-463d-bdbd-71c2e61bcca1",
+  "lessonId": "ce9089b2-416d-4035-ab89-14d9338459cb",
+  "enrollmentId": "767d906c-1aed-4292-aa0e-5b1dcbafc41f",
+  "certificateId": "c9940f32-1810-43cb-8fd4-caa908d6e4b1",
+  "certificateCode": "9e92eaa1-8065-42be-a3a8-398b5cff8cfc",
+  "reviewId": "9856b1d7-2f99-4d56-ad68-2abcdc030715"
+}

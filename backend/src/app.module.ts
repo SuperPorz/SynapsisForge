@@ -10,13 +10,14 @@ import { EnrollmentsModule } from './modules/enrollments/enrollments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ReviewsModule } from './modules/reviews/reviews.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { CertificatesModule } from './modules/certificates/certificates.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guard';
+import { LessonsModule } from './modules/lessons/lessons.module';
 
 @Module({
   imports: [
@@ -43,8 +44,15 @@ import { RolesGuard } from './common/guards/roles.guard';
       synchronize: true, // TODO: Impostare su false quando si va in produzione
     }),
     // Database secondario (MongoDB)
-    MongooseModule.forRoot('mongodb://localhost:27017/mongo_synapsis', {
-      connectionName: 'mongo_synapsis', // Nome della connessione
+    MongooseModule.forRootAsync({
+      connectionName: 'mongo_synapsis',
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URI'),
+        user: configService.get<string>('MONGO_USER'),
+        pass: configService.get<string>('MONGO_PASS'),
+        authSource: configService.get<string>('MONGO_AUTH_SOURCE', 'admin'),
+      }),
+      inject: [ConfigService],
     }),
     EventEmitterModule.forRoot({
       // Configurazioni opzionali di event-emitter2
@@ -58,6 +66,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     AuthModule,
     CertificatesModule,
     AdminModule,
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [

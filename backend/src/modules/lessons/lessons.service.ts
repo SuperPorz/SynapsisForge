@@ -10,16 +10,52 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
+// prettier-ignore
+import { LessonProgress, LessonProgressDocument } from '../enrollments/schemas/lesson-progress.schema';
+import { Enrollment } from 'src/common/entities/enrollments.entity';
+import { EnrollmentsService } from '../enrollments/enrollments.service';
+import { S3Client } from '@aws-sdk/client-s3';
+import { ConfigService } from '@nestjs/config';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { UpdateLessonProgressDto } from './dto/update-lesson-progress.dto';
+import { Section } from 'src/common/entities/section.entity';
 
 @Injectable()
 export class LessonsService {
+  private s3Client: S3Client;
+
   constructor(
-    @InjectModel(LessonContent.name)
+    @InjectModel(LessonContent.name, 'mongo_synapsis')
     private lessonContentModel: Model<LessonContentDocument>,
+
+    @InjectModel(LessonProgress.name, 'mongo_synapsis')
+    private lessonProgressModel: Model<LessonProgressDocument>,
 
     @InjectRepository(Lesson)
     private lessonRepository: Repository<Lesson>,
-  ) {}
+
+    @InjectRepository(Enrollment)
+    private enrollmentRepository: Repository<Enrollment>,
+
+    @InjectRepository(Section)
+    private sectionRepository: Repository<Section>,
+
+    private enrollmentsService: EnrollmentsService,
+    private configService: ConfigService,
+  ) {
+    // S3Client si istanzia qui, non si inietta
+    this.s3Client = new S3Client({
+      region: this.configService.get<string>('AWS_REGION', ''),
+      credentials: {
+        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID', ''),
+        secretAccessKey: this.configService.get<string>(
+          'AWS_SECRET_ACCESS_KEY',
+          '',
+        ),
+      },
+    });
+  }
 
   // ---------------------------------------------------------------------------
   // PostgreSQL — CRUD lezioni
@@ -132,5 +168,129 @@ export class LessonsService {
 
   async findContent(lessonId: string): Promise<LessonContentDocument | null> {
     return await this.lessonContentModel.findOne({ lessonId }).exec();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Player — video + progresso
+  // ---------------------------------------------------------------------------
+
+  async getVideoUrl(
+    enrollmentId: string,
+    lessonId: string,
+  ): Promise<{
+    videoUrl: string;
+    last_position_seconds: number;
+    sections: {
+      id: string;
+      title: string;
+      order: number;
+      lessons: {
+        id: string;
+        title: string;
+        order: number;
+        duration_seconds: number;
+      }[];
+    }[];
+    completedLessonIds: string[];
+  }> {
+    // 1. verifica enrollment + carica course
+    const enrollment = await this.enrollmentsService.findById(enrollmentId);
+    if (!enrollment)
+      throw new NotFoundException(`Enrollment ${enrollmentId} non trovato`);
+
+    // 2. recupera lezione da PG
+    const lesson = await this.lessonRepository.findOne({
+      where: { id: lessonId },
+    });
+    if (!lesson) throw new NotFoundException(`Lezione ${lessonId} non trovata`);
+
+    // 3. recupera LessonContent da MongoDB → s3Key
+    const content = await this.lessonContentModel.findOne({ lessonId }).exec();
+    if (!content)
+      throw new NotFoundException(
+        `Contenuto per lezione ${lessonId} non trovato`,
+      );
+
+    // 4. genera signed URL S3 oppure usa videoUrl diretto (USE_S3=false in dev)
+    const useS3 = this.configService.get<string>('USE_S3') === 'true';
+    let videoUrl: string;
+
+    if (useS3) {
+      const command = new GetObjectCommand({
+        Bucket: this.configService.get<string>('AWS_S3_BUCKET_NAME', ''),
+        Key: content.s3Key,
+      });
+      videoUrl = await getSignedUrl(this.s3Client, command, {expiresIn: 3600,});
+    } else {
+      videoUrl = content.videoUrl;
+    }
+
+    // 5. recupera last_position_seconds per questa lezione
+    const progress = await this.lessonProgressModel
+      .findOne({ enrollmentId, lessonId })
+      .exec();
+
+    // 6. recupera sezioni + lezioni del corso per la sidebar
+    const sections = await this.sectionRepository.find({
+      where: { course: { id: enrollment.course.id } },
+      relations: ['lessons'],
+      order: { order: 'ASC' },
+    });
+
+    // 7. recupera tutti i lessonId completati per questo enrollment
+    const completedProgress = await this.lessonProgressModel
+      .find({ enrollmentId, completed: true })
+      .select('lessonId')
+      .exec();
+
+    const completedLessonIds = completedProgress.map((p) => p.lessonId);
+
+    return {
+      videoUrl,
+      last_position_seconds: progress?.last_position_seconds ?? 0,
+      sections: sections.map((s) => ({
+        id: s.id,
+        title: s.title,
+        order: s.order,
+        lessons: s.lessons
+          .sort((a, b) => a.order - b.order)
+          .map((l) => ({
+            id: l.id,
+            title: l.title,
+            order: l.order,
+            duration_seconds: l.duration_seconds,
+          })),
+      })),
+      completedLessonIds,
+    };
+  }
+
+  async updateLessonProgress(
+    enrollmentId: string,
+    lessonId: string,
+    dto: UpdateLessonProgressDto,
+  ): Promise<LessonProgressDocument> {
+    const completed = dto.completed ?? false;
+
+    // upsert — crea il documento se non esiste, aggiorna se esiste
+    const progress = await this.lessonProgressModel
+      .findOneAndUpdate(
+        { enrollmentId, lessonId },
+        {
+          $set: {
+            last_position_seconds: dto.last_position_seconds,
+            ...(completed && { completedAt: new Date() }),
+          },
+        },
+        { new: true, upsert: true },
+      )
+      .exec();
+
+    // se completed → ricalcola progress_percent aggregato su PG
+    if (completed) {
+      await this.enrollmentsService.updateProgress(enrollmentId);
+    }
+
+    return progress;
   }
 }

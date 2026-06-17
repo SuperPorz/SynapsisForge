@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.develop';
 
@@ -20,7 +20,7 @@ interface JwtPayload {
 // Forma pubblica dell'utente esposta ai componenti tramite signal.
 // Non esponiamo JwtPayload direttamente: è un dettaglio implementativo del token.
 export interface User {
-  id: string;          // = payload.sub
+  id: string; // = payload.sub
   email: string;
   role: 'student' | 'instructor' | 'admin';
 }
@@ -32,6 +32,10 @@ interface LoginDto {
 
 interface AuthResponse {
   accessToken: string;
+}
+
+interface ApiResponse<T> {
+  data: T;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,10 +66,10 @@ export class AuthService {
 
   // Computed pubblici: derivati dal signal, aggiornati automaticamente.
   // I template li leggono senza async pipe e senza subscribe.
-  readonly currentUser     = this._currentUser.asReadonly();
+  readonly currentUser = this._currentUser.asReadonly();
   readonly isAuthenticated = computed(() => this._currentUser() !== null);
-  readonly role            = computed(() => this._currentUser()?.role ?? null);
-  readonly userId          = computed(() => this._currentUser()?.id ?? null);
+  readonly role = computed(() => this._currentUser()?.role ?? null);
+  readonly userId = computed(() => this._currentUser()?.id ?? null);
 
   // ─── IDRATAZIONE ALL'AVVIO ────────────────────────────────────────────────
   //
@@ -92,14 +96,8 @@ export class AuthService {
   // ─────────────────────────────────────────────────────────────────────────────
   login(dto: LoginDto): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.API}/auth/login`, dto, {
-        withCredentials: true, // necessario per ricevere e inviare il cookie httpOnly
-      })
-      .pipe(
-        tap((response) => {
-          this.applyToken(response.accessToken);
-        }),
-      );
+      .post<AuthResponse>(`${this.API}/auth/login`, dto, { withCredentials: true })
+      .pipe(tap((response) => this.applyToken(response.accessToken)));
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -107,12 +105,10 @@ export class AuthService {
   // poi pulisce lo stato locale.
   // ─────────────────────────────────────────────────────────────────────────────
   logout(): void {
-    this.http
-      .post(`${this.API}/auth/logout`, {}, { withCredentials: true })
-      .subscribe({
-        complete: () => this.clearSessionAndRedirect(),
-        error: ()    => this.clearSessionAndRedirect(), // pulisce anche in caso di errore
-      });
+    this.http.post(`${this.API}/auth/logout`, {}, { withCredentials: true }).subscribe({
+      complete: () => this.clearSessionAndRedirect(),
+      error: () => this.clearSessionAndRedirect(), // pulisce anche in caso di errore
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -123,11 +119,7 @@ export class AuthService {
   refresh(): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.API}/auth/refresh`, {}, { withCredentials: true })
-      .pipe(
-        tap((response) => {
-          this.applyToken(response.accessToken);
-        }),
-      );
+      .pipe(tap((response) => this.applyToken(response.accessToken)));
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -176,12 +168,12 @@ export class AuthService {
   private applyToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
     const user = this.buildUserFromToken(token);
-    this._currentUser.set(user);  // aggiorna il signal → tutti i computed reagiscono
+    this._currentUser.set(user); // aggiorna il signal → tutti i computed reagiscono
   }
 
   private clearSessionAndRedirect(): void {
     localStorage.removeItem(this.TOKEN_KEY);
-    this._currentUser.set(null);  // aggiorna il signal → navbar, guard, ecc. reagiscono
+    this._currentUser.set(null); // aggiorna il signal → navbar, guard, ecc. reagiscono
     this.router.navigate(['/login']);
   }
 
@@ -195,9 +187,9 @@ export class AuthService {
     if (payload.exp <= now) return null; // token scaduto: non idratare lo stato
 
     return {
-      id:    payload.sub,
+      id: payload.sub,
       email: payload.email,
-      role:  payload.role,
+      role: payload.role,
     };
   }
 
@@ -210,9 +202,7 @@ export class AuthService {
 
     try {
       // base64url → base64 standard (sostituisce - con + e _ con /)
-      const base64Payload = token.split('.')[1]
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
+      const base64Payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
       const decoded = atob(base64Payload);
       return JSON.parse(decoded) as JwtPayload;
     } catch {

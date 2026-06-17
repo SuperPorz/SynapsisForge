@@ -4,7 +4,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-
 import { CourseCard } from '../../../shared/components/course-card/course-card';
 import { CourseService } from '../../../core/services/courses.service';
 import { Course } from '../../../core/models/course-model';
@@ -52,7 +51,6 @@ const PRICE_RANGES: PriceRangeOption[] = [
   styleUrl: './course-list.css',
 })
 export class CourseList implements OnInit {
-
   // ── Dipendenze ────────────────────────────────────────────────
   private coursesService = inject(CourseService);
   private destroyRef = inject(DestroyRef);
@@ -121,7 +119,7 @@ export class CourseList implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
-          this.categories.set(response.data);
+          this.categories.set(response);
         },
         error: (err) => {
           console.error(err);
@@ -142,8 +140,8 @@ export class CourseList implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
-          this.courses.set(response.data.data);
-          this.total.set(response.data.total);
+          this.courses.set(response.data);
+          this.total.set(response.total);
           this.isLoading.set(false);
         },
         error: (err) => {
@@ -161,12 +159,11 @@ export class CourseList implements OnInit {
         debounceTime(300),
         distinctUntilChanged(),
         switchMap((value) => {
-          if(!value) {
+          if (!value) {
             this.loadCourses();
             this.isSearching.set(false);
-            return of (null)
-          }
-          else {
+            return of(null);
+          } else {
             this.isSearching.set(true);
             this.filters.update((f) => ({ ...f, search: value ?? '', page: 1 }));
             return this.coursesService.search(value);
@@ -179,7 +176,7 @@ export class CourseList implements OnInit {
             this.courses.set(response.data);
           }
         }),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }
@@ -213,12 +210,12 @@ export class CourseList implements OnInit {
       this.filters.update((f) => ({ ...f, priceRange: range, page: 1 }));
       this.isLoading.set(true);
       this.coursesService
-        .searchFilter( {minPrice: parsed_range.min, maxPrice: parsed_range.max} )
+        .searchFilter({ minPrice: parsed_range.min, maxPrice: parsed_range.max })
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (response) => {
             this.courses.set(response.data);
-            this.total.set(response.data.length);
+            this.total.set(response.total);
             this.isLoading.set(false);
           },
           error: (err) => {
@@ -273,5 +270,4 @@ export class CourseList implements OnInit {
     const [min, max] = range.split('-').map((v) => parseInt(v, 10));
     return { min, max };
   }
-
 }

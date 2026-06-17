@@ -48,6 +48,9 @@ export class LessonContent {
   @Prop({ required: true })
   videoUrl!: string;
 
+  @Prop({ required: true })
+  s3Key!: string; // es. "videos/lesson-uuid.mp4" — usato per generare signed URL
+
   @Prop({ type: String, default: null })
   transcript!: string | null;
 

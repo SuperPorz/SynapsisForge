@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, De
 import { Status } from './enum/courses.enum';
 import { Category } from './categories.entity';
 import { Lesson } from './lessons.entity';
-import { InstructorProfile } from './InstructorProfile.entity';
+import { InstructorProfile } from './instructor-profile.entity';
 import { Section } from './section.entity';
 
 @Entity('courses')
