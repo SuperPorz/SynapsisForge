@@ -313,7 +313,7 @@ Relazioni: `ManyToOne → users`, `ManyToOne → courses`
 ### 🟡 Priorità media — course-list (backlog)
  
 1. **Filtro categoria multi-select** — `FilterState.category` è `string | null`, serve `string[]`
-2. **Cursore pointer paginazione** — manca `cursor-pointer` sui bottoni pagina
+2. **Cursore pointer paginazione** — manca `cursor-pointer` sui bottoni pagina [RISOLTO]
 3. **Contatore `total()` durante ricerca** — `search()` non restituisce `total`, mostra valore precedente
 4. **Filtro livello** — UI presente ma non collegata, backend non ha campo `level`
 5. **Corsi DRAFT/PENDING visibili** — manca filtro `WHERE status = 'PUBLISHED'` nel `GET /courses`

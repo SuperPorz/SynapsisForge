@@ -10,11 +10,9 @@ export class LessonsService {
   private readonly base = environment.apiUrl;
 
   getVideoUrl(enrollmentId: string, lessonId: string): Observable<LessonVideoResponse> {
-    return this.http
-      .get<{
-        data: LessonVideoResponse;
-      }>(`${this.base}/enrollments/${enrollmentId}/lessons/${lessonId}/video`)
-      .pipe(map((res) => res.data));
+    return this.http.get<LessonVideoResponse>(
+      `${this.base}/enrollments/${enrollmentId}/lessons/${lessonId}/video`,
+    );
   }
 
   updateProgress(
