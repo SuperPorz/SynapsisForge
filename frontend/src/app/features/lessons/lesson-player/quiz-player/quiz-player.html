@@ -1,0 +1,82 @@
+<div class="flex flex-col gap-6">
+  <!-- Progress bar -->
+  <div class="flex items-center gap-3">
+    <span class="text-xs text-fg-muted whitespace-nowrap">
+      Domanda {{ currentIndex() + 1 }} di {{ quiz().length }}
+    </span>
+    <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+      <div
+        class="h-full bg-fg-brand rounded-full transition-all duration-500"
+        [style.width.%]="progress()"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Card domanda con animazione -->
+  <div
+    class="transition-all duration-300"
+    [class.opacity-0]="animating()"
+    [class.translate-y-2]="animating()"
+  >
+    <!-- Testo domanda -->
+    <p class="text-lg font-semibold text-heading mb-5">
+      {{ currentQuestion().question }}
+    </p>
+
+    <!-- Opzioni -->
+    <div class="flex flex-col gap-3">
+      @for (option of currentQuestion().options; track option.label) {
+        <button
+          class="w-full text-left px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center gap-3"
+          [class]="optionClass(option.label)"
+          (click)="selectAnswer(option.label)"
+          [disabled]="answerState() !== 'unanswered'"
+        >
+          <span class="font-bold text-sm w-5 flex-shrink-0">{{ option.label }}</span>
+          <span class="text-sm">{{ option.text }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Feedback -->
+    @if (answerState() !== 'unanswered') {
+      <div
+        class="mt-5 p-4 rounded-lg border"
+        [class.bg-green-50]="answerState() === 'correct'"
+        [class.border-green-200]="answerState() === 'correct'"
+        [class.bg-red-50]="answerState() === 'wrong'"
+        [class.border-red-200]="answerState() === 'wrong'"
+      >
+        <p
+          class="font-semibold text-sm mb-1"
+          [class.text-green-700]="answerState() === 'correct'"
+          [class.text-red-700]="answerState() === 'wrong'"
+        >
+          {{ answerState() === 'correct' ? '✓ Corretto!' : '✗ Risposta errata' }}
+        </p>
+
+        @if (answerState() === 'wrong') {
+          <p class="text-sm text-red-600 mb-2">
+            Risposta corretta: <strong>{{ currentQuestion().correctAnswer }}</strong>
+          </p>
+        }
+
+        @if (currentQuestion().explanation) {
+          <p class="text-sm text-fg-muted">{{ currentQuestion().explanation }}</p>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Bottone avanti / completa -->
+  @if (answerState() !== 'unanswered') {
+    <div class="flex justify-end">
+      <button
+        class="px-6 py-2.5 bg-fg-brand text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+        (click)="next()"
+      >
+        {{ isLast() ? 'Completa lezione' : 'Prossima domanda →' }}
+      </button>
+    </div>
+  }
+</div>

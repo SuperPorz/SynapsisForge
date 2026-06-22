@@ -28,13 +28,15 @@ const TRANSCRIPTS = [
   null,
 ];
 
-// ── Quiz pool per categoria (riutilizzato ciclicamente per lezione) ───────────
+// ── Quiz pool per categoria ────────────────────────────────────────────────────
+// Ogni item include explanation: mostrata al frontend dopo la risposta
 const QUIZZES: Record<
   string,
   {
     question: string;
     options: { label: string; text: string }[];
     correctAnswer: string;
+    explanation: string;
   }[]
 > = {
   'web-development': [
@@ -47,6 +49,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'A Promise' },
       ],
       correctAnswer: 'B',
+      explanation:
+        'useState returns a tuple [state, setState]. The first element is the current value, the second is the updater function. Destructuring makes it easy to name them: const [count, setCount] = useState(0).',
     },
     {
       question: 'Which HTTP method is idempotent and safe?',
@@ -57,6 +61,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'PATCH' },
       ],
       correctAnswer: 'C',
+      explanation:
+        'GET is both safe (no side effects) and idempotent (repeated calls return the same result). POST creates resources and is neither. PUT is idempotent but not safe since it modifies data.',
     },
   ],
   'data-science': [
@@ -69,6 +75,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'pd.import_csv()' },
       ],
       correctAnswer: 'B',
+      explanation:
+        'pd.read_csv() is the standard Pandas function for loading CSV files into a DataFrame. It accepts dozens of parameters to handle encoding, separators, headers, and date parsing.',
     },
     {
       question: 'What does a confusion matrix measure?',
@@ -79,6 +87,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'Dataset size' },
       ],
       correctAnswer: 'B',
+      explanation:
+        'A confusion matrix shows true positives, false positives, true negatives, and false negatives for a classifier. From it you derive precision, recall, and F1 score — the core metrics for evaluating classification models.',
     },
   ],
   'ui-ux-design': [
@@ -94,6 +104,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'Accessibility compliance' },
       ],
       correctAnswer: 'B',
+      explanation:
+        'Affordance, coined by Don Norman, refers to the perceived and actual properties of an object that suggest how it should be used. A button that looks pressable has good affordance. Poor affordance leads to user confusion.',
     },
     {
       question: 'What is the primary purpose of wireframing?',
@@ -107,6 +119,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'To test performance' },
       ],
       correctAnswer: 'B',
+      explanation:
+        'Wireframes focus on information architecture and user flow, deliberately stripping away color and typography to avoid distracting from structural decisions. High-fidelity design comes later once layout is validated.',
     },
   ],
   'mobile-development': [
@@ -120,6 +134,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'Built-in backend support' },
       ],
       correctAnswer: 'B',
+      explanation:
+        "Flutter's primary value proposition is write-once, run-everywhere: one Dart codebase targets iOS, Android, web, and desktop. Performance is close to native thanks to AOT compilation, but the true win is development velocity.",
     },
     {
       question: 'What does the Expo managed workflow provide?',
@@ -133,6 +149,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'A CSS-in-JS library' },
       ],
       correctAnswer: 'B',
+      explanation:
+        'The Expo managed workflow abstracts native build tooling, provides over-the-air JS updates via EAS Update, and offers a cloud build service. The tradeoff is limited native module access — for full control you eject to bare workflow.',
     },
   ],
   devops: [
@@ -148,6 +166,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'To write CI/CD pipelines' },
       ],
       correctAnswer: 'B',
+      explanation:
+        'A Dockerfile is a text file with sequential instructions (FROM, RUN, COPY, CMD…) that Docker executes to build a layered image. Each instruction creates a new layer, enabling caching and efficient rebuilds.',
     },
     {
       question: 'What does idempotency mean in infrastructure as code?',
@@ -161,6 +181,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'The infrastructure cannot be deleted' },
       ],
       correctAnswer: 'B',
+      explanation:
+        'Idempotency guarantees that applying the same configuration repeatedly converges to the same desired state without side effects. Tools like Terraform and Ansible are built around this principle — apply once or a hundred times, the result is identical.',
     },
   ],
   cybersecurity: [
@@ -176,6 +198,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'Encrypting SQL data at rest' },
       ],
       correctAnswer: 'A',
+      explanation:
+        'SQL injection exploits unsanitized user input concatenated into SQL queries. Attackers can read, modify, or delete data and bypass authentication. Prevention: always use parameterized queries or an ORM — never string-concatenate user input into SQL.',
     },
     {
       question: 'What does XSS stand for?',
@@ -186,6 +210,8 @@ const QUIZZES: Record<
         { label: 'D', text: 'XML Style Sheets' },
       ],
       correctAnswer: 'A',
+      explanation:
+        'Cross-Site Scripting (XSS) allows attackers to inject malicious scripts into pages viewed by other users, stealing cookies, session tokens, or redirecting traffic. Prevention: escape output, use Content Security Policy, and sanitize HTML input.',
     },
   ],
 };
@@ -280,7 +306,7 @@ export async function seedMongo(seededLessons: SeededLesson[]): Promise<void> {
     return {
       lessonId: lesson.id, // ← UUID reale da PostgreSQL
       videoUrl,
-      s3Key: `videos/placeholder.mp4`, // placeholder finché S3 non è configurato
+      s3Key: `videos/placeholder.mp4`,
       transcript,
       attachments: [],
       quiz,

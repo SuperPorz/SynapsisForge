@@ -180,6 +180,12 @@ export class LessonsService {
   ): Promise<{
     videoUrl: string;
     last_position_seconds: number;
+    quiz: {
+      question: string;
+      options: { label: string; text: string }[];
+      correctAnswer: string;
+      explanation: string | null;
+    }[];
     sections: {
       id: string;
       title: string;
@@ -220,7 +226,9 @@ export class LessonsService {
         Bucket: this.configService.get<string>('AWS_S3_BUCKET_NAME', ''),
         Key: content.s3Key,
       });
-      videoUrl = await getSignedUrl(this.s3Client, command, {expiresIn: 3600,});
+      videoUrl = await getSignedUrl(this.s3Client, command, {
+        expiresIn: 3600,
+      });
     } else {
       videoUrl = content.videoUrl;
     }
@@ -248,6 +256,12 @@ export class LessonsService {
     return {
       videoUrl,
       last_position_seconds: progress?.last_position_seconds ?? 0,
+      quiz: (content.quiz ?? []).map((q) => ({
+        question: q.question,
+        options: q.options.map((o) => ({ label: o.label, text: o.text })),
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation ?? null,
+      })),
       sections: sections.map((s) => ({
         id: s.id,
         title: s.title,

@@ -40,9 +40,22 @@ export interface LessonVideoResponse {
   last_position_seconds: number;
   sections: Section[];
   completedLessonIds: string[];
+  quiz: QuizItem[];
 }
 
 export interface UpdateProgressPayload {
   last_position_seconds: number;
   completed?: boolean;
+}
+
+export interface QuizOption {
+  label: string;
+  text: string;
+}
+
+export interface QuizItem {
+  question: string;
+  options: QuizOption[];
+  correctAnswer: string;
+  explanation: string | null;
 }

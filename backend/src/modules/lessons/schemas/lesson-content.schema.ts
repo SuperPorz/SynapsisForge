@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 // --- tipi annidati ---
 
-@Schema({ _id: false }) // _id: false perché sono subdocument, non collezioni indipendenti
+@Schema({ _id: false })
 export class QuizOption {
   @Prop({ required: true })
   label!: string;
@@ -22,6 +22,9 @@ export class QuizItem {
 
   @Prop({ required: true })
   correctAnswer!: string; // corrisponde a QuizOption.label, es. "A", "B"
+
+  @Prop({ type: String, default: null })
+  explanation!: string | null; // mostrata dopo la risposta dell'utente
 }
 
 @Schema({ _id: false })

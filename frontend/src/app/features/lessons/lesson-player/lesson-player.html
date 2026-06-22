@@ -44,7 +44,9 @@
       <!-- VIDEO AREA — occupa 2/3 su desktop -->
       <main class="lg:col-span-2 overflow-y-auto p-6 flex flex-col gap-6">
         <!-- Player -->
-        <div class="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+        <div
+          class="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-lg flex-shrink-0 min-h-[180px]"
+        >
           <video
             #videoPlayer
             class="w-full h-full"
@@ -63,7 +65,47 @@
             Durata: {{ formatDuration(currentLesson()?.duration_seconds ?? 0) }}
           </p>
         </div>
+
+        <!-- Quiz -->
+        @if (quiz().length > 0) {
+          <div class="bg-surface-alt rounded-xl border border-gray-200 p-6">
+            <h3 class="text-base font-semibold text-heading mb-5 flex items-center gap-2">
+              <span>📝</span> Quiz
+            </h3>
+            <app-quiz-player [quiz]="quiz()" (quizCompleted)="onQuizCompleted()" />
+          </div>
+        }
       </main>
+
+      <!-- Modale congratulazioni — fixed overlay, DOM position non impatta il layout -->
+      @if (showCongratulations()) {
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div
+            class="bg-surface rounded-2xl shadow-2xl max-w-md w-full p-8 flex flex-col items-center gap-5 text-center"
+          >
+            <div class="text-6xl">🎉</div>
+            <h2 class="text-2xl font-bold text-heading">Corso completato!</h2>
+            <p class="text-fg-muted text-sm leading-relaxed">
+              Hai completato tutte le lezioni del corso. Il tuo certificato è disponibile nella tua
+              area personale.
+            </p>
+            <div class="flex flex-col gap-3 w-full">
+              <a
+                routerLink="/profile/my-certificates"
+                class="w-full px-6 py-3 bg-fg-brand text-white font-semibold rounded-lg hover:opacity-90 transition-opacity text-sm"
+              >
+                Vai ai miei certificati
+              </a>
+              <button
+                class="w-full px-6 py-3 border border-gray-200 text-fg text-sm font-medium rounded-lg hover:bg-surface-alt transition-colors"
+                (click)="showCongratulations.set(false)"
+              >
+                Continua a esplorare
+              </button>
+            </div>
+          </div>
+        </div>
+      }
 
       <!-- SIDEBAR — occupa 1/3 su desktop -->
       <aside

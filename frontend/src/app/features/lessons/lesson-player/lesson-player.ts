@@ -1,15 +1,16 @@
 //prettier-ignore
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, signal, computed, } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fromEvent, Subject, Subscription } from 'rxjs';
 import { throttleTime, takeUntil } from 'rxjs/operators';
 import { LessonsService } from '../../../core/services/lessons.service';
-import { Lesson, LessonVideoResponse, Section } from '../../../core/models/course-model';
+import { Lesson, LessonVideoResponse, Section, QuizItem } from '../../../core/models/course-model';
+import { QuizPlayer } from './quiz-player/quiz-player';
 
 @Component({
   selector: 'app-lesson-player',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, QuizPlayer],
   templateUrl: './lesson-player.html',
 })
 export class LessonPlayer implements OnInit, OnDestroy {
@@ -31,17 +32,17 @@ export class LessonPlayer implements OnInit, OnDestroy {
   sections = signal<Section[]>([]);
   completedLessonIds = signal<string[]>([]);
   currentLesson = signal<Lesson | null>(null);
+  quiz = signal<QuizItem[]>([]);
+  showCongratulations = signal(false);
 
   // ── derived signals ───────────────────────────────────────────────────────
-  // activeLessonId è derivato dal lessonId del route, non da currentLesson,
-  // così la sidebar si evidenzia immediatamente al click senza aspettare HTTP
   activeLessonId = computed(() => this.lessonId());
 
   // ── RxJS cleanup ──────────────────────────────────────────────────────────
   private readonly destroy$ = new Subject<void>();
   private timeupdateSub?: Subscription;
 
-  // ── posizione salvata più di recente (per evitare chiamate ridondanti) ────
+  // ── posizione salvata più di recente ─────────────────────────────────────
   private lastSavedPosition = 0;
 
   ngOnInit(): void {
@@ -63,6 +64,7 @@ export class LessonPlayer implements OnInit, OnDestroy {
     this.timeupdateSub?.unsubscribe();
     this.loading.set(true);
     this.error.set(null);
+    this.showCongratulations.set(false);
 
     this.lessonsService
       .getVideoUrl(this.enrollmentId(), this.lessonId())
@@ -72,19 +74,16 @@ export class LessonPlayer implements OnInit, OnDestroy {
           this.videoUrl.set(res.videoUrl);
           this.sections.set(res.sections);
           this.completedLessonIds.set(res.completedLessonIds);
+          this.quiz.set(res.quiz ?? []);
 
-          // currentLesson: cerchiamo la lezione corrente nelle sezioni
           const found =
             res.sections.flatMap((s) => s.lessons).find((l) => l.id === this.lessonId()) ?? null;
           this.currentLesson.set(found);
 
           this.loading.set(false);
 
-          // aggancia il listener timeupdate dopo che il DOM è pronto
-          // setTimeout 0 garantisce che @ViewChild sia risolto
           setTimeout(() => this.attachTimeupdateListener(), 0);
 
-          // seek alla posizione salvata se > 0
           if (res.last_position_seconds > 0) {
             setTimeout(() => {
               if (this.videoPlayerRef?.nativeElement) {
@@ -105,7 +104,6 @@ export class LessonPlayer implements OnInit, OnDestroy {
     const video = this.videoPlayerRef?.nativeElement;
     if (!video) return;
 
-    // salva la posizione ogni 10s — throttleTime ignora gli eventi intermedi
     this.timeupdateSub = fromEvent(video, 'timeupdate')
       .pipe(throttleTime(10_000), takeUntil(this.destroy$))
       .subscribe(() => {
@@ -122,10 +120,41 @@ export class LessonPlayer implements OnInit, OnDestroy {
     const position = video ? Math.floor(video.currentTime) : 0;
     this.saveProgress(position, true);
 
-    // aggiorna localmente completedLessonIds per riflettere lo stato in sidebar
-    // senza dover fare un nuovo GET
     if (!this.completedLessonIds().includes(this.lessonId())) {
       this.completedLessonIds.update((ids) => [...ids, this.lessonId()]);
+    }
+
+    // se non c'è quiz, il video stesso completa la lezione → controlla corso
+    if (this.quiz().length === 0) {
+      this.checkCourseCompletion();
+    }
+  }
+
+  // ── completamento quiz ────────────────────────────────────────────────────
+  onQuizCompleted(): void {
+    const pos = this.videoPlayerRef?.nativeElement
+      ? Math.floor(this.videoPlayerRef.nativeElement.currentTime)
+      : 0;
+
+    this.saveProgress(pos, true);
+
+    if (!this.completedLessonIds().includes(this.lessonId())) {
+      this.completedLessonIds.update((ids) => [...ids, this.lessonId()]);
+    }
+
+    this.checkCourseCompletion();
+  }
+
+  // ── controlla se il corso è completato al 100% ───────────────────────────
+  private checkCourseCompletion(): void {
+    const allLessonIds = this.sections()
+      .flatMap((s) => s.lessons)
+      .map((l) => l.id);
+
+    const allCompleted = allLessonIds.every((id) => this.completedLessonIds().includes(id));
+
+    if (allCompleted) {
+      this.showCongratulations.set(true);
     }
   }
 
@@ -137,7 +166,10 @@ export class LessonPlayer implements OnInit, OnDestroy {
         completed,
       })
       .pipe(takeUntil(this.destroy$))
-      .subscribe();
+      .subscribe({
+        next: () => console.log('[saveProgress] ✅ OK', { positionSeconds, completed }),
+        error: (err) => console.error('[saveProgress] ❌ ERRORE', err.status, err.error),
+      });
   }
 
   // ── navigazione sidebar ───────────────────────────────────────────────────
@@ -157,6 +189,3 @@ export class LessonPlayer implements OnInit, OnDestroy {
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
 }
-
-// enrollment di alice
-// 163eb40f-d8ff-4abf-b50a-6672b052cdd2
