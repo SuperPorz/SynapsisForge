@@ -1,18 +1,20 @@
 <section class="relative overflow-hidden bg-gradient-to-br from-brand-softer via-white to-brand-subtle px-6 pb-20 pt-16 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 sm:pb-28 sm:pt-24">
   <div class="mx-auto max-w-4xl text-center">
     <h1 class="text-4xl font-extrabold tracking-tight text-heading sm:text-5xl lg:text-6xl">
-      Impara. Crea. <span class="text-fg-brand">Cresci.</span>
+      Learn. Create. <span class="text-fg-brand">Grow.</span>
     </h1>
     <p class="mx-auto mt-6 max-w-2xl text-lg text-fg-muted sm:text-xl">
-      Corsi interattivi con video, quiz e certificati. Tutto ciò che ti serve per portare le tue competenze al livello successivo.
+      Interactive courses with videos, quizzes, and certificates. Everything you need to take your skills to the next level.
     </p>
     <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
       <a routerLink="/courses" class="rounded-xl bg-fg-brand px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-fg-brand/25 transition-all hover:bg-fg-brand-strong hover:shadow-xl hover:shadow-fg-brand/30">
-        Esplora i corsi
+        Browse courses
       </a>
-      <a routerLink="/register" class="rounded-xl border border-gray-300 bg-white px-8 py-3.5 text-base font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-        Inizia gratis
-      </a>
+      @if (!auth.isAuthenticated()) {
+        <a routerLink="/register" class="rounded-xl border border-gray-300 bg-white px-8 py-3.5 text-base font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+          Start free
+        </a>
+      }
     </div>
   </div>
 </section>

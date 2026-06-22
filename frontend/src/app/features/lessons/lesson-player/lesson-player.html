@@ -14,7 +14,7 @@
       >
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      Torna ai miei corsi
+      Back to my courses
     </a>
     <span class="text-fg-muted">|</span>
     <h1 class="text-heading font-semibold truncate">
@@ -62,7 +62,7 @@
             {{ currentLesson()?.title }}
           </h2>
           <p class="text-fg-muted text-sm">
-            Durata: {{ formatDuration(currentLesson()?.duration_seconds ?? 0) }}
+            Duration: {{ formatDuration(currentLesson()?.duration_seconds ?? 0) }}
           </p>
         </div>
 
@@ -89,23 +89,23 @@
             class="bg-surface rounded-2xl shadow-2xl max-w-md w-full p-8 flex flex-col items-center gap-5 text-center"
           >
             <div class="text-6xl">🎉</div>
-            <h2 class="text-2xl font-bold text-heading">Corso completato!</h2>
+            <h2 class="text-2xl font-bold text-heading">Course completed!</h2>
             <p class="text-fg-muted text-sm leading-relaxed">
-              Hai completato tutte le lezioni del corso. Il tuo certificato è disponibile nella tua
-              area personale.
+              You have completed all lessons in this course. Your certificate is available in
+              your personal area.
             </p>
             <div class="flex flex-col gap-3 w-full">
               <a
                 routerLink="/profile/my-certificates"
                 class="w-full px-6 py-3 bg-fg-brand text-white font-semibold rounded-lg hover:opacity-90 transition-opacity text-sm"
               >
-                Vai ai miei certificati
+                Go to my certificates
               </a>
               <button
                 class="w-full px-6 py-3 border border-gray-200 text-fg text-sm font-medium rounded-lg hover:bg-surface-alt transition-colors"
                 (click)="showCongratulations.set(false)"
               >
-                Continua a esplorare
+                Continue exploring
               </button>
             </div>
           </div>
@@ -118,7 +118,7 @@
       >
         <div class="p-4 border-b border-gray-200">
           <h3 class="font-semibold text-heading text-sm uppercase tracking-wide">
-            Contenuti del corso
+            Course content
           </h3>
         </div>
 

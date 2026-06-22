@@ -1,65 +1,39 @@
-<div class="w-full bg-neutral-primary-soft p-6 border border-default rounded-base shadow-xs">
+<div class="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
   <a [routerLink]="['/courses', course().id]">
-    <img
-      class="rounded-base mb-6 w-full h-48 object-cover"
-      [src]="course().thumbnail_url"
-      [alt]="course().title"
-    />
+    <img class="h-48 w-full object-cover" [src]="course().thumbnail_url" [alt]="course().title" />
   </a>
 
-  <div>
-    <!-- Rating -->
+  <div class="p-5">
     @if (course().rating) {
-      <div class="flex items-center gap-2 mb-4">
+      <div class="mb-3 flex items-center gap-2">
         <div class="flex items-center gap-0.5">
           @for (_ of [1, 2, 3, 4, 5]; track $index) {
-            <svg
-              class="w-4 h-4 text-fg-yellow"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"
-              />
+            <svg class="h-4 w-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
             </svg>
           }
         </div>
-        <span
-          class="bg-brand-softer border border-brand-subtle text-fg-brand-strong text-xs font-medium px-1.5 py-0.5 rounded-sm"
-        >
+        <span class="rounded border border-brand-subtle bg-brand-softer px-1.5 py-0.5 text-xs font-medium text-fg-brand-strong dark:border-indigo-500/30 dark:text-indigo-200">
           {{ course().rating }} out of 5
         </span>
       </div>
     }
 
-    <!-- Titolo -->
     <a [routerLink]="['/courses', course().id]">
-      <h5 class="text-lg font-semibold text-heading tracking-tight mb-1 line-clamp-2">
+      <h5 class="mb-1 line-clamp-2 text-lg font-semibold text-heading tracking-tight">
         {{ course().title }}
       </h5>
     </a>
 
-    <!-- Istruttore -->
-    <p class="text-sm text-muted mb-4">
+    <p class="mb-4 text-sm text-fg-muted">
       {{ course().instructor?.user?.first_name }} {{ course().instructor?.user?.last_name }}
     </p>
 
-    <!-- Prezzo + CTA -->
-    <div class="flex items-center justify-between mt-4">
+    <div class="mt-4 flex items-center justify-between">
       <span class="text-2xl font-extrabold text-heading"> ${{ course().price }} </span>
-      <button
-        type="button"
-        class="inline-flex items-center gap-1.5 text-white bg-brand hover:bg-brand-strong border border-transparent focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-base text-sm px-3 py-2 focus:outline-none"
-      >
-        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <path
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"
-          />
+      <button type="button" class="inline-flex items-center gap-1.5 rounded-lg bg-fg-brand px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-fg-brand-strong focus:outline-none focus:ring-2 focus:ring-brand-subtle">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
         </svg>
         Add to cart
       </button>

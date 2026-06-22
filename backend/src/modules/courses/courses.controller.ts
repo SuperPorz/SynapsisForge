@@ -38,7 +38,7 @@ export class CoursesController {
 
   @Public()
   @ApiOperation({
-    summary: 'Get all courses with pagination and optional category filter',
+    summary: 'Get all courses with pagination and optional filters',
   })
   @ApiResponse({
     status: 200,
@@ -56,12 +56,18 @@ export class CoursesController {
     @Query('category') category?: string,
     @Query('featured', new ParseBoolPipe({ optional: true }))
     featured?: boolean,
+    @Query('q') q?: string,
+    @Query('minPrice') minPrice?: string,
+    @Query('maxPrice') maxPrice?: string,
   ) {
     const { data, total } = await this.CoursesService.findAll(
       page,
       limit,
       category,
       featured,
+      q,
+      minPrice ? Number(minPrice) : undefined,
+      maxPrice ? Number(maxPrice) : undefined,
     );
 
     return {

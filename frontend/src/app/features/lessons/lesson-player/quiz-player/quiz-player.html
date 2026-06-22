@@ -2,7 +2,7 @@
   <!-- Progress bar -->
   <div class="flex items-center gap-3">
     <span class="text-xs text-fg-muted whitespace-nowrap">
-      Domanda {{ currentIndex() + 1 }} di {{ quiz().length }}
+      Question {{ currentIndex() + 1 }} of {{ quiz().length }}
     </span>
     <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
       <div
@@ -52,12 +52,12 @@
           [class.text-green-700]="answerState() === 'correct'"
           [class.text-red-700]="answerState() === 'wrong'"
         >
-          {{ answerState() === 'correct' ? '✓ Corretto!' : '✗ Risposta errata' }}
+          {{ answerState() === 'correct' ? '✓ Correct!' : '✗ Wrong answer' }}
         </p>
 
         @if (answerState() === 'wrong') {
           <p class="text-sm text-red-600 mb-2">
-            Risposta corretta: <strong>{{ currentQuestion().correctAnswer }}</strong>
+            Correct answer: <strong>{{ currentQuestion().correctAnswer }}</strong>
           </p>
         }
 
@@ -75,7 +75,7 @@
       (click)="prev()"
       [disabled]="isFirst()"
     >
-      ← Precedente
+      ← Previous
     </button>
     <button
       class="px-6 py-2.5 text-sm font-semibold rounded-lg transition-opacity"
@@ -88,7 +88,7 @@
       (click)="next()"
       [disabled]="answerState() === 'unanswered'"
     >
-      {{ isLast() ? 'Lezione successiva →' : 'Prossima domanda →' }}
+      {{ isLast() ? 'Next lesson →' : 'Next question →' }}
     </button>
   </div>
 </div>

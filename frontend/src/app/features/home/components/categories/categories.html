@@ -1,8 +1,14 @@
-<div>
-    <h3>Categories</h3>
-    <div>
-        @for (category of categories; track category.id) {
-            <a [routerLink]="['/catalog']" [queryParams]="{ category: category.slug }" class="bg-brand-softer border border-brand-subtle text-fg-brand-strong text-xs font-medium px-1.5 py-0.5 rounded-full">{{ category.label }}</a>
-        }
-    </div>
+<div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+  <div class="mb-10 text-center">
+    <h2 class="text-3xl font-bold text-heading">Browse by category</h2>
+    <p class="mt-2 text-fg-muted">Find the perfect course for you</p>
+  </div>
+
+  <div class="flex flex-wrap justify-center gap-3">
+    @for (category of categories; track category.id) {
+      <a [routerLink]="['/courses']" [queryParams]="{ category: category.slug }" class="rounded-full border border-brand-subtle bg-brand-softer px-5 py-2 text-sm font-medium text-fg-brand-strong transition-colors hover:bg-fg-brand hover:text-white dark:text-indigo-200 dark:hover:text-white">
+        {{ category.label }}
+      </a>
+    }
+  </div>
 </div>

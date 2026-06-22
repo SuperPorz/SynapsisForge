@@ -2,7 +2,7 @@
 import { ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from 'src/common/entities/courses.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Category } from 'src/common/entities/categories.entity';
@@ -19,19 +19,47 @@ export class CoursesService {
     private readonly categoriesRepo: Repository<Category>,
   ) {}
 
-  //prettier-ignore
-  async findAll(page: number, limit: number, category?: string, featured?: boolean) {
-    const where: FindOptionsWhere<Course> = {};
+  async findAll(
+    page: number,
+    limit: number,
+    category?: string,
+    featured?: boolean,
+    q?: string,
+    minPrice?: number,
+    maxPrice?: number,
+  ) {
+    const qb = this.coursesRepo
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'user')
+      .leftJoinAndSelect('course.category', 'category');
 
-    if (category) where.category = { name: category };
-    if (featured !== undefined) where.featured = featured;
+    if (category) {
+      qb.andWhere('category.name = :category', { category });
+    }
 
-    const [data, total] = await this.coursesRepo.findAndCount({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      relations: ['instructor', 'instructor.user', 'category'],
-    });
+    if (featured !== undefined) {
+      qb.andWhere('course.featured = :featured', { featured });
+    }
+
+    if (q) {
+      qb.andWhere('(course.title ILIKE :q OR course.description ILIKE :q)', {
+        q: `%${q}%`,
+      });
+    }
+
+    if (minPrice !== undefined) {
+      qb.andWhere('course.price >= :minPrice', { minPrice });
+    }
+
+    if (maxPrice !== undefined) {
+      qb.andWhere('course.price <= :maxPrice', { maxPrice });
+    }
+
+    const [data, total] = await qb
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
 
     return { data, total };
   }

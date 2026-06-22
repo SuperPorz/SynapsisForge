@@ -1,205 +1,127 @@
-<div class="min-h-screen bg-page">
-
-  <!-- Page Header -->
-  <div class="border-b border-default bg-surface">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 class="text-3xl font-bold text-heading mb-1">Esplora i corsi</h1>
-      <p class="text-muted text-sm">Scopri il catalogo completo e inizia a imparare oggi</p>
+<div class="bg-surface-alt dark:bg-gray-900">
+  <div class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <h1 class="mb-1 text-3xl font-bold text-heading">Browse courses</h1>
+      <p class="text-sm text-fg-muted">Discover the full catalog and start learning today</p>
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex flex-col lg:flex-row gap-8">
-
-      <!-- ═══════════════════════════════════════════
-           SIDEBAR FILTRI
-      ════════════════════════════════════════════ -->
-      <aside class="w-full lg:w-64 shrink-0">
-        <div class="bg-surface border border-default rounded-base p-5 lg:sticky lg:top-6">
-
-          <!-- Header sidebar -->
-          <div class="flex items-center justify-between mb-5">
-            <span class="text-sm font-semibold text-heading">Filtri</span>
-            <button
-              (click)="resetFilters()"
-              type="button"
-              class="text-xs text-fg-brand hover:text-fg-brand-strong font-medium transition-colors"
-            >
-              Azzera tutto
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="flex flex-col gap-8 lg:flex-row">
+      <aside class="w-full shrink-0 lg:w-64">
+        <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm lg:sticky lg:top-6 dark:border-gray-700 dark:bg-gray-800">
+          <div class="mb-5 flex items-center justify-between">
+            <span class="text-sm font-semibold text-heading">Filters</span>
+            <button (click)="resetFilters()" type="button" class="text-xs font-medium text-fg-brand transition-colors hover:text-fg-brand-strong">
+              Reset all
             </button>
           </div>
 
-          <!-- Filtro: Categoria -->
-          <div class="mb-6">
-            <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Categoria</p>
-            <div class="space-y-2">
-              @for (category of categories(); track category.id) {
-                <label class="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    (change)="onCategoryChange(category.id)"
-                    [checked]="isCategoryActive(category.id)"
-                    type="checkbox"
-                    class="w-4 h-4 rounded accent-brand cursor-pointer"
-                    [value]="category.id"
-                  />
-                  <span class="text-sm text-body group-hover:text-heading transition-colors">
-                    {{ category.name }}
-                  </span>
-                </label>
-              }
-            </div>
+          <div class="mb-6 space-y-2">
+            <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">Category</p>
+            @for (category of categories(); track category.id) {
+              <label class="group flex cursor-pointer items-center gap-2.5">
+                <input (change)="onCategoryChange(category.id)" [checked]="isCategoryActive(category.id)" type="checkbox" class="h-4 w-4 cursor-pointer accent-indigo-600" [value]="category.id" />
+                <span class="text-sm text-gray-700 transition-colors group-hover:text-heading dark:text-gray-300">{{ category.name }}</span>
+              </label>
+            }
           </div>
 
-          <!-- Divider -->
-          <div class="border-t border-default mb-6"></div>
+          <div class="mb-6 border-t border-gray-200 dark:border-gray-700"></div>
 
-          <!-- Filtro: Livello -->
-          <div class="mb-6">
-            <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Livello</p>
-            <div class="space-y-2">
-              @for (level of levels; track level.value) {
-                <label class="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    (change)="onLevelChange(level.value)"
-                    [checked]="isLevelActive(level.value)"
-                    type="radio"
-                    name="level"
-                    class="w-4 h-4 accent-brand cursor-pointer"
-                    [value]="level.value"
-                  />
-                  <span class="text-sm text-body group-hover:text-heading transition-colors">
-                    {{ level.label }}
-                  </span>
-                </label>
-              }
-            </div>
+          <div class="mb-6 space-y-2">
+            <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">Level</p>
+            @for (level of levels; track level.value) {
+              <label class="group flex cursor-pointer items-center gap-2.5">
+                <input (change)="onLevelChange(level.value)" [checked]="isLevelActive(level.value)" type="radio" name="level" class="h-4 w-4 cursor-pointer accent-indigo-600" [value]="level.value" />
+                <span class="text-sm text-gray-700 transition-colors group-hover:text-heading dark:text-gray-300">{{ level.label }}</span>
+              </label>
+            }
           </div>
 
-          <!-- Divider -->
-          <div class="border-t border-default mb-6"></div>
+          <div class="mb-6 border-t border-gray-200 dark:border-gray-700"></div>
 
-          <!-- Filtro: Prezzo -->
-          <div>
-            <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Prezzo</p>
-            <div class="space-y-2">
-              @for (range of priceRanges; track range.label) {
-                <label class="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    (change)="onPriceChange(range.value)"
-                    [checked]="isPriceActive(range.value)"
-                    type="radio"
-                    name="price"
-                    class="w-4 h-4 accent-brand cursor-pointer"
-                    [value]="range.value"
-                  />
-                  <span class="text-sm text-body group-hover:text-heading transition-colors">
-                    {{ range.label }}
-                  </span>
-                </label>
-              }
-            </div>
+          <div class="space-y-2">
+            <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">Price</p>
+            @for (range of priceRanges; track range.label) {
+              <label class="group flex cursor-pointer items-center gap-2.5">
+                <input (change)="onPriceChange(range.value)" [checked]="isPriceActive(range.value)" type="radio" name="price" class="h-4 w-4 cursor-pointer accent-indigo-600" [value]="range.value" />
+                <span class="text-sm text-gray-700 transition-colors group-hover:text-heading dark:text-gray-300">{{ range.label }}</span>
+              </label>
+            }
           </div>
-
         </div>
       </aside>
 
-      <!-- ═══════════════════════════════════════════
-           CONTENUTO PRINCIPALE
-      ════════════════════════════════════════════ -->
-      <div class="flex-1 min-w-0">
-
-        <!-- Barra ricerca + contatore risultati -->
-        <div class="flex flex-col sm:flex-row gap-3 mb-6">
-
-          <!-- Search input -->
+      <div class="min-w-0 flex-1">
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row">
           <div class="relative flex-1">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <!-- Icona lente o spinner a seconda dello stato -->
               @if (isSearching()) {
-                <svg class="w-4 h-4 text-muted animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="h-4 w-4 animate-spin text-fg-muted" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
               } @else {
-                <svg class="w-4 h-4 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                <svg class="h-4 w-4 text-fg-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
                 </svg>
               }
             </div>
-            <input
-              type="text"
-              [formControl]="searchControl"
-              placeholder="Cerca corsi, argomenti, istruttori..."
-              class="w-full pl-9 pr-9 py-2.5 text-sm bg-surface border border-default rounded-base text-body placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-brand-subtle focus:border-brand-subtle transition-colors"
-            />
-            <!-- Clear button -->
+            <input type="text" [formControl]="searchControl" placeholder="Search courses, topics, instructors..." class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-800 placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20" />
             @if (searchControl.value) {
-              <button
-                type="button"
-                (click)="clearSearch()"
-                class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted hover:text-heading transition-colors"
-              >
-                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              <button type="button" (click)="clearSearch()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-fg-muted transition-colors hover:text-heading">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                 </svg>
               </button>
             }
           </div>
 
-          <!-- Contatore risultati -->
           @if (!isLoading()) {
-            <div class="flex items-center shrink-0">
-              <span class="text-sm text-muted">
-                <span class="font-semibold text-heading">{{ total() }}</span> corsi trovati
+            <div class="flex shrink-0 items-center">
+              <span class="text-sm text-fg-muted">
+                <span class="font-semibold text-heading">{{ total() }}</span> courses found
               </span>
             </div>
           }
-
         </div>
 
-        <!-- ── STATO: LOADING ── -->
         @if (isLoading()) {
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
-              <div class="w-full bg-neutral-primary-soft p-6 border border-default rounded-base shadow-xs animate-pulse">
-                <div class="w-full h-48 bg-neutral-secondary-soft rounded-base mb-6"></div>
-                <div class="h-4 bg-neutral-secondary-soft rounded w-3/4 mb-3"></div>
-                <div class="h-4 bg-neutral-secondary-soft rounded w-1/2 mb-6"></div>
+              <div class="animate-pulse rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                <div class="mb-6 h-48 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+                <div class="mb-3 h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700"></div>
+                <div class="mb-6 h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700"></div>
                 <div class="flex items-center justify-between">
-                  <div class="h-8 bg-neutral-secondary-soft rounded w-20"></div>
-                  <div class="h-9 bg-neutral-secondary-soft rounded w-28"></div>
+                  <div class="h-8 w-20 rounded bg-gray-200 dark:bg-gray-700"></div>
+                  <div class="h-9 w-28 rounded bg-gray-200 dark:bg-gray-700"></div>
                 </div>
               </div>
             }
           </div>
         }
 
-        <!-- ── STATO: ERRORE ── -->
         @else if (error()) {
-          <div class="rounded-base border border-error-subtle bg-error-softer p-4 text-fg-error text-sm">
+          <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
             {{ error() }}
           </div>
         }
 
-        <!-- ── STATO: NESSUN RISULTATO ── -->
         @else if (courses().length === 0) {
           <div class="flex flex-col items-center justify-center py-20 text-center">
-            <svg class="w-12 h-12 text-muted mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            <svg class="mb-4 h-12 w-12 text-fg-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
             </svg>
-            <p class="text-heading font-semibold mb-1">Nessun corso trovato</p>
-            <p class="text-muted text-sm">Prova a modificare i filtri o la ricerca</p>
-            <button
-              type="button"
-              (click)="resetFilters()"
-              class="mt-4 text-sm text-fg-brand hover:text-fg-brand-strong font-medium transition-colors"
-            >
-              Azzera tutti i filtri
+            <p class="mb-1 font-semibold text-heading">No courses found</p>
+            <p class="text-sm text-fg-muted">Try adjusting your filters or search query</p>
+            <button (click)="resetFilters()" type="button" class="mt-4 text-sm font-medium text-fg-brand transition-colors hover:text-fg-brand-strong">
+              Reset all filters
             </button>
           </div>
         }
 
-        <!-- ── STATO: GRIGLIA CORSI ── -->
         @else {
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             @for (course of courses(); track course.id) {
@@ -207,58 +129,31 @@
             }
           </div>
 
-          <!-- Paginazione numerica -->
           @if (totalPages() > 1) {
-            <div class="flex items-center justify-center gap-1 mt-10">
-
-              <!-- Precedente -->
-              <button
-                type="button"
-                [disabled]="currentPage() === 1"
-                (click)="goToPage(currentPage() - 1)"
-                class="cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-base border border-default text-muted hover:text-heading hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                </svg>
+            <div class="mt-10 flex items-center justify-center gap-1">
+              <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
               </button>
 
-              <!-- Pagine numerate -->
               @for (page of visiblePages(); track page) {
                 @if (page === -1) {
-                  <!-- Ellipsis -->
-                  <span class="inline-flex items-center justify-center w-9 h-9 text-muted text-sm">…</span>
+                  <span class="inline-flex h-9 w-9 items-center justify-center text-sm text-fg-muted">…</span>
                 } @else {
-                  <button
-                    type="button"
-                    (click)="goToPage(page)"
-                    [class]="page === currentPage()
-                      ? 'cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-base text-sm font-semibold bg-brand text-white border border-brand shadow-xs'
-                      : 'cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-base text-sm text-body border border-default hover:bg-surface-hover hover:text-heading transition-colors'"
-                  >
+                  <button type="button" (click)="goToPage(page)" [class]="page === currentPage()
+                    ? 'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-fg-brand text-sm font-semibold text-white shadow-sm border border-fg-brand'
+                    : 'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-heading dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'">
                     {{ page }}
                   </button>
                 }
               }
 
-              <!-- Successivo -->
-              <button
-                type="button"
-                [disabled]="currentPage() === totalPages()"
-                (click)="goToPage(currentPage() + 1)"
-                class="cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-base border border-default text-muted hover:text-heading hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                </svg>
+              <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
               </button>
-
             </div>
           }
         }
-
       </div>
     </div>
   </div>
-
 </div>
