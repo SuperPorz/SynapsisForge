@@ -38,6 +38,7 @@ They exist **solely to manage the agentic development workflow**.
 6. **`TODO.md`** contains the active work block. When all items are done, the next block is pulled from `PLAN.md`.
 7. During implementation, **`TODO.md`** may have finer-grained tasks than `PLAN.md` (more specific subtasks). The source of truth for completion is `PLAN.md`.
 8. Changes to agentic files **are never committed** unless explicitly requested.
+9. **Pushing to any remote (GitHub/GitLab) is strictly forbidden without explicit user approval.** This includes `git push`, `git push --force`, and any deploy trigger.
 
 ### Golden rule — planning immutability
 
