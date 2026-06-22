@@ -1,6 +1,6 @@
-import { Component, input, output, signal, computed, effect } from '@angular/core';
-import { QuizItem } from '../../../../core/models/course-model';
+import { Component, input, output, signal, computed, effect, untracked, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { QuizItem, QuizAnswer } from '../../../../core/models/course-model';
 
 type AnswerState = 'unanswered' | 'correct' | 'wrong';
 
@@ -9,60 +9,103 @@ type AnswerState = 'unanswered' | 'correct' | 'wrong';
   standalone: true,
   imports: [NgClass],
   templateUrl: './quiz-player.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuizPlayer {
-  // ── input / output ────────────────────────────────────────────────────────
   quiz = input.required<QuizItem[]>();
+  initialAnswers = input<QuizAnswer[]>([]);
   quizCompleted = output<void>();
+  answersChanged = output<QuizAnswer[]>();
 
-  // ── state ─────────────────────────────────────────────────────────────────
   currentIndex = signal(0);
+  answeredQuestions = signal<Record<number, QuizAnswer>>({});
   selectedLabel = signal<string | null>(null);
   answerState = signal<AnswerState>('unanswered');
   animating = signal(false);
 
-  // ── reset stato quando cambia il quiz (nuova lezione) ────────────────────
   constructor() {
     effect(() => {
-      this.quiz(); // dipendenza: ogni volta che quiz cambia...
+      this.quiz();
+      const saved = untracked(() => this.initialAnswers());
       this.currentIndex.set(0);
-      this.selectedLabel.set(null);
-      this.answerState.set('unanswered');
+      this.answeredQuestions.set(this.indexAnswers(saved));
+      this.restoreCurrentQuestion();
       this.animating.set(false);
     });
   }
 
-  // ── derived ───────────────────────────────────────────────────────────────
+  private indexAnswers(answers: QuizAnswer[]): Record<number, QuizAnswer> {
+    const map: Record<number, QuizAnswer> = {};
+    for (const a of answers) {
+      map[a.questionIndex] = a;
+    }
+    return map;
+  }
+
+  private restoreCurrentQuestion(): void {
+    const existing = this.answeredQuestions()[this.currentIndex()];
+    if (existing) {
+      this.selectedLabel.set(existing.selectedLabel);
+      this.answerState.set(existing.correct ? 'correct' : 'wrong');
+    } else {
+      this.selectedLabel.set(null);
+      this.answerState.set('unanswered');
+    }
+  }
+
   currentQuestion = computed(() => this.quiz()[this.currentIndex()]);
   isLast = computed(() => this.currentIndex() === this.quiz().length - 1);
+  isFirst = computed(() => this.currentIndex() === 0);
   progress = computed(() => Math.round(((this.currentIndex() + 1) / this.quiz().length) * 100));
 
-  // ── actions ───────────────────────────────────────────────────────────────
   selectAnswer(label: string): void {
     if (this.answerState() !== 'unanswered') return;
+    const q = this.currentQuestion();
+    if (!q) return;
+    const correct = label === q.correctAnswer;
+    const answer: QuizAnswer = {
+      questionIndex: this.currentIndex(),
+      selectedLabel: label,
+      correct,
+    };
+    this.answeredQuestions.update((aq) => ({ ...aq, [this.currentIndex()]: answer }));
     this.selectedLabel.set(label);
-    this.answerState.set(label === this.currentQuestion().correctAnswer ? 'correct' : 'wrong');
+    this.answerState.set(correct ? 'correct' : 'wrong');
+    this.emitAnswers();
+  }
+
+  private emitAnswers(): void {
+    const all = Object.values(this.answeredQuestions())
+      .sort((a, b) => a.questionIndex - b.questionIndex);
+    this.answersChanged.emit(all);
   }
 
   next(): void {
     if (this.answerState() === 'unanswered') return;
-
+    this.emitAnswers();
     if (this.isLast()) {
       this.quizCompleted.emit();
       return;
     }
-
-    // animazione di uscita → avanza → animazione di entrata
     this.animating.set(true);
     setTimeout(() => {
       this.currentIndex.update((i) => i + 1);
-      this.selectedLabel.set(null);
-      this.answerState.set('unanswered');
+      this.restoreCurrentQuestion();
       this.animating.set(false);
     }, 300);
   }
 
-  // ── helpers template ──────────────────────────────────────────────────────
+  prev(): void {
+    if (this.isFirst()) return;
+    this.emitAnswers();
+    this.animating.set(true);
+    setTimeout(() => {
+      this.currentIndex.update((i) => i - 1);
+      this.restoreCurrentQuestion();
+      this.animating.set(false);
+    }, 300);
+  }
+
   optionClass(label: string): string {
     const state = this.answerState();
     const selected = this.selectedLabel();

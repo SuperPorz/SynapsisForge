@@ -1,10 +1,10 @@
 //prettier-ignore
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fromEvent, Subject, Subscription } from 'rxjs';
 import { throttleTime, takeUntil } from 'rxjs/operators';
 import { LessonsService } from '../../../core/services/lessons.service';
-import { Lesson, LessonVideoResponse, Section, QuizItem } from '../../../core/models/course-model';
+import { Lesson, LessonVideoResponse, Section, QuizItem, QuizAnswer } from '../../../core/models/course-model';
 import { QuizPlayer } from './quiz-player/quiz-player';
 
 @Component({
@@ -23,7 +23,7 @@ export class LessonPlayer implements OnInit, OnDestroy {
 
   // ── route params ──────────────────────────────────────────────────────────
   private enrollmentId = signal('');
-  private lessonId = signal('');
+  lessonId = signal('');
 
   // ── state signals ─────────────────────────────────────────────────────────
   loading = signal(true);
@@ -33,10 +33,8 @@ export class LessonPlayer implements OnInit, OnDestroy {
   completedLessonIds = signal<string[]>([]);
   currentLesson = signal<Lesson | null>(null);
   quiz = signal<QuizItem[]>([]);
+  quizAnswers = signal<QuizAnswer[]>([]);
   showCongratulations = signal(false);
-
-  // ── derived signals ───────────────────────────────────────────────────────
-  activeLessonId = computed(() => this.lessonId());
 
   // ── RxJS cleanup ──────────────────────────────────────────────────────────
   private readonly destroy$ = new Subject<void>();
@@ -75,6 +73,7 @@ export class LessonPlayer implements OnInit, OnDestroy {
           this.sections.set(res.sections);
           this.completedLessonIds.set(res.completedLessonIds);
           this.quiz.set(res.quiz ?? []);
+          this.quizAnswers.set(res.quizAnswers ?? []);
 
           const found =
             res.sections.flatMap((s) => s.lessons).find((l) => l.id === this.lessonId()) ?? null;
@@ -118,31 +117,43 @@ export class LessonPlayer implements OnInit, OnDestroy {
   onVideoEnded(): void {
     const video = this.videoPlayerRef?.nativeElement;
     const position = video ? Math.floor(video.currentTime) : 0;
-    this.saveProgress(position, true);
 
-    if (!this.completedLessonIds().includes(this.lessonId())) {
-      this.completedLessonIds.update((ids) => [...ids, this.lessonId()]);
-    }
-
-    // se non c'è quiz, il video stesso completa la lezione → controlla corso
     if (this.quiz().length === 0) {
+      this.saveProgress(position, true);
+
+      if (!this.completedLessonIds().includes(this.lessonId())) {
+        this.completedLessonIds.update((ids) => [...ids, this.lessonId()]);
+      }
+
       this.checkCourseCompletion();
+    } else {
+      this.saveProgress(position, false);
     }
   }
 
-  // ── completamento quiz ────────────────────────────────────────────────────
+  // ── completamento quiz → naviga alla prossima lezione ─────────────────────
   onQuizCompleted(): void {
     const pos = this.videoPlayerRef?.nativeElement
       ? Math.floor(this.videoPlayerRef.nativeElement.currentTime)
       : 0;
 
-    this.saveProgress(pos, true);
+    this.saveProgress(pos, true, this.quizAnswers());
 
     if (!this.completedLessonIds().includes(this.lessonId())) {
       this.completedLessonIds.update((ids) => [...ids, this.lessonId()]);
     }
 
     this.checkCourseCompletion();
+    this.navigateToNextLesson();
+  }
+
+  // ── risposte quiz aggiornate ───────────────────────────────────────────────
+  onAnswersChanged(answers: QuizAnswer[]): void {
+    this.quizAnswers.set(answers);
+    const pos = this.videoPlayerRef?.nativeElement
+      ? Math.floor(this.videoPlayerRef.nativeElement.currentTime)
+      : 0;
+    this.saveProgress(pos, false, answers);
   }
 
   // ── controlla se il corso è completato al 100% ───────────────────────────
@@ -159,11 +170,12 @@ export class LessonPlayer implements OnInit, OnDestroy {
   }
 
   // ── chiamata HTTP progresso ───────────────────────────────────────────────
-  private saveProgress(positionSeconds: number, completed: boolean): void {
+  private saveProgress(positionSeconds: number, completed: boolean, quizAnswers?: QuizAnswer[]): void {
     this.lessonsService
       .updateProgress(this.enrollmentId(), this.lessonId(), {
         last_position_seconds: positionSeconds,
         completed,
+        quizAnswers,
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -176,6 +188,14 @@ export class LessonPlayer implements OnInit, OnDestroy {
   navigateToLesson(lessonId: string): void {
     if (lessonId === this.lessonId()) return;
     this.router.navigate(['/enrollments', this.enrollmentId(), 'lessons', lessonId]);
+  }
+
+  private navigateToNextLesson(): void {
+    const allLessons = this.sections().flatMap((s) => s.lessons);
+    const idx = allLessons.findIndex((l) => l.id === this.lessonId());
+    if (idx !== -1 && idx < allLessons.length - 1) {
+      this.navigateToLesson(allLessons[idx + 1].id);
+    }
   }
 
   // ── helpers template ──────────────────────────────────────────────────────

@@ -41,11 +41,13 @@ export interface LessonVideoResponse {
   sections: Section[];
   completedLessonIds: string[];
   quiz: QuizItem[];
+  quizAnswers: QuizAnswer[];
 }
 
 export interface UpdateProgressPayload {
   last_position_seconds: number;
   completed?: boolean;
+  quizAnswers?: QuizAnswer[];
 }
 
 export interface QuizOption {
@@ -58,4 +60,10 @@ export interface QuizItem {
   options: QuizOption[];
   correctAnswer: string;
   explanation: string | null;
+}
+
+export interface QuizAnswer {
+  questionIndex: number;
+  selectedLabel: string;
+  correct: boolean;
 }

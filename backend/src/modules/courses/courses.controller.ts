@@ -1,8 +1,26 @@
-import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, ParseBoolPipe, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseBoolPipe,
+  Patch,
+  Post,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid.pipe';
 import { ParsePositiveIntPipe } from 'src/common/pipes/parse-positive-int.pipe';
 import { UserRole } from 'src/common/entities/enum/users.enum';
@@ -19,28 +37,47 @@ export class CoursesController {
   constructor(private readonly CoursesService: CoursesService) {}
 
   @Public()
-  @ApiOperation({ summary: 'Get all courses with pagination and optional category filter' })
-  @ApiResponse({ status: 200, description: 'List of courses retrieved successfully.' })
-  @ApiResponse({ status: 404, description: 'No courses found for the given criteria.' })
+  @ApiOperation({
+    summary: 'Get all courses with pagination and optional category filter',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of courses retrieved successfully.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'No courses found for the given criteria.',
+  })
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async findAll(
     @Query('page', ParsePositiveIntPipe) page: number = 1,
     @Query('limit', ParsePositiveIntPipe) limit: number = 10,
     @Query('category') category?: string,
-    @Query('featured', new ParseBoolPipe({ optional: true })) featured?: boolean,
+    @Query('featured', new ParseBoolPipe({ optional: true }))
+    featured?: boolean,
   ) {
-    const { data, total } = await this.CoursesService.findAll(page, limit, category, featured);
+    const { data, total } = await this.CoursesService.findAll(
+      page,
+      limit,
+      category,
+      featured,
+    );
 
     return {
-      data: plainToInstance(CourseResponseDto, data, { excludeExtraneousValues: true }),
+      data: plainToInstance(CourseResponseDto, data, {
+        excludeExtraneousValues: true,
+      }),
       total,
     };
   }
 
   @Public()
   @ApiOperation({ summary: 'Get all available course categories' })
-  @ApiResponse({ status: 200, description: 'Categories retrieved successfully.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Categories retrieved successfully.',
+  })
   @Get('categories')
   getCategories() {
     return this.CoursesService.getCategories();
@@ -49,7 +86,10 @@ export class CoursesController {
   @Public()
   @ApiOperation({ summary: 'Search for courses by title or description' })
   @ApiResponse({ status: 200, description: 'Matching courses found.' })
-  @ApiResponse({ status: 404, description: 'No courses found for the given search query.' })
+  @ApiResponse({
+    status: 404,
+    description: 'No courses found for the given search query.',
+  })
   @Get('search')
   search(@Query('q') query: string) {
     return this.CoursesService.search(query);
@@ -118,7 +158,10 @@ export class CoursesController {
 
   @ApiOperation({ summary: 'Search for courses with filters' })
   @ApiResponse({ status: 200, description: 'Filtered courses found.' })
-  @ApiResponse({ status: 404, description: 'No courses found for the given filters.' })
+  @ApiResponse({
+    status: 404,
+    description: 'No courses found for the given filters.',
+  })
   @Get('search/filter')
   searchFilter(@Query() filters: SearchFilterDto) {
     return this.CoursesService.searchFilter(filters);

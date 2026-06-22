@@ -1,5 +1,11 @@
 import { Controller, Get, Patch, Param, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { CertificatesService } from './certificates.service';
 import { Public } from 'src/common/decorators/public.decorator';
 
@@ -12,8 +18,14 @@ export class CertificatesController {
   // ─── GET /certificates/verify/:certificate_code ── PUBBLICO ──────────────
   @Public()
   @Get('verify/:certificate_code')
-  @ApiOperation({ summary: 'Verifica autenticità di un certificato (pubblico)' })
-  @ApiParam({ name: 'certificate_code', description: 'UUID del certificato', type: String })
+  @ApiOperation({
+    summary: 'Verifica autenticità di un certificato (pubblico)',
+  })
+  @ApiParam({
+    name: 'certificate_code',
+    description: 'UUID del certificato',
+    type: String,
+  })
   @ApiResponse({ status: 200, description: 'Certificato trovato e verificato' })
   @ApiResponse({ status: 404, description: 'Certificato non trovato' })
   verify(@Param('certificate_code', ParseUUIDPipe) certificate_code: string) {

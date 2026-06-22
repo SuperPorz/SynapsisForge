@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * mongo-uri.util.ts
  * -----------------

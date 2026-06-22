@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../common/entities/users.entity';

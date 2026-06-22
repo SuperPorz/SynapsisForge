@@ -1,4 +1,25 @@
-import { IsBoolean, IsInt, IsOptional, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  Min,
+  IsArray,
+  ValidateNested,
+  IsNumber,
+  IsString,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class QuizAnswerDto {
+  @IsNumber()
+  questionIndex!: number;
+
+  @IsString()
+  selectedLabel!: string;
+
+  @IsBoolean()
+  correct!: boolean;
+}
 
 export class UpdateLessonProgressDto {
   @IsInt()
@@ -8,4 +29,10 @@ export class UpdateLessonProgressDto {
   @IsBoolean()
   @IsOptional()
   completed?: boolean;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QuizAnswerDto)
+  @IsOptional()
+  quizAnswers?: QuizAnswerDto[];
 }

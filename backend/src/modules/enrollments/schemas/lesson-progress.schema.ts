@@ -3,13 +3,25 @@ import { HydratedDocument } from 'mongoose';
 
 export type LessonProgressDocument = HydratedDocument<LessonProgress>;
 
-@Schema({ collection: 'lesson_progress' }) // Opzionale: definisce il nome della collezione
+@Schema({ _id: false })
+export class QuizAnswer {
+  @Prop({ required: true })
+  questionIndex!: number;
+
+  @Prop({ required: true })
+  selectedLabel!: string;
+
+  @Prop({ required: true })
+  correct!: boolean;
+}
+
+@Schema({ collection: 'lesson_progress' })
 export class LessonProgress {
   @Prop({ required: true })
   enrollmentId!: string;
 
   @Prop({ required: true })
-  lessonId!: string; // FK verso Lesson PostgreSQL
+  lessonId!: string;
 
   @Prop({ default: Date.now })
   completedAt!: Date;
@@ -19,8 +31,10 @@ export class LessonProgress {
 
   @Prop({ type: Boolean, default: false })
   completed!: boolean;
+
+  @Prop({ type: [QuizAnswer], default: [] })
+  quizAnswers!: QuizAnswer[];
 }
 
-// Generazione dello schema fisico di Mongoose
-// prettier-ignore
-export const LessonProgressSchema = SchemaFactory.createForClass(LessonProgress);
+export const LessonProgressSchema =
+  SchemaFactory.createForClass(LessonProgress);

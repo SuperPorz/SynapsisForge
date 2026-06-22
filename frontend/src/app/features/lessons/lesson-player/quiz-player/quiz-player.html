@@ -28,7 +28,7 @@
       @for (option of currentQuestion().options; track option.label) {
         <button
           class="w-full text-left px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center gap-3"
-          [class]="optionClass(option.label)"
+          [ngClass]="optionClass(option.label)"
           (click)="selectAnswer(option.label)"
           [disabled]="answerState() !== 'unanswered'"
         >
@@ -68,15 +68,27 @@
     }
   </div>
 
-  <!-- Bottone avanti / completa -->
-  @if (answerState() !== 'unanswered') {
-    <div class="flex justify-end">
-      <button
-        class="px-6 py-2.5 bg-fg-brand text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
-        (click)="next()"
-      >
-        {{ isLast() ? 'Completa lezione' : 'Prossima domanda →' }}
-      </button>
-    </div>
-  }
+  <!-- Pulsanti navigazione — sempre visibili -->
+  <div class="flex items-center justify-between">
+    <button
+      class="px-4 py-2.5 text-sm font-medium rounded-lg border border-gray-200 text-fg hover:bg-surface-alt transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+      (click)="prev()"
+      [disabled]="isFirst()"
+    >
+      ← Precedente
+    </button>
+    <button
+      class="px-6 py-2.5 text-sm font-semibold rounded-lg transition-opacity"
+      [class.bg-fg-brand]="answerState() !== 'unanswered'"
+      [class.text-white]="answerState() !== 'unanswered'"
+      [class.hover:opacity-90]="answerState() !== 'unanswered'"
+      [class.bg-gray-400]="answerState() === 'unanswered'"
+      [class.text-gray-200]="answerState() === 'unanswered'"
+      [class.cursor-not-allowed]="answerState() === 'unanswered'"
+      (click)="next()"
+      [disabled]="answerState() === 'unanswered'"
+    >
+      {{ isLast() ? 'Lezione successiva →' : 'Prossima domanda →' }}
+    </button>
+  </div>
 </div>

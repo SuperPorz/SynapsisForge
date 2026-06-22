@@ -72,7 +72,12 @@
             <h3 class="text-base font-semibold text-heading mb-5 flex items-center gap-2">
               <span>📝</span> Quiz
             </h3>
-            <app-quiz-player [quiz]="quiz()" (quizCompleted)="onQuizCompleted()" />
+            <app-quiz-player
+              [quiz]="quiz()"
+              [initialAnswers]="quizAnswers()"
+              (quizCompleted)="onQuizCompleted()"
+              (answersChanged)="onAnswersChanged($event)"
+            />
           </div>
         }
       </main>
@@ -130,16 +135,16 @@
             @for (lesson of section.lessons; track lesson.id) {
               <button
                 class="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-surface transition-colors cursor-pointer border-b border-gray-50 last:border-0"
-                [class.bg-surface-alt]="lesson.id === activeLessonId()"
-                [class.border-l-2]="lesson.id === activeLessonId()"
-                [class.border-l-fg-brand]="lesson.id === activeLessonId()"
+[class.bg-surface-alt]="lesson.id === lessonId()"
+[class.border-l-2]="lesson.id === lessonId()"
+[class.border-l-fg-brand]="lesson.id === lessonId()"
                 (click)="navigateToLesson(lesson.id)"
               >
                 <!-- Icona stato -->
                 <span class="flex-shrink-0 w-5 text-center">
                   @if (isCompleted(lesson.id)) {
                     <span class="text-green-500 text-sm">✅</span>
-                  } @else if (lesson.id === activeLessonId()) {
+                  } @else if (lesson.id === lessonId()) {
                     <span class="text-fg-brand text-sm">▶</span>
                   } @else {
                     <span class="text-fg-muted text-sm">○</span>
@@ -150,7 +155,7 @@
                 <span class="flex flex-col min-w-0">
                   <span
                     class="text-sm text-fg truncate"
-                    [class.font-semibold]="lesson.id === activeLessonId()"
+                    [class.font-semibold]="lesson.id === lessonId()"
                   >
                     {{ lesson.title }}
                   </span>

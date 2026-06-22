@@ -92,7 +92,23 @@ The agent **can run CLI-based tests autonomously**. No browser-based visual test
 
 See `COMMANDS.md` for full command reference.
 
-## 5. Dev databases
+## 5. Service management
+
+**CRITICAL: Never start, stop, or restart the Angular dev server or NestJS backend.**
+
+The user always manages both services manually from their VSCode terminal:
+- **Frontend**: `http://localhost:4200` (ng serve)
+- **Backend**: `http://localhost:3000` (nest start --watch)
+
+To verify a service is running, check its port:
+```bash
+curl -s -o /dev/null -w "%{http_code}" http://localhost:4200  # → 200 if running
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000  # → 401 (no auth) if running
+```
+
+If a service is down, **ask the user** to start it rather than attempting to start it yourself.
+
+## 6. Dev databases
 
 Three Docker containers are always running in the background:
 
@@ -104,14 +120,14 @@ Three Docker containers are always running in the background:
 
 Containers are defined in `infra/docker-compose.yaml`.
 
-## 6. Relevant API endpoints
+## 7. Relevant API endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/enrollments/:eid/lessons/:lid/video` | Video URL + quiz + progress + sections |
 | PATCH | `/enrollments/:eid/lessons/:lid/progress` | Save lesson progress (position, completed, quizAnswers) |
 
-## 7. Agent states
+## 8. Agent states
 
 - 🟢 Ready: awaiting instructions
 - 🔍 Analyzing: studying codebase

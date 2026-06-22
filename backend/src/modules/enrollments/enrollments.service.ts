@@ -140,7 +140,7 @@ export class EnrollmentsService {
     ); */
 
     // 3. Conta le lezioni completate per questo enrollment
-    const completedCount = await this.lessonProgressModel.countDocuments({ enrollmentId });
+    const completedCount = await this.lessonProgressModel.countDocuments({ enrollmentId, completed: true });
 
     // 4. Ricalcola il progresso
     const percent = Math.round((completedCount / totalLessons) * 100);

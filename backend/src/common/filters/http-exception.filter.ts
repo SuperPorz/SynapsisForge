@@ -50,7 +50,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
   // Metodo privato che "classifica" l'eccezione
   // e la converte sempre in HttpException
   private toHttpException(exception: unknown): HttpException {
-
     // CASO 1: errore TypeORM — unique constraint violation
     if (exception instanceof QueryFailedError) {
       const isUniqueViolation =

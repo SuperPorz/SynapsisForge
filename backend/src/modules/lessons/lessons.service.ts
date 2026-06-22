@@ -198,6 +198,11 @@ export class LessonsService {
       }[];
     }[];
     completedLessonIds: string[];
+    quizAnswers: {
+      questionIndex: number;
+      selectedLabel: string;
+      correct: boolean;
+    }[];
   }> {
     // 1. verifica enrollment + carica course
     const enrollment = await this.enrollmentsService.findById(enrollmentId);
@@ -256,6 +261,13 @@ export class LessonsService {
     return {
       videoUrl,
       last_position_seconds: progress?.last_position_seconds ?? 0,
+      quizAnswers: progress?.quizAnswers
+        ? progress.quizAnswers.map((a) => ({
+            questionIndex: a.questionIndex,
+            selectedLabel: a.selectedLabel,
+            correct: a.correct,
+          }))
+        : [],
       quiz: (content.quiz ?? []).map((q) => ({
         question: q.question,
         options: q.options.map((o) => ({ label: o.label, text: o.text })),
@@ -286,25 +298,31 @@ export class LessonsService {
   ): Promise<LessonProgressDocument> {
     const completed = dto.completed ?? false;
 
-    // upsert — crea il documento se non esiste, aggiorna se esiste
+    const $set: Record<string, unknown> = {
+      last_position_seconds: dto.last_position_seconds,
+      completed,
+    };
+
+    if (dto.quizAnswers) {
+      $set.quizAnswers = dto.quizAnswers;
+    }
+
+    if (completed) {
+      $set.completedAt = new Date();
+    }
+
     const progress = await this.lessonProgressModel
       .findOneAndUpdate(
         { enrollmentId, lessonId },
-        {
-          $set: {
-            last_position_seconds: dto.last_position_seconds,
-            ...(completed && { completedAt: new Date() }),
-          },
-        },
+        { $set },
         { new: true, upsert: true },
       )
       .exec();
 
-    // se completed → ricalcola progress_percent aggregato su PG
     if (completed) {
       await this.enrollmentsService.updateProgress(enrollmentId);
     }
 
-    return progress;
+    return progress.toObject() as LessonProgressDocument;
   }
 }
