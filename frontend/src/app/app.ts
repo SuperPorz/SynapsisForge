@@ -1,22 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ApiService } from './core/services/api.service';
+import { Navbar } from './shared/components/navbar/navbar';
+import { Footer } from './shared/components/footer/footer';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Navbar, Footer],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
-  protected readonly title = signal('frontend');
-
-  constructor(private api: ApiService) {}
-
-  ngOnInit() {
-    this.api.get<any[]>('/courses?page=1&limit=10').subscribe({
-      next: (data) => console.log('✅ corsi:', data),
-      error: (err) => console.error('❌ errore del cazzo:', err),
-    });
-  }
-}
+export class App {}
