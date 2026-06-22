@@ -2,6 +2,7 @@
 import { Component, OnInit, DestroyRef, inject, signal, computed, } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { CourseCard } from '../../../shared/components/course-card/course-card';
@@ -51,10 +52,11 @@ const PRICE_RANGES: PriceRangeOption[] = [
 export class CourseList implements OnInit {
   private coursesService = inject(CourseService);
   private destroyRef = inject(DestroyRef);
+  private route = inject(ActivatedRoute);
 
   courses = signal<Course[]>([]);
   total = signal(0);
-  categories = signal([] as { id: string; name: string }[]);
+  categories = signal([] as { id: string; name: string; slug: string }[]);
 
   isLoading = signal(true);
   isSearching = signal(false);
@@ -98,6 +100,10 @@ export class CourseList implements OnInit {
   });
 
   ngOnInit(): void {
+    const initialCategory = this.route.snapshot.queryParams['category'];
+    if (initialCategory) {
+      this.filters.update((f) => ({ ...f, category: initialCategory }));
+    }
     this.loadCategories();
     this.loadCourses();
     this.initSearchDebounce();
@@ -177,11 +183,11 @@ export class CourseList implements OnInit {
     return { min, max };
   }
 
-  onCategoryChange(categoryId: string): void {
-    const isSame = this.filters().category === categoryId;
+  onCategoryChange(categorySlug: string): void {
+    const isSame = this.filters().category === categorySlug;
     this.filters.update((f) => ({
       ...f,
-      category: isSame ? null : categoryId,
+      category: isSame ? null : categorySlug,
       page: 1,
     }));
     this.loadCourses();
@@ -223,8 +229,8 @@ export class CourseList implements OnInit {
     this.loadCourses();
   }
 
-  isCategoryActive(categoryId: string): boolean {
-    return this.filters().category === categoryId;
+  isCategoryActive(categorySlug: string): boolean {
+    return this.filters().category === categorySlug;
   }
 
   isLevelActive(level: string): boolean {

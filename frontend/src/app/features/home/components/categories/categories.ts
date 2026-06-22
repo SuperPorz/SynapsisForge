@@ -17,18 +17,23 @@ export class Categories {
   categories: Category[] = [
     {
       id: 1,
-      label: 'web-development',
-      slug: 'web',
+      label: 'Web Development',
+      slug: 'web-development',
     },
     {
       id: 2,
-      label: 'python',
-      slug: 'py',
+      label: 'Data Science',
+      slug: 'data-science',
     },
     {
       id: 3,
-      label: 'angular',
-      slug: 'ng',
+      label: 'UI/UX Design',
+      slug: 'ui-ux-design',
+    },
+    {
+      id: 4,
+      label: 'Mobile Development',
+      slug: 'mobile-development',
     },
   ];
 }

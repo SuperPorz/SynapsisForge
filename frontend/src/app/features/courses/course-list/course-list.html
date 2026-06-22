@@ -21,7 +21,7 @@
             <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">Category</p>
             @for (category of categories(); track category.id) {
               <label class="group flex cursor-pointer items-center gap-2.5">
-                <input (change)="onCategoryChange(category.id)" [checked]="isCategoryActive(category.id)" type="checkbox" class="h-4 w-4 cursor-pointer accent-indigo-600" [value]="category.id" />
+                <input (change)="onCategoryChange(category.slug)" [checked]="isCategoryActive(category.slug)" type="checkbox" class="h-4 w-4 cursor-pointer accent-indigo-600" [value]="category.slug" />
                 <span class="text-sm text-gray-700 transition-colors group-hover:text-heading dark:text-gray-300">{{ category.name }}</span>
               </label>
             }

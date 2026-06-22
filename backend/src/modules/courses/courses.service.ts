@@ -35,7 +35,7 @@ export class CoursesService {
       .leftJoinAndSelect('course.category', 'category');
 
     if (category) {
-      qb.andWhere('category.name = :category', { category });
+      qb.andWhere('category.slug = :category', { category });
     }
 
     if (featured !== undefined) {
