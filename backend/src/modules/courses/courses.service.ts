@@ -1,6 +1,8 @@
 // prettier-ignore
 import { ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { Course } from 'src/common/entities/courses.entity';
 import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -8,6 +10,10 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { Category } from 'src/common/entities/categories.entity';
 import { CourseDetailResponseDto } from './dto/course-detail-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { Enrollment } from 'src/common/entities/enrollments.entity';
+import { Review } from 'src/common/entities/reviews.entity';
+import { Lesson } from 'src/common/entities/lessons.entity';
+import { LessonProgress } from 'src/modules/enrollments/schemas/lesson-progress.schema';
 
 @Injectable()
 export class CoursesService {
@@ -17,6 +23,18 @@ export class CoursesService {
 
     @InjectRepository(Category)
     private readonly categoriesRepo: Repository<Category>,
+
+    @InjectRepository(Enrollment)
+    private readonly enrollmentRepo: Repository<Enrollment>,
+
+    @InjectRepository(Review)
+    private readonly reviewRepo: Repository<Review>,
+
+    @InjectRepository(Lesson)
+    private readonly lessonRepo: Repository<Lesson>,
+
+    @InjectModel(LessonProgress.name, 'mongo_synapsis')
+    private lessonProgressModel: Model<LessonProgress>,
   ) {}
 
   async findAll(
@@ -164,6 +182,143 @@ export class CoursesService {
 
   async getCategories(): Promise<Category[]> {
     return await this.categoriesRepo.find();
+  }
+
+  async findMyCourses(userId: string) {
+    const courses = await this.coursesRepo
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .where('instructor.userId = :userId', { userId })
+      .orderBy('course.created_at', 'DESC')
+      .getMany();
+
+    const courseIds = courses.map((c) => c.id);
+
+    const enrollmentCounts = courseIds.length
+      ? await this.enrollmentRepo
+          .createQueryBuilder('enrollment')
+          .select('enrollment."courseId"', 'courseId')
+          .addSelect('COUNT(*)', 'count')
+          .where('enrollment."courseId" IN (:...courseIds)', { courseIds })
+          .groupBy('enrollment."courseId"')
+          .getRawMany()
+      : [];
+
+    const countMap: Record<string, number> = {};
+    for (const row of enrollmentCounts) {
+      countMap[row.courseId] = Number(row.count);
+    }
+
+    return courses.map((c) => ({
+      id: c.id,
+      title: c.title,
+      slug: c.slug,
+      description: c.description,
+      price: Number(c.price),
+      status: c.status,
+      thumbnail_url: c.thumbnail_url,
+      category: c.category?.name ?? null,
+      enrollmentCount: countMap[c.id] ?? 0,
+      created_at: c.created_at,
+    }));
+  }
+
+  async getCourseStats(userId: string, courseId: string) {
+    const course = await this.coursesRepo
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('course.category', 'category')
+      .where('course.id = :courseId', { courseId })
+      .andWhere('instructor.userId = :userId', { userId })
+      .getOne();
+
+    if (!course) throw new NotFoundException(`Course ${courseId} not found`);
+
+    const enrollmentCount = await this.enrollmentRepo.count({
+      where: { course: { id: courseId } },
+    });
+
+    const avgRating = await this.reviewRepo
+      .createQueryBuilder('review')
+      .innerJoin('review.enrollment', 'enrollment')
+      .where('enrollment."courseId" = :courseId', { courseId })
+      .select('AVG(review.rating)', 'avg')
+      .getRawOne();
+
+    const lessons = await this.lessonRepo.find({
+      where: { course: { id: courseId } },
+    });
+
+    const lessonIds = lessons.map((l) => l.id);
+    const watchTimeAgg = lessonIds.length
+      ? await this.lessonProgressModel
+          .aggregate([
+            { $match: { lessonId: { $in: lessonIds } } },
+            { $group: { _id: null, total: { $sum: '$last_position_seconds' } } },
+          ])
+          .exec()
+      : [];
+
+    const totalWatchTimeSeconds = watchTimeAgg.length ? watchTimeAgg[0].total : 0;
+
+    return {
+      courseId: course.id,
+      courseTitle: course.title,
+      enrollmentCount,
+      averageRating: avgRating?.avg ? Number(Number(avgRating.avg).toFixed(1)) : null,
+      totalWatchTimeSeconds,
+    };
+  }
+
+  async getCourseLessonsWithStats(userId: string, courseId: string) {
+    const course = await this.coursesRepo
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .where('course.id = :courseId', { courseId })
+      .andWhere('instructor.userId = :userId', { userId })
+      .getOne();
+
+    if (!course) throw new NotFoundException(`Course ${courseId} not found`);
+
+    const lessons = await this.lessonRepo.find({
+      where: { course: { id: courseId } },
+      order: { order: 'ASC' },
+    });
+
+    if (!lessons.length) return [];
+
+    const lessonIds = lessons.map((l) => l.id);
+
+    const watchTimeAgg = await this.lessonProgressModel
+      .aggregate([
+        { $match: { lessonId: { $in: lessonIds } } },
+        {
+          $group: {
+            _id: '$lessonId',
+            totalWatchTime: { $sum: '$last_position_seconds' },
+            completions: { $sum: { $cond: ['$completed', 1, 0] } },
+          },
+        },
+      ])
+      .exec();
+
+    const statsMap: Record<string, { totalWatchTime: number; completions: number }> = {};
+    for (const row of watchTimeAgg) {
+      statsMap[row._id] = {
+        totalWatchTime: row.totalWatchTime,
+        completions: row.completions,
+      };
+    }
+
+    return lessons.map((l) => ({
+      lessonId: l.id,
+      lessonTitle: l.title,
+      order: l.order,
+      durationSeconds: l.duration_seconds,
+      totalWatchTimeSeconds: statsMap[l.id]?.totalWatchTime ?? 0,
+      completionCount: statsMap[l.id]?.completions ?? 0,
+    }));
   }
 
   async searchFilter(filters: {

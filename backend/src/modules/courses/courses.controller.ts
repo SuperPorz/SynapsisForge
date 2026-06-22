@@ -9,8 +9,10 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseInterceptors,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -99,6 +101,39 @@ export class CoursesController {
   @Get('search')
   search(@Query('q') query: string) {
     return this.CoursesService.search(query);
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.INSTRUCTOR)
+  @ApiOperation({ summary: 'Get all courses owned by the authenticated instructor' })
+  @ApiResponse({ status: 200, description: 'Instructor courses retrieved.' })
+  @Get('my')
+  findMyCourses(@Req() req: Request & { user: { id: string } }) {
+    return this.CoursesService.findMyCourses(req.user.id);
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.INSTRUCTOR)
+  @ApiOperation({ summary: 'Get stats for a course (enrollments, rating, watch time)' })
+  @ApiResponse({ status: 200, description: 'Course stats retrieved.' })
+  @Get('my/stats/:id')
+  getCourseStats(
+    @Req() req: Request & { user: { id: string } },
+    @Param('id', ParseUuidPipe) id: string,
+  ) {
+    return this.CoursesService.getCourseStats(req.user.id, id);
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.INSTRUCTOR)
+  @ApiOperation({ summary: 'Get lesson list with watch time stats for a course' })
+  @ApiResponse({ status: 200, description: 'Lessons with stats retrieved.' })
+  @Get('my/:id/lessons')
+  getCourseLessons(
+    @Req() req: Request & { user: { id: string } },
+    @Param('id', ParseUuidPipe) id: string,
+  ) {
+    return this.CoursesService.getCourseLessonsWithStats(req.user.id, id);
   }
 
   @Public()

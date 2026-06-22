@@ -1,1 +1,157 @@
-<p>instructor works!</p>
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Instructor Panel</h1>
+    <a routerLink="/dashboard/instructor/new" class="inline-flex items-center gap-2 rounded-lg bg-fg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Create new course
+    </a>
+  </div>
+
+  <div class="border-b border-gray-200 dark:border-gray-700">
+    <nav class="-mb-px flex gap-6">
+      <button (click)="activeTab.set('courses')" class="border-b-2 pb-3 text-sm font-medium transition-colors" [class.border-fg-brand]="activeTab() === 'courses'" [class.text-fg-brand]="activeTab() === 'courses'" [class.border-transparent]="activeTab() !== 'courses'" [class.text-gray-500]="activeTab() !== 'courses'" [class.hover:text-gray-700]="activeTab() !== 'courses'" [class.hover:border-gray-300]="activeTab() !== 'courses'">
+        Courses
+      </button>
+      <button (click)="activeTab.set('analytics')" class="border-b-2 pb-3 text-sm font-medium transition-colors" [class.border-fg-brand]="activeTab() === 'analytics'" [class.text-fg-brand]="activeTab() === 'analytics'" [class.border-transparent]="activeTab() !== 'analytics'" [class.text-gray-500]="activeTab() !== 'analytics'" [class.hover:text-gray-700]="activeTab() !== 'analytics'" [class.hover:border-gray-300]="activeTab() !== 'analytics'">
+        Analytics
+      </button>
+    </nav>
+  </div>
+
+  @if (activeTab() === 'courses') {
+    <div class="space-y-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="Search courses..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            class="w-64 rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+          />
+          <select
+            [ngModel]="statusFilter()"
+            (ngModelChange)="statusFilter.set($event)"
+            class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+          >
+            <option value="all">All status</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="DRAFT">Draft</option>
+            <option value="PENDING">Pending</option>
+          </select>
+        </div>
+        <span class="text-sm text-gray-500 dark:text-gray-400">{{ filteredCourses().length }} courses</span>
+      </div>
+
+      @if (loading()) {
+        <div class="flex items-center justify-center py-12">
+          <div class="h-8 w-8 animate-spin rounded-full border-4 border-fg-brand border-t-transparent"></div>
+        </div>
+      } @else if (filteredCourses().length === 0) {
+        <div class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No courses yet</h3>
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Create your first course to get started.</p>
+          <a routerLink="/dashboard/instructor/new" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-fg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Create new course
+          </a>
+        </div>
+      } @else {
+        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Course</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Price</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Enrollments</th>
+                <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+              @for (course of filteredCourses(); track course.id) {
+                <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <td class="whitespace-nowrap px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      @if (course.thumbnail_url) {
+                        <img [src]="course.thumbnail_url" alt="" class="h-10 w-16 rounded object-cover" />
+                      }
+                      <div class="min-w-0">
+                        <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ course.title }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ course.category }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4">
+                    <span [class]="statusBadgeClass(course.status)">{{ course.status }}</span>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    @if (course.price === 0) {
+                      Free
+                    } @else {
+                      ${{ course.price.toFixed(2) }}
+                    }
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ course.enrollmentCount }}</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
+                    <button (click)="selectCourse(course.id)" class="text-fg-brand hover:text-fg-brand-strong font-medium transition-colors">
+                      Analytics
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  @if (activeTab() === 'analytics') {
+    @if (!selectedCourseId()) {
+      <div class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Select a course</h3>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Go to the Courses tab and click "Analytics" on a course to view its statistics.</p>
+      </div>
+    } @else if (statsLoading()) {
+      <div class="flex items-center justify-center py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-fg-brand border-t-transparent"></div>
+      </div>
+    } @else {
+      @let stats = courseStats();
+      @if (stats) {
+        <div class="grid gap-6 sm:grid-cols-3">
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Enrollments</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ stats.enrollmentCount }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Average Rating</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ stats.averageRating ?? '—' }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Watch Time</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ (stats.totalWatchTimeSeconds / 3600).toFixed(1) }}h</p>
+          </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Enrollments (last 30 days)</h3>
+            <div class="h-64">
+              <canvas baseChart type="line" [data]="enrollmentsChartData()" [options]="enrollmentsChartOptions"></canvas>
+            </div>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Top Lessons by Watch Time</h3>
+            <div class="h-64">
+              <canvas baseChart type="bar" [data]="lessonsChartData()" [options]="lessonsChartOptions"></canvas>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  }
+</div>

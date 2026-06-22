@@ -55,4 +55,46 @@ export class CourseService {
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.API}/courses/categories`);
   }
+
+  getMyCourses(): Observable<InstructorCourse[]> {
+    return this.http.get<InstructorCourse[]>(`${this.API}/courses/my`);
+  }
+
+  getCourseStats(courseId: string): Observable<CourseStats> {
+    return this.http.get<CourseStats>(`${this.API}/courses/my/stats/${courseId}`);
+  }
+
+  getCourseLessonsWithStats(courseId: string): Observable<LessonStats[]> {
+    return this.http.get<LessonStats[]>(`${this.API}/courses/my/${courseId}/lessons`);
+  }
+}
+
+export interface InstructorCourse {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  status: string;
+  thumbnail_url: string;
+  category: string | null;
+  enrollmentCount: number;
+  created_at: string;
+}
+
+export interface CourseStats {
+  courseId: string;
+  courseTitle: string;
+  enrollmentCount: number;
+  averageRating: number | null;
+  totalWatchTimeSeconds: number;
+}
+
+export interface LessonStats {
+  lessonId: string;
+  lessonTitle: string;
+  order: number;
+  durationSeconds: number;
+  totalWatchTimeSeconds: number;
+  completionCount: number;
 }
