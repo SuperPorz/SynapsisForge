@@ -1,54 +1,33 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Transform } from 'class-transformer';
 
-export class ResponseEnrollmentDto {
+export class DashboardEnrollmentDto {
   @ApiProperty({ example: 'uuid-enrollment-id' })
-  @Expose()
   id!: string;
 
   @ApiProperty({ example: 42 })
-  @Expose()
   progress_percent!: number;
 
   @ApiProperty({ example: '2026-05-01T10:00:00.000Z', nullable: true })
-  @Expose()
   completed_at!: Date | null;
 
   @ApiProperty({ example: '2026-05-01T09:00:00.000Z' })
-  @Expose()
   enrolled_at!: Date;
 
   @ApiProperty({ example: 'uuid-course-id' })
-  @Expose()
-  @Transform(({ obj }: { obj: { course?: { id: string } } }) => obj.course?.id)
   courseId!: string;
 
   @ApiPropertyOptional({ example: 'Corso di Python' })
-  @Expose()
-  @Transform(
-    ({ obj }: { obj: { course?: { title: string } } }) => obj.course?.title,
-  )
   courseTitle?: string;
 
   @ApiPropertyOptional({ example: 'python-basics' })
-  @Expose()
-  @Transform(
-    ({ obj }: { obj: { course?: { slug: string } } }) => obj.course?.slug,
-  )
   courseSlug?: string;
 
   @ApiPropertyOptional({ example: 'https://example.com/thumb.jpg' })
-  @Expose()
-  @Transform(
-    ({ obj }: { obj: { course?: { thumbnail_url: string } } }) =>
-      obj.course?.thumbnail_url,
-  )
   courseThumbnail?: string;
 
+  @ApiPropertyOptional({ example: 'uuid-first-lesson-id' })
+  firstLessonId?: string;
+
   @ApiProperty({ example: 'uuid-student-id' })
-  @Expose()
-  @Transform(
-    ({ obj }: { obj: { student?: { userId: string } } }) => obj.student?.userId,
-  )
   studentId!: string;
 }

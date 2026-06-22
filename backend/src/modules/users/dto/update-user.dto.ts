@@ -30,4 +30,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(Country)
   country?: Country;
+
+  @ApiPropertyOptional({ example: 'https://example.com/avatar.jpg' })
+  @IsOptional()
+  @IsString()
+  avatar_url?: string;
+
+  @ApiPropertyOptional({ example: 'Studente di informatica' })
+  @IsOptional()
+  @IsString()
+  bio?: string;
 }

@@ -54,7 +54,9 @@ export class UsersService {
     if (!user)
       throw new NotFoundException(`Utente con id ${userId} non trovato`);
 
-    return plainToInstance(ResponseUserDto, user);
+    return plainToInstance(ResponseUserDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -72,7 +74,9 @@ export class UsersService {
     Object.assign(user, dto);
     await this.usersRepository.save(user);
 
-    return plainToInstance(ResponseUserDto, user);
+    return plainToInstance(ResponseUserDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 
   // ---------------------------------------------------------------------------

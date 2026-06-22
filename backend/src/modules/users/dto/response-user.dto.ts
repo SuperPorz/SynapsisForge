@@ -30,4 +30,12 @@ export class ResponseUserDto {
   @Expose()
   @ApiProperty()
   createdAt!: Date;
+
+  @Expose()
+  @ApiProperty({ nullable: true })
+  avatar_url!: string | null;
+
+  @Expose()
+  @ApiProperty({ nullable: true })
+  bio!: string | null;
 }

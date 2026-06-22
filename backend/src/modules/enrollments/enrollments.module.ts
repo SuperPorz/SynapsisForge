@@ -8,6 +8,7 @@ import { EnrollmentsController } from './enrollments.controller';
 import { Course } from 'src/common/entities/courses.entity';
 import { StudentProfile } from 'src/common/entities/student-profile.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
+import { Lesson } from 'src/common/entities/lessons.entity';
 
 // Mongoose Schema
 import {
@@ -18,7 +19,7 @@ import { Payment } from 'src/common/entities/payments.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Enrollment, StudentProfile, Course, Payment]),
+    TypeOrmModule.forFeature([Enrollment, StudentProfile, Course, Payment, Lesson]),
     MongooseModule.forFeature(
       [{ name: LessonProgress.name, schema: LessonProgressSchema }],
       'mongo_synapsis', // <--- DEVE ESSERE IDENTICO al connectionName in AppModule

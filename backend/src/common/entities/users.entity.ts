@@ -53,6 +53,12 @@ export class User {
   @Column({ type: 'timestamptz', nullable: true })
   password_reset_expires_at!: Date | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  avatar_url!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  bio!: string | null;
+
   @OneToMany(() => Payment, (payment) => payment.user)
   payments?: Payment[];
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Patch, Param, ParseUUIDPipe, Req } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -8,6 +8,7 @@ import {
 } from '@nestjs/swagger';
 import { CertificatesService } from './certificates.service';
 import { Public } from 'src/common/decorators/public.decorator';
+import { Request } from 'express';
 
 @ApiTags('Certificates')
 @ApiBearerAuth()
@@ -30,6 +31,18 @@ export class CertificatesController {
   @ApiResponse({ status: 404, description: 'Certificato non trovato' })
   verify(@Param('certificate_code', ParseUUIDPipe) certificate_code: string) {
     return this.certificatesService.verify(certificate_code);
+  }
+
+  // ─── GET /certificates/my ─────────────────────────────────────────────────
+  @ApiBearerAuth()
+  @Get('my')
+  @ApiOperation({ summary: "Recupera tutti i certificati dell'utente autenticato" })
+  @ApiResponse({ status: 200, description: 'Lista dei certificati' })
+  findMy(
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    const userId = req.user['id'];
+    return this.certificatesService.findByUser(userId);
   }
 
   // ─── GET /certificates/:id ────────────────────────────────────────────────

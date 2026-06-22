@@ -1,1 +1,36 @@
-<p>certificates works!</p>
+<div class="mx-auto max-w-3xl">
+  <h1 class="mb-8 text-2xl font-bold text-gray-900">I miei certificati</h1>
+
+  @if (loading()) {
+    <p class="text-gray-500">Caricamento...</p>
+  } @else if (certificates().length === 0) {
+    <div class="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
+      <p class="text-gray-500">Non hai ancora completato nessun corso.</p>
+      <a routerLink="/courses" class="mt-4 inline-block rounded-lg bg-fg-brand px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-fg-brand/90">
+        Esplora i corsi
+      </a>
+    </div>
+  } @else {
+    <div class="grid gap-4">
+      @for (c of certificates(); track c.id) {
+        <div class="flex items-center gap-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-amber-100">
+            <svg class="h-7 w-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-lg font-semibold text-gray-900">{{ c.courseTitle }}</h3>
+            <p class="text-sm text-gray-500">Rilasciato il {{ c.issued_at | date:'longDate' }}</p>
+            @if (!c.is_valid) {
+              <span class="mt-1 inline-block rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700">Revocato</span>
+            }
+          </div>
+          @if (c.pdf_url) {
+            <a [href]="c.pdf_url" target="_blank" class="shrink-0 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+              Scarica PDF
+            </a>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

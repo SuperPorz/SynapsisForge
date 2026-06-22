@@ -69,6 +69,46 @@ export class CertificatesService {
     };
   }
 
+  async findByUser(userId: string): Promise<
+    {
+      id: string;
+      issued_at: Date;
+      pdf_url: string;
+      is_valid: boolean;
+      certificate_code: string;
+      courseTitle: string;
+      courseId: string;
+    }[]
+  > {
+    const certificates = await this.certificateRepository
+      .createQueryBuilder('cert')
+      .innerJoinAndSelect('cert.enrollment', 'enrollment')
+      .innerJoin('enrollment.student', 'student')
+      .innerJoin('enrollment.course', 'course')
+      .where('student.userId = :userId', { userId })
+      .select([
+        'cert.id',
+        'cert.issued_at',
+        'cert.pdf_url',
+        'cert.is_valid',
+        'cert.certificate_code',
+        'course.title',
+        'course.id',
+      ])
+      .orderBy('cert.issued_at', 'DESC')
+      .getRawMany();
+
+    return certificates.map((c) => ({
+      id: c.cert_id,
+      issued_at: c.cert_issued_at,
+      pdf_url: c.cert_pdf_url,
+      is_valid: c.cert_is_valid,
+      certificate_code: c.cert_certificate_code,
+      courseTitle: c.course_title,
+      courseId: c.course_id,
+    }));
+  }
+
   async revoke(id: string): Promise<void> {
     const certificate = await this.certificateRepository.findOne({
       where: { id: id },

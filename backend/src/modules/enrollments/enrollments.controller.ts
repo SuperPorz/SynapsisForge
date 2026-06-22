@@ -13,19 +13,34 @@ import { Request } from 'express';
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
 
-  // ─── GET  ────────────────────────────────────────────────────
+  // ─── GET /enrollments/my  ─────────────────────────────────────
   @Get('my')
   @ApiOperation({
-    summary: "Restituisce l'enrollment dell'utente per un corso specifico",
+    summary:
+      "Restituisce l'enrollment per un corso specifico (se courseId fornito) o tutti gli enrollments dell'utente",
   })
-  @ApiQuery({ name: 'courseId', required: true, type: String })
-  @ApiResponse({ status: 200, description: 'Enrollment trovato o null' })
+  @ApiQuery({ name: 'courseId', required: false, type: String })
+  @ApiResponse({ status: 200, description: 'Enrollment trovato o lista' })
   async getMyEnrollment(
-    @Query('courseId') courseId: string,
+    @Query('courseId') courseId: string | undefined,
     @Req() req: Request & { user: { id: string } },
-  ): Promise<ResponseEnrollmentDto | null> {
+  ) {
     const userId = req.user['id'];
-    return this.enrollmentsService.findMyEnrollment(userId, courseId);
+    if (courseId) {
+      return this.enrollmentsService.findMyEnrollment(userId, courseId);
+    }
+    return this.enrollmentsService.findMyEnrollments(userId);
+  }
+
+  // ─── GET /enrollments/my/activity ────────────────────────────
+  @Get('my/activity')
+  @ApiOperation({ summary: "Ultime 10 lezioni completate dall'utente" })
+  @ApiResponse({ status: 200, description: 'Attività recente' })
+  async getMyActivity(
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    const userId = req.user['id'];
+    return this.enrollmentsService.findMyActivity(userId);
   }
 
   // ─── POST /enrollments ────────────────────────────────────────────────────

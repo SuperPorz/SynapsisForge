@@ -3,7 +3,8 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from 'src/common/entities/courses.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
-import { Repository } from 'typeorm';
+import { Lesson } from 'src/common/entities/lessons.entity';
+import { Repository, In } from 'typeorm';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { StudentProfile } from 'src/common/entities/student-profile.entity';
 import { Status as CourseStatus } from '../../common/entities/enum/courses.enum';
@@ -15,6 +16,7 @@ import { LessonProgress } from 'src/modules/enrollments/schemas/lesson-progress.
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
 import { ResponseEnrollmentDto } from './dto/response-enrollment.dto';
+import { DashboardEnrollmentDto } from './dto/dashboard-enrollment.dto';
 
 @Injectable()
 export class EnrollmentsService {
@@ -30,6 +32,9 @@ export class EnrollmentsService {
 
     @InjectRepository(Payment)
     private paymentRepository: Repository<Payment>,
+
+    @InjectRepository(Lesson)
+    private lessonRepository: Repository<Lesson>,
 
     @InjectModel(LessonProgress.name, 'mongo_synapsis')
     private lessonProgressModel: Model<LessonProgress>,
@@ -170,5 +175,120 @@ export class EnrollmentsService {
 
     const enrollment = await query.getOne();
     return enrollment ? this.toDto(enrollment) : null;
+  }
+
+  async findMyActivity(
+    userId: string,
+  ): Promise<
+    {
+      lessonId: string;
+      lessonTitle: string;
+      courseTitle: string;
+      courseId: string;
+      completedAt: Date;
+    }[]
+  > {
+    // 1. Get all enrollment IDs for this user
+    const enrollments = await this.enrollmentRepository
+      .createQueryBuilder('enrollment')
+      .innerJoin('enrollment.student', 'student')
+      .innerJoinAndSelect('enrollment.course', 'course')
+      .where('student.userId = :userId', { userId })
+      .select(['enrollment.id', 'course.id', 'course.title'])
+      .getRawMany();
+
+    if (!enrollments.length) return [];
+
+    const enrollmentIds = enrollments.map((e) => e.enrollment_id);
+
+    // 2. Query last 10 completed lessons from MongoDB
+    const progresses = await this.lessonProgressModel
+      .find({ enrollmentId: { $in: enrollmentIds }, completed: true })
+      .sort({ completedAt: -1 })
+      .limit(10)
+      .exec();
+
+    if (!progresses.length) return [];
+
+    // 3. Map enrollmentId → course info
+    const courseByEnrollmentId: Record<string, { title: string; id: string }> =
+      {};
+    for (const e of enrollments) {
+      courseByEnrollmentId[e.enrollment_id] = {
+        title: e.course_title,
+        id: e.course_id,
+      };
+    }
+
+    // 4. Fetch lesson titles from PG
+    const lessonIds = progresses.map((p) => p.lessonId);
+    const lessons = await this.lessonRepository.find({
+      where: { id: In(lessonIds) },
+    });
+    const lessonMap = new Map(lessons.map((l) => [l.id, l.title]));
+
+    return progresses.map((p) => ({
+      lessonId: p.lessonId,
+      lessonTitle: lessonMap.get(p.lessonId) ?? 'Lezione sconosciuta',
+      courseTitle: courseByEnrollmentId[p.enrollmentId]?.title ?? '',
+      courseId: courseByEnrollmentId[p.enrollmentId]?.id ?? '',
+      completedAt: p.completedAt!,
+    }));
+  }
+
+  async findMyEnrollments(
+    userId: string,
+  ): Promise<DashboardEnrollmentDto[]> {
+    const rows = await this.enrollmentRepository
+      .createQueryBuilder('enrollment')
+      .innerJoin('enrollment.student', 'student')
+      .innerJoin('enrollment.course', 'course')
+      .where('student.userId = :userId', { userId })
+      .select([
+        'enrollment.id',
+        'enrollment.progress_percent',
+        'enrollment.completed_at',
+        'enrollment.enrolled_at',
+        'course.id',
+        'course.title',
+        'course.slug',
+        'course.thumbnail_url',
+        'student.userId',
+      ])
+      .orderBy('enrollment.enrolled_at', 'DESC')
+      .getRawMany();
+
+    if (!rows.length) return [];
+
+    // Fetch first lesson ID per course
+    const courseIds = [...new Set<string>(rows.map((r) => r.course_id))];
+    const firstLessons = await this.lessonRepository
+      .createQueryBuilder('l')
+      .where('l."courseId" IN (:...courseIds)', { courseIds })
+      .andWhere('l.deleted_at IS NULL')
+      .orderBy('l."order"', 'ASC')
+      .getMany();
+
+    const firstLessonByCourse: Record<string, string> = {};
+    for (const fl of firstLessons) {
+      if (!firstLessonByCourse[fl.courseId]) {
+        firstLessonByCourse[fl.courseId] = fl.id;
+      }
+    }
+
+    return rows.map((r) => {
+      const dto = new DashboardEnrollmentDto();
+      dto.id = r.enrollment_id;
+      dto.progress_percent = r.enrollment_progress_percent;
+      dto.completed_at = r.enrollment_completed_at ?? null;
+      dto.enrolled_at = r.enrollment_enrolled_at;
+      dto.courseId = r.course_id;
+      dto.courseTitle = r.course_title;
+      dto.courseSlug = r.course_slug;
+      dto.courseThumbnail = r.course_thumbnail_url;
+      dto.firstLessonId = firstLessonByCourse[r.course_id] ?? null;
+      dto.studentId = r.student_userId;
+      return dto;
+    });
   }
 }
