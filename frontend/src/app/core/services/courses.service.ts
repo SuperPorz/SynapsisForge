@@ -173,6 +173,7 @@ export interface InstructorCourse {
   thumbnail_url: string;
   category: string | null;
   enrollmentCount: number;
+  rating: number | null;
   created_at: string;
 }
 

@@ -37,6 +37,10 @@ export class Instructor implements OnInit {
     });
   });
 
+  isStarFilled(starIndex: number, rating: number | null): boolean {
+    return starIndex <= Math.round(rating ?? 0);
+  }
+
   statusBadgeClass(status: string): string {
     const base = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold';
     switch (status) {

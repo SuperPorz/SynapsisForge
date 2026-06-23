@@ -4,20 +4,18 @@
   </a>
 
   <div class="p-5">
-    @if (course().rating) {
-      <div class="mb-3 flex items-center gap-2">
-        <div class="flex items-center gap-0.5">
-          @for (filled of starStates(); track $index) {
-            <svg class="h-4 w-4" [class.text-yellow-400]="filled" [class.text-gray-300]="!filled" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
-            </svg>
-          }
-        </div>
-        <span class="rounded border border-brand-subtle bg-brand-softer px-1.5 py-0.5 text-xs font-medium text-fg-brand-strong dark:border-indigo-500/30 dark:text-indigo-200">
-          {{ course().rating }} out of 5
-        </span>
+    <div class="mb-3 flex items-center gap-2">
+      <div class="flex items-center gap-0.5">
+        @for (filled of starStates(); track $index) {
+          <svg class="h-4 w-4" [class.text-yellow-400]="filled" [class.text-gray-300]="!filled" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+          </svg>
+        }
       </div>
-    }
+      @if (!course().rating) {
+        <span class="rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400">Unrated</span>
+      }
+    </div>
 
     <a [routerLink]="['/courses', course().id]">
       <h5 class="mb-1 line-clamp-2 text-lg font-semibold text-heading tracking-tight">

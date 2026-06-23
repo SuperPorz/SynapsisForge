@@ -90,7 +90,30 @@ export class CoursesService {
       .take(limit)
       .getManyAndCount();
 
-    return { data, total };
+    const courseIds = data.map((c) => c.id);
+    const avgRatings: { courseId: string; avg: string }[] = courseIds.length
+      ? await this.reviewRepo
+          .createQueryBuilder('review')
+          .innerJoin('review.enrollment', 'enrollment')
+          .select('enrollment."courseId"', 'courseId')
+          .addSelect('AVG(review.rating)', 'avg')
+          .where('enrollment."courseId" IN (:...courseIds)', { courseIds })
+          .groupBy('enrollment."courseId"')
+          .getRawMany()
+      : [];
+
+    const ratingMap: Record<string, number | null> = {};
+    for (const row of avgRatings) {
+      ratingMap[row.courseId] = Number(Number(row.avg).toFixed(1));
+    }
+
+    return {
+      data: data.map((c) => ({
+        ...c,
+        rating: ratingMap[c.id] ?? null,
+      })),
+      total,
+    };
   }
 
   //prettier-ignore
@@ -247,6 +270,22 @@ export class CoursesService {
       countMap[row.courseId] = Number(row.count);
     }
 
+    const avgRatings: { courseId: string; avg: string }[] = courseIds.length
+      ? await this.reviewRepo
+          .createQueryBuilder('review')
+          .innerJoin('review.enrollment', 'enrollment')
+          .select('enrollment."courseId"', 'courseId')
+          .addSelect('AVG(review.rating)', 'avg')
+          .where('enrollment."courseId" IN (:...courseIds)', { courseIds })
+          .groupBy('enrollment."courseId"')
+          .getRawMany()
+      : [];
+
+    const ratingMap: Record<string, number | null> = {};
+    for (const row of avgRatings) {
+      ratingMap[row.courseId] = Number(Number(row.avg).toFixed(1));
+    }
+
     return courses.map((c) => ({
       id: c.id,
       title: c.title,
@@ -257,6 +296,7 @@ export class CoursesService {
       thumbnail_url: c.thumbnail_url,
       category: c.category?.name ?? null,
       enrollmentCount: countMap[c.id] ?? 0,
+      rating: ratingMap[c.id] ?? null,
       created_at: c.created_at,
     }));
   }
