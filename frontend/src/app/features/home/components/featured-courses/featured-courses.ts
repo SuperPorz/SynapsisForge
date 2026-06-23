@@ -32,7 +32,7 @@ export class FeaturedCourses implements OnInit {
         },
         error: (err) => {
           console.error(err);
-          this.error = 'Impossibile caricare i corsi in evidenza.';
+          this.error = 'Unable to load featured courses.';
           this.isLoading = false;
           this.changeDetectorRef.detectChanges();
         },

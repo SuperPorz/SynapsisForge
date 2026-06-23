@@ -4,12 +4,12 @@ import { DatePipe } from '@angular/common';
 import { EnrollmentService, EnrollmentResponse, ActivityItem } from '../../../core/services/enrollment.service';
 
 @Component({
-  selector: 'app-my-courses',
+  selector: 'app-my-enrolls',
   imports: [RouterLink, DatePipe],
-  templateUrl: './my-courses.html',
-  styleUrl: './my-courses.css',
+  templateUrl: './my-enrolls.html',
+  styleUrl: './my-enrolls.css',
 })
-export class MyCourses implements OnInit {
+export class MyEnrolls implements OnInit {
   private enrollmentService = inject(EnrollmentService);
 
   enrollments = signal<EnrollmentResponse[]>([]);

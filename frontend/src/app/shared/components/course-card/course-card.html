@@ -1,6 +1,6 @@
-<div class="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+<div class="w-full overflow-hidden rounded-xl border border-gray-200 bg-card-bg shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
   <a [routerLink]="['/courses', course().id]">
-    <img class="h-48 w-full object-cover" [src]="course().thumbnail_url" [alt]="course().title" />
+    <img class="h-40 sm:h-48 w-full object-cover" [src]="course().thumbnail_url" [alt]="course().title" />
   </a>
 
   <div class="p-5">

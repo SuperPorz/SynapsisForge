@@ -35,6 +35,7 @@ export class LessonPlayer implements OnInit, OnDestroy {
   quiz = signal<QuizItem[]>([]);
   quizAnswers = signal<QuizAnswer[]>([]);
   showCongratulations = signal(false);
+  _sidebarOpen = signal(false);
 
   // ── RxJS cleanup ──────────────────────────────────────────────────────────
   private readonly destroy$ = new Subject<void>();
@@ -92,7 +93,7 @@ export class LessonPlayer implements OnInit, OnDestroy {
           }
         },
         error: () => {
-          this.error.set('Impossibile caricare la lezione. Riprova più tardi.');
+          this.error.set('Unable to load the lesson. Please try again.');
           this.loading.set(false);
         },
       });

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -10,5 +10,4 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class DashboardLayout {
   auth = inject(AuthService);
-  _sidebarOpen = signal(false);
 }

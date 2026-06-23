@@ -2,14 +2,14 @@ import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { CourseService } from '../../../core/services/courses.service';
 import { EnrollmentService, EnrollmentResponse } from '../../../core/services/enrollment.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Course } from '../../../core/models/course-model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-course-detail',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './course-detail.html',
   styleUrl: './course-detail.css',
 })
@@ -68,7 +68,7 @@ export class CourseDetail {
           this.checkEnrollment(response.id);
         },
         error: () => {
-          this.error.set('Impossibile caricare i dettagli del corso.');
+          this.error.set('Unable to load course details.');
           this.loading.set(false);
         },
       });
@@ -104,7 +104,7 @@ export class CourseDetail {
         this.enrolling.set(false);
       },
       error: () => {
-        this.error.set('Iscrizione non riuscita. Riprova.');
+        this.error.set('Enrollment failed. Please try again.');
         this.enrolling.set(false);
       },
     });

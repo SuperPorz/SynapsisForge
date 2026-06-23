@@ -55,12 +55,12 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'my-courses', pathMatch: 'full' },
+      { path: '', redirectTo: 'my-enrolls', pathMatch: 'full' },
       {
-        path: 'my-courses',
+        path: 'my-enrolls',
         loadComponent: () =>
-          import('./features/dashboard/my-courses/my-courses').then(
-            (m) => m.MyCourses,
+          import('./features/dashboard/my-enrolls/my-enrolls').then(
+            (m) => m.MyEnrolls,
           ),
       },
       {

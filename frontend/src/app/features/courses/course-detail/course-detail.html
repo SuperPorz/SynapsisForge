@@ -81,7 +81,7 @@
               </button>
 
               @if (isSectionExpanded(section.id)) {
-                <ul class="divide-y divide-gray-100 bg-white dark:divide-gray-700 dark:bg-gray-800" [class.border-b]="!last">
+                <ul class="divide-y divide-gray-100 bg-card-bg dark:divide-gray-700 dark:bg-gray-800" [class.border-b]="!last">
                   @for (lesson of section.lessons; track lesson.id) {
                     <li class="flex items-center justify-between px-5 py-3 text-sm text-gray-700 dark:text-gray-300" [class.cursor-pointer]="isEnrolled()" (click)="isEnrolled() && navigateToLesson(lesson.id)">
                       <div class="flex items-center gap-3">
@@ -118,7 +118,7 @@
       </div>
 
       <aside class="lg:col-span-1">
-        <div class="sticky top-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="sticky top-8 overflow-hidden rounded-2xl border border-gray-200 bg-card-bg shadow-sm dark:border-gray-700 dark:bg-gray-800">
           @if (c.thumbnail_url) {
             <img [src]="c.thumbnail_url" [alt]="c.title" class="h-44 w-full object-cover" />
           } @else {

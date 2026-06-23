@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-fg: #111827;
@@ -10,6 +11,7 @@
   --color-surface-alt: #f3f4f6;
   --color-brand-subtle: #e0e7ff;
   --color-brand-softer: #eef2ff;
+  --color-card-bg: #e5e5e5;
 }
 
 .dark {
@@ -20,6 +22,12 @@
   --color-surface-alt: #111827;
   --color-brand-subtle: #3730a3;
   --color-brand-softer: #1e1b4b;
+  --color-card-bg: #374151;
+}
+
+/* Card backgrounds: light gray in light mode, lighter gray in dark mode */
+.dark .dark\:bg-gray-800 {
+  background-color: var(--color-card-bg);
 }
 
 body {
