@@ -1,0 +1,66 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/site.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "lazy",
+      "resources": {
+        "files": [
+          "/**/*.png",
+          "/**/*.svg",
+          "/**/*.ico",
+          "/**/*.jpg",
+          "/**/*.webp"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-courses",
+      "urls": ["/api/courses", "/api/courses/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 50,
+        "maxAge": "1h",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "api-enrollments",
+      "urls": ["/api/enrollments/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 20,
+        "maxAge": "30m",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "api-auth",
+      "urls": ["/api/auth/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 10,
+        "maxAge": "5m",
+        "timeout": "3s"
+      }
+    }
+  ]
+}
