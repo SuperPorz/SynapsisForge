@@ -5,6 +5,56 @@ import { environment } from '../../../environments/environment.develop';
 import { Course, PaginatedCoursesResponse } from '../models/course-model';
 import { Category } from '../models/category-model';
 
+export interface CreateCoursePayload {
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  category_id: string;
+  thumbnail_url: string;
+  status?: string;
+}
+
+export interface CreateSectionPayload {
+  title: string;
+  order?: number;
+}
+
+export interface CreateLessonPayload {
+  title: string;
+  order: number;
+  duration_seconds?: number;
+  section_id?: string;
+}
+
+export interface CreateLessonContentPayload {
+  videoUrl: string;
+  transcript?: string | null;
+  quiz?: QuizItemPayload[];
+}
+
+export interface QuizItemPayload {
+  question: string;
+  options: { label: string; text: string }[];
+  correctAnswer: string;
+  explanation?: string | null;
+}
+
+export interface SectionResponse {
+  id: string;
+  title: string;
+  order: number;
+  lessons?: LessonResponse[];
+}
+
+export interface LessonResponse {
+  id: string;
+  title: string;
+  order: number;
+  duration_seconds: number;
+  section_id?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CourseService {
   private http = inject(HttpClient);
@@ -66,6 +116,50 @@ export class CourseService {
 
   getCourseLessonsWithStats(courseId: string): Observable<LessonStats[]> {
     return this.http.get<LessonStats[]>(`${this.API}/courses/my/${courseId}/lessons`);
+  }
+
+  createCourse(payload: CreateCoursePayload): Observable<Course> {
+    return this.http.post<Course>(`${this.API}/courses`, payload);
+  }
+
+  updateCourse(id: string, payload: Partial<CreateCoursePayload>): Observable<Course> {
+    return this.http.patch<Course>(`${this.API}/courses/${id}`, payload);
+  }
+
+  createSection(courseId: string, payload: CreateSectionPayload): Observable<SectionResponse> {
+    return this.http.post<SectionResponse>(`${this.API}/courses/${courseId}/sections`, payload);
+  }
+
+  updateSection(courseId: string, sectionId: string, payload: Partial<CreateSectionPayload>): Observable<SectionResponse> {
+    return this.http.patch<SectionResponse>(`${this.API}/courses/${courseId}/sections/${sectionId}`, payload);
+  }
+
+  deleteSection(courseId: string, sectionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.API}/courses/${courseId}/sections/${sectionId}`);
+  }
+
+  reorderSections(courseId: string, sectionIds: string[]): Observable<SectionResponse[]> {
+    return this.http.patch<SectionResponse[]>(`${this.API}/courses/${courseId}/sections/reorder`, { sectionIds });
+  }
+
+  createLesson(courseId: string, payload: CreateLessonPayload): Observable<LessonResponse> {
+    return this.http.post<LessonResponse>(`${this.API}/courses/${courseId}/lessons`, payload);
+  }
+
+  updateLesson(courseId: string, lessonId: string, payload: Partial<CreateLessonPayload>): Observable<LessonResponse> {
+    return this.http.patch<LessonResponse>(`${this.API}/courses/${courseId}/lessons/${lessonId}`, payload);
+  }
+
+  deleteLesson(courseId: string, lessonId: string): Observable<void> {
+    return this.http.delete<void>(`${this.API}/courses/${courseId}/lessons/${lessonId}`);
+  }
+
+  createLessonContent(courseId: string, lessonId: string, payload: CreateLessonContentPayload): Observable<unknown> {
+    return this.http.post(`${this.API}/courses/${courseId}/lessons/${lessonId}/content`, payload);
+  }
+
+  updateLessonContent(courseId: string, lessonId: string, payload: Partial<CreateLessonContentPayload>): Observable<unknown> {
+    return this.http.patch(`${this.API}/courses/${courseId}/lessons/${lessonId}/content`, payload);
   }
 }
 

@@ -62,7 +62,12 @@ export class LessonsService {
   // ---------------------------------------------------------------------------
 
   async createLesson(courseId: string, dto: CreateLessonDto): Promise<Lesson> {
-    const lesson = this.lessonRepository.create({ ...dto, courseId });
+    const { section_id, ...rest } = dto;
+    const lesson = this.lessonRepository.create({
+      ...rest,
+      courseId,
+      section: section_id ? { id: section_id } : undefined,
+    });
     return await this.lessonRepository.save(lesson);
   }
 

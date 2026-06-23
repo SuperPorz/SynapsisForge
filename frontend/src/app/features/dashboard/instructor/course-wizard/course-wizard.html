@@ -1,0 +1,258 @@
+<div class="mx-auto max-w-4xl space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Create New Course</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Fill in the details to create your course</p>
+    </div>
+    <a routerLink="/dashboard/instructor" class="text-sm text-fg-brand hover:text-fg-brand-strong transition-colors">← Back to dashboard</a>
+  </div>
+
+  <div class="flex items-center gap-2">
+    @for (s of [1,2,3,4]; track s) {
+      <div class="flex items-center gap-2">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold"
+          [class.bg-fg-brand]="step() >= s"
+          [class.text-white]="step() >= s"
+          [class.bg-gray-200]="step() < s"
+          [class.text-gray-600]="step() < s"
+          [class.dark:bg-gray-600]="step() < s"
+          [class.dark:text-gray-300]="step() < s">
+          {{ s }}
+        </div>
+        <span class="hidden text-sm sm:inline"
+          [class.text-fg-brand]="step() === s"
+          [class.text-gray-500]="step() !== s"
+          [class.dark:text-gray-400]="step() !== s">
+          @switch (s) {
+            @case (1) { Basic Info }
+            @case (2) { Sections }
+            @case (3) { Lessons }
+            @case (4) { Content & Quiz }
+          }
+        </span>
+        @if (s < 4) {
+          <div class="h-px w-8 bg-gray-300 dark:bg-gray-600"></div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+      {{ error() }}
+    </div>
+  }
+
+  @if (step() === 1) {
+    <div class="space-y-6 rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h2>
+
+      <div class="grid gap-6 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Course Title</label>
+          <input type="text" [(ngModel)]="step1Model.title" (input)="autoSlug()" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="e.g. Introduction to Web Development" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Slug</label>
+          <input type="text" [(ngModel)]="step1Model.slug" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="introduction-to-web-development" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+          <select [(ngModel)]="step1Model.category_id" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+            <option value="">Select a category</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price ($)</label>
+          <input type="number" [(ngModel)]="step1Model.price" min="0" step="0.01" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="0.00" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Thumbnail URL</label>
+          <input type="url" [(ngModel)]="step1Model.thumbnail_url" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="https://example.com/thumbnail.jpg" />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+          <textarea [(ngModel)]="step1Model.description" rows="4" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="Describe what students will learn..."></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button (click)="nextStep()" [disabled]="!step1Valid || submitting()" class="rounded-lg bg-fg-brand px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
+          @if (submitting()) {
+            Creating...
+          } @else {
+            Next → Sections
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (step() === 2) {
+    <div class="space-y-6 rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Sections</h2>
+        <button (click)="addSection()" class="inline-flex items-center gap-1 rounded-lg bg-fg-brand px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Section
+        </button>
+      </div>
+
+      @if (sections().length === 0) {
+        <p class="text-sm text-gray-500 dark:text-gray-400">No sections yet. Click "Add Section" to start building your course structure.</p>
+      }
+
+      <div class="space-y-3">
+        @for (sec of sections(); track i; let i = $index) {
+          <div class="flex items-center gap-3 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-fg-brand/10 text-sm font-semibold text-fg-brand">{{ i + 1 }}</span>
+            <input type="text" [ngModel]="sec.title" (ngModelChange)="sectionTitle(i, $event)" class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="Section title (e.g. Getting Started)" />
+            <button (click)="removeSection(i)" class="text-red-500 hover:text-red-700 transition-colors" title="Remove section">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="flex items-center justify-between">
+        <button (click)="prevStep()" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">← Back</button>
+        <button (click)="nextStep()" [disabled]="!step2Valid || submitting()" class="rounded-lg bg-fg-brand px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
+          @if (submitting()) {
+            Creating sections...
+          } @else {
+            Next → Lessons
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (step() === 3) {
+    <div class="space-y-6">
+      @for (sec of sections(); track i; let i = $index) {
+        <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+          <div class="mb-4 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Section {{ i + 1 }}: {{ sec.title }}</h3>
+            <button (click)="addLesson(i)" class="inline-flex items-center gap-1 rounded-lg bg-fg-brand/10 px-3 py-1.5 text-sm font-medium text-fg-brand transition-colors hover:bg-fg-brand/20">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Add Lesson
+            </button>
+          </div>
+
+          @if ((lessons()[i] || []).length === 0) {
+            <p class="text-sm text-gray-400 dark:text-gray-500">No lessons yet. Click "Add Lesson" to add lessons to this section.</p>
+          }
+
+          <div class="space-y-2">
+            @for (lesson of lessons()[i] || []; track li; let li = $index) {
+              <div class="flex items-center gap-3 rounded-lg border border-gray-100 p-3 dark:border-gray-700">
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ li + 1 }}.</span>
+                <input type="text" [value]="lesson.title" (input)="updateLesson(i, li, 'title', $any($event.target).value)" class="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="Lesson title" />
+                <input type="number" [value]="lesson.duration_seconds" (input)="updateLesson(i, li, 'duration_seconds', toNumber($any($event.target).value))" class="w-24 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="sec" min="0" />
+                <button (click)="removeLesson(i, li)" class="text-red-400 hover:text-red-600 transition-colors" title="Remove lesson">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="flex items-center justify-between">
+        <button (click)="prevStep()" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">← Back</button>
+        <button (click)="nextStep()" [disabled]="!allLessonsValid || submitting()" class="rounded-lg bg-fg-brand px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
+          @if (submitting()) {
+            Creating lessons...
+          } @else {
+            Next → Content & Quiz
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (step() === 4) {
+    <div class="space-y-6">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Set video URL and optional quiz questions for each lesson.</p>
+
+      @for (sec of sections(); track si; let si = $index) {
+        @for (lesson of lessons()[si] || []; track li; let li = $index) {
+          @let globalIdx = globalLessonIndex(si, li);
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <h3 class="mb-1 text-base font-semibold text-gray-900 dark:text-white">Lesson: {{ lesson.title }}</h3>
+            <p class="mb-4 text-xs text-gray-500 dark:text-gray-400">{{ sec.title }} • {{ lesson.duration_seconds }}s</p>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Video URL</label>
+                <input type="url" [value]="contents()[globalIdx]?.videoUrl || ''" (input)="setVideoUrl(globalIdx, $any($event.target).value)" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="https://cdn.example.com/video.mp4" />
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between">
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Quiz Questions (optional)</label>
+                  <button (click)="addQuizItem(globalIdx)" class="inline-flex items-center gap-1 text-sm text-fg-brand hover:text-fg-brand-strong transition-colors">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Question
+                  </button>
+                </div>
+
+                @if (contents()[globalIdx]?.quiz?.length) {
+                  <div class="mt-2 space-y-4">
+                    @for (q of contents()[globalIdx]?.quiz || []; track qi; let qi = $index) {
+                      <div class="rounded-lg border border-gray-100 p-4 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Question {{ qi + 1 }}</span>
+                          <button (click)="removeQuizItem(globalIdx, qi)" class="text-xs text-red-500 hover:text-red-700 transition-colors">Remove</button>
+                        </div>
+                        <input type="text" [value]="q.question" (input)="contents()[globalIdx].quiz[qi].question = $any($event.target).value" class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="Enter your question" />
+
+                        <div class="mt-3 space-y-2">
+                          @for (opt of q.options; track oi; let oi = $index) {
+                            <div class="flex items-center gap-2">
+                              <span class="text-sm font-medium text-gray-500 dark:text-gray-400 w-6">{{ opt.label }}.</span>
+                              <input type="text" [value]="opt.text" (input)="updateQuizOption(globalIdx, qi, oi, $any($event.target).value)" class="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="Option text" />
+                              <input type="radio" name="correct_{{ globalIdx }}_{{ qi }}" [value]="opt.label" [checked]="q.correctAnswer === opt.label" (change)="contents()[globalIdx].quiz[qi].correctAnswer = opt.label" class="h-4 w-4 text-fg-brand focus:ring-fg-brand" />
+                            </div>
+                          }
+                          @if (q.options.length < 6) {
+                            <button (click)="addQuizOption(globalIdx, qi)" class="text-xs text-fg-brand hover:text-fg-brand-strong transition-colors">+ Add option</button>
+                          }
+                        </div>
+
+                        <div class="mt-2">
+                          <label class="text-xs font-medium text-gray-500 dark:text-gray-400">Explanation (shown after answering)</label>
+                          <input type="text" [value]="q.explanation" (input)="contents()[globalIdx].quiz[qi].explanation = $any($event.target).value" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="Optional explanation" />
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      }
+
+      <div class="flex items-center justify-between gap-4">
+        <button (click)="prevStep()" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">← Back</button>
+        <div class="flex gap-3">
+          <button (click)="publish('DRAFT')" [disabled]="saving()" class="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 disabled:opacity-50">
+            @if (saving()) { Saving... } @else { Save as Draft }
+          </button>
+          <button (click)="publish('PENDING')" [disabled]="saving()" class="rounded-lg bg-fg-brand px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong disabled:opacity-50">
+            @if (saving()) { Saving... } @else { Submit for Review }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

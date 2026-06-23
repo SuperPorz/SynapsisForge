@@ -11,6 +11,8 @@ import {
   Query,
   Req,
   UseInterceptors,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { CoursesService } from './courses.service';
@@ -19,6 +21,8 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -31,6 +35,9 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { CourseResponseDto } from './dto/response-course.dto';
 import { plainToInstance } from 'class-transformer';
 import { SearchFilterDto } from './dto/search-filter.dto';
+import { CreateSectionDto } from './dto/create-section.dto';
+import { UpdateSectionDto } from './dto/update-section.dto';
+import { ReorderSectionsDto } from './dto/reorder-sections.dto';
 
 @ApiTags('Courses')
 @ApiBadRequestResponse({ description: 'Validation failed or invalid input.' })
@@ -159,11 +166,14 @@ export class CoursesController {
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Create a new course' })
-  @ApiResponse({ status: 201, description: 'Course created successfully.' })
+  @ApiCreatedResponse({ description: 'Course created successfully.' })
   @ApiResponse({ status: 409, description: 'Course already exists.' })
   @Post()
-  create(@Body() dto: CreateCourseDto) {
-    return this.CoursesService.create(dto);
+  create(
+    @Body() dto: CreateCourseDto,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    return this.CoursesService.create(dto, req.user.id);
   }
 
   @ApiBearerAuth()
@@ -172,8 +182,12 @@ export class CoursesController {
   @ApiResponse({ status: 200, description: 'Course updated successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
   @Patch(':id')
-  update(@Param('id', ParseUuidPipe) id: string, @Body() dto: UpdateCourseDto) {
-    return this.CoursesService.update(id, dto);
+  update(
+    @Param('id', ParseUuidPipe) id: string,
+    @Body() dto: UpdateCourseDto,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    return this.CoursesService.update(id, dto, req.user.id);
   }
 
   @ApiBearerAuth()
@@ -182,8 +196,11 @@ export class CoursesController {
   @ApiResponse({ status: 200, description: 'Course deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
   @Delete(':id')
-  delete(@Param('id', ParseUuidPipe) id: string) {
-    return this.CoursesService.delete(id);
+  delete(
+    @Param('id', ParseUuidPipe) id: string,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    return this.CoursesService.delete(id, req.user.id);
   }
 
   @ApiBearerAuth()
@@ -193,8 +210,69 @@ export class CoursesController {
   @ApiResponse({ status: 404, description: 'Course not found.' })
   @ApiResponse({ status: 409, description: 'Course is already active.' })
   @Patch(':id/restore')
-  restore(@Param('id', ParseUuidPipe) id: string) {
-    return this.CoursesService.restore(id);
+  restore(
+    @Param('id', ParseUuidPipe) id: string,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    return this.CoursesService.restore(id, req.user.id);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Section CRUD
+  // ---------------------------------------------------------------------------
+
+  @ApiBearerAuth()
+  @Roles(UserRole.INSTRUCTOR)
+  @ApiOperation({ summary: 'Create a section in a course' })
+  @ApiCreatedResponse({ description: 'Section created successfully.' })
+  @Post(':courseId/sections')
+  createSection(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Body() dto: CreateSectionDto,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    return this.CoursesService.createSection(courseId, dto, req.user.id);
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.INSTRUCTOR)
+  @ApiOperation({ summary: 'Update a section' })
+  @ApiResponse({ status: 200, description: 'Section updated successfully.' })
+  @Patch(':courseId/sections/:sectionId')
+  updateSection(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Param('sectionId', ParseUuidPipe) sectionId: string,
+    @Body() dto: UpdateSectionDto,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    return this.CoursesService.updateSection(courseId, sectionId, dto, req.user.id);
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.INSTRUCTOR)
+  @ApiOperation({ summary: 'Delete a section' })
+  @ApiNoContentResponse({ description: 'Section deleted successfully.' })
+  @Delete(':courseId/sections/:sectionId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteSection(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Param('sectionId', ParseUuidPipe) sectionId: string,
+    @Req() req: Request & { user: { id: string } },
+  ): Promise<void> {
+    return this.CoursesService.deleteSection(courseId, sectionId, req.user.id);
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.INSTRUCTOR)
+  @ApiOperation({ summary: 'Reorder sections' })
+  @ApiResponse({ status: 200, description: 'Sections reordered successfully.' })
+  @Patch(':courseId/sections/reorder')
+  reorderSections(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Body() dto: ReorderSectionsDto,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    return this.CoursesService.reorderSections(courseId, dto, req.user.id);
   }
 
   @ApiOperation({ summary: 'Search for courses with filters' })

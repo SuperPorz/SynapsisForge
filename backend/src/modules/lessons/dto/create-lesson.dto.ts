@@ -18,4 +18,10 @@ export class CreateLessonDto {
   @IsInt()
   @IsPositive()
   duration_seconds?: number;
+
+  @ApiPropertyOptional({ example: 'uuid', description: 'Section ID the lesson belongs to' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  section_id?: string;
 }

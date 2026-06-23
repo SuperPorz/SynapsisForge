@@ -82,6 +82,15 @@ export const routes: Routes = [
             (m) => m.Instructor,
           ),
       },
+      {
+        path: 'instructor/new',
+        canActivate: [roleGuard],
+        data: { roles: ['instructor', 'admin'] },
+        loadComponent: () =>
+          import('./features/dashboard/instructor/course-wizard/course-wizard').then(
+            (m) => m.CourseWizard,
+          ),
+      },
     ],
   },
 ];

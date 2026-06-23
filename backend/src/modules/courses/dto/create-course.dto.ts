@@ -26,13 +26,6 @@ export class CreateCourseDto {
   description!: string;
 
   @ApiProperty({
-    description: 'The UUID of the instructor teaching the course',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @IsString()
-  instructor_id!: string;
-
-  @ApiProperty({
     description: 'The price of the course',
     example: 99.99,
   })
@@ -49,9 +42,9 @@ export class CreateCourseDto {
   @ApiProperty({
     description: 'The status of the course',
     enum: Status,
-    default: Status.DRAFT, // Per la documentazione Swagger
+    default: Status.DRAFT,
   })
-  @IsOptional() // Permette al client di non inviarlo
+  @IsOptional()
   @IsEnum(Status)
   status?: Status = Status.DRAFT;
 

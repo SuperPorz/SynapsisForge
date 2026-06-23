@@ -9,6 +9,7 @@ import { Section } from 'src/common/entities/section.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { Review } from 'src/common/entities/reviews.entity';
 import { Lesson } from 'src/common/entities/lessons.entity';
+import { InstructorProfile } from 'src/common/entities/instructor-profile.entity';
 import {
   LessonProgress,
   LessonProgressSchema,
@@ -16,7 +17,7 @@ import {
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Course, Category, Section, Enrollment, Review, Lesson]),
+    TypeOrmModule.forFeature([Course, Category, Section, Enrollment, Review, Lesson, InstructorProfile]),
     MongooseModule.forFeature(
       [{ name: LessonProgress.name, schema: LessonProgressSchema }],
       'mongo_synapsis',

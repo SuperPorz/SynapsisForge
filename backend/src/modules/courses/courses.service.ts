@@ -1,5 +1,5 @@
 // prettier-ignore
-import { ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -14,6 +14,11 @@ import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { Review } from 'src/common/entities/reviews.entity';
 import { Lesson } from 'src/common/entities/lessons.entity';
 import { LessonProgress } from 'src/modules/enrollments/schemas/lesson-progress.schema';
+import { Section } from 'src/common/entities/section.entity';
+import { InstructorProfile } from 'src/common/entities/instructor-profile.entity';
+import { CreateSectionDto } from './dto/create-section.dto';
+import { UpdateSectionDto } from './dto/update-section.dto';
+import { ReorderSectionsDto } from './dto/reorder-sections.dto';
 
 @Injectable()
 export class CoursesService {
@@ -32,6 +37,12 @@ export class CoursesService {
 
     @InjectRepository(Lesson)
     private readonly lessonRepo: Repository<Lesson>,
+
+    @InjectRepository(Section)
+    private readonly sectionRepo: Repository<Section>,
+
+    @InjectRepository(InstructorProfile)
+    private readonly instructorProfileRepo: Repository<InstructorProfile>,
 
     @InjectModel(LessonProgress.name, 'mongo_synapsis')
     private lessonProgressModel: Model<LessonProgress>,
@@ -112,16 +123,28 @@ export class CoursesService {
     return course;
   }
 
-  async create(dto: CreateCourseDto): Promise<Course> {
+  private async verifyOwnership(courseId: string, userId: string): Promise<Course> {
+    const course = await this.coursesRepo.findOne({
+      where: { id: courseId },
+      relations: ['instructor'],
+    });
+    if (!course) throw new NotFoundException(`Course ${courseId} not found`);
+    if (course.instructor.userId !== userId) {
+      throw new ForbiddenException('You do not own this course');
+    }
+    return course;
+  }
+
+  async create(dto: CreateCourseDto, userId: string): Promise<Course> {
     try {
       const course = this.coursesRepo.create({
         ...dto,
-        instructor: { userId: dto.instructor_id },
+        instructor: { userId },
         category: { id: dto.category_id },
       });
       return await this.coursesRepo.save(course);
     } catch (err) {
-      const pgError = err as { code?: string }; // typeguard per accedere in sicurezza a code
+      const pgError = err as { code?: string };
       if (pgError.code === '23505') {
         throw new ConflictException(`Course "${dto.title}" already exists`);
       }
@@ -136,14 +159,14 @@ export class CoursesService {
     return course;
   }
 
-  async update(id: string, dto: UpdateCourseDto): Promise<Course | null> {
+  async update(id: string, dto: UpdateCourseDto, userId: string): Promise<Course | null> {
+    await this.verifyOwnership(id, userId);
     await this.coursesRepo.update({ id }, dto);
     return await this.findOneEntity(id);
   }
 
-  async delete(id: string): Promise<{ message: string }> {
-    const course = await this.coursesRepo.findOneBy({ id });
-    if (!course) throw new NotFoundException(`Course ${id} not found`);
+  async delete(id: string, userId: string): Promise<{ message: string }> {
+    const course = await this.verifyOwnership(id, userId);
     await this.coursesRepo.softDelete({ id });
     return {
       message: `Course "${course.title}" has been deactivated successfully`,
@@ -166,12 +189,16 @@ export class CoursesService {
     return courses;
   }
 
-  async restore(id: string): Promise<{ message: string }> {
+  async restore(id: string, userId: string): Promise<{ message: string }> {
     const course = await this.coursesRepo.findOne({
       where: { id },
       withDeleted: true,
+      relations: ['instructor'],
     });
     if (!course) throw new NotFoundException(`Course ${id} not found`);
+    if (course.instructor.userId !== userId) {
+      throw new ForbiddenException('You do not own this course');
+    }
     if (!course.deleted_at)
       throw new ConflictException(`Course "${course.title}" is already active`);
     await this.coursesRepo.restore({ id });
@@ -351,5 +378,67 @@ export class CoursesService {
     }
 
     return courses;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Section CRUD
+  // ---------------------------------------------------------------------------
+
+  async createSection(courseId: string, dto: CreateSectionDto, userId: string): Promise<Section> {
+    await this.verifyOwnership(courseId, userId);
+
+    const maxOrder = await this.sectionRepo
+      .createQueryBuilder('section')
+      .where('section.courseId = :courseId', { courseId })
+      .select('MAX(section.order)', 'max')
+      .getRawOne();
+
+    const section = this.sectionRepo.create({
+      title: dto.title,
+      order: dto.order ?? (maxOrder?.max ?? 0) + 1,
+      course: { id: courseId },
+    });
+    return await this.sectionRepo.save(section);
+  }
+
+  async updateSection(
+    courseId: string,
+    sectionId: string,
+    dto: UpdateSectionDto,
+    userId: string,
+  ): Promise<Section> {
+    await this.verifyOwnership(courseId, userId);
+    const section = await this.sectionRepo.findOne({ where: { id: sectionId, course: { id: courseId } } });
+    if (!section) throw new NotFoundException(`Section ${sectionId} not found`);
+
+    Object.assign(section, dto);
+    return await this.sectionRepo.save(section);
+  }
+
+  async deleteSection(courseId: string, sectionId: string, userId: string): Promise<void> {
+    await this.verifyOwnership(courseId, userId);
+    const section = await this.sectionRepo.findOne({ where: { id: sectionId, course: { id: courseId } } });
+    if (!section) throw new NotFoundException(`Section ${sectionId} not found`);
+
+    await this.sectionRepo.remove(section);
+  }
+
+  async reorderSections(courseId: string, dto: ReorderSectionsDto, userId: string): Promise<Section[]> {
+    await this.verifyOwnership(courseId, userId);
+
+    const sections = await this.sectionRepo.find({
+      where: { course: { id: courseId } },
+    });
+
+    const sectionMap = new Map(sections.map((s) => [s.id, s]));
+
+    for (let i = 0; i < dto.sectionIds.length; i++) {
+      const section = sectionMap.get(dto.sectionIds[i]);
+      if (section) {
+        section.order = i + 1;
+      }
+    }
+
+    return await this.sectionRepo.save(sections);
   }
 }
