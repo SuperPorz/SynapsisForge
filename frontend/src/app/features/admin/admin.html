@@ -1,1 +1,214 @@
-<p>admin works!</p>
+<div class="mx-auto max-w-6xl space-y-6 p-4 sm:p-6 lg:p-8">
+  <div class="flex items-center gap-4">
+    <a routerLink="/dashboard" class="flex items-center gap-1 text-sm text-fg-brand hover:text-fg-brand-strong transition-colors">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Dashboard
+    </a>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Admin Panel</h1>
+  </div>
+
+  <div class="border-b border-gray-200 dark:border-gray-700">
+    <nav class="-mb-px flex gap-6">
+      <button (click)="activeTab.set('dashboard')" class="cursor-pointer border-b-2 pb-3 text-sm font-medium transition-colors" [class.border-fg-brand]="activeTab() === 'dashboard'" [class.text-fg-brand]="activeTab() === 'dashboard'" [class.border-transparent]="activeTab() !== 'dashboard'" [class.text-gray-500]="activeTab() !== 'dashboard'">
+        Dashboard
+      </button>
+      <button (click)="activeTab.set('users')" class="cursor-pointer border-b-2 pb-3 text-sm font-medium transition-colors" [class.border-fg-brand]="activeTab() === 'users'" [class.text-fg-brand]="activeTab() === 'users'" [class.border-transparent]="activeTab() !== 'users'" [class.text-gray-500]="activeTab() !== 'users'">
+        Users
+      </button>
+      <button (click)="activeTab.set('moderation')" class="cursor-pointer border-b-2 pb-3 text-sm font-medium transition-colors" [class.border-fg-brand]="activeTab() === 'moderation'" [class.text-fg-brand]="activeTab() === 'moderation'" [class.border-transparent]="activeTab() !== 'moderation'" [class.text-gray-500]="activeTab() !== 'moderation'">
+        Course Moderation
+        @if (pendingCourses().length > 0) {
+          <span class="ml-1.5 inline-flex items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white">{{ pendingCourses().length }}</span>
+        }
+      </button>
+    </nav>
+  </div>
+
+  <!-- ════════════════ DASHBOARD TAB ════════════════ -->
+  @if (activeTab() === 'dashboard') {
+    @if (statsLoading()) {
+      <div class="flex items-center justify-center py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-fg-brand border-t-transparent"></div>
+      </div>
+    } @else {
+      @let s = stats();
+      @if (s) {
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Users</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ s.total_users }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Instructors</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ (s.users_by_role.find(r => r.role === 'INSTRUCTOR')?.count ?? 0) }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Students</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ (s.users_by_role.find(r => r.role === 'STUDENT')?.count ?? 0) }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Published Courses</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ s.published_courses }}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="rounded-lg border border-gray-200 bg-white px-8 py-6 dark:border-gray-700 dark:bg-gray-900">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Users by Role</h3>
+            <div class="h-64 flex items-center justify-center">
+              <canvas baseChart type="doughnut" [data]="usersByRoleChartData()" [options]="doughnutOptions"></canvas>
+            </div>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white px-8 py-6 dark:border-gray-700 dark:bg-gray-900">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Revenue (YTD)</h3>
+            <div class="h-64">
+              <canvas baseChart type="line" [data]="revenueChartData()" [options]="revenueChartOptions"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+          <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+              <span class="inline-flex h-2 w-2 rounded-full bg-green-500"></span>
+              <span>{{ s.published_courses }} courses published</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+              <span class="inline-flex h-2 w-2 rounded-full bg-fg-brand"></span>
+              <span>{{ s.total_users }} registered users</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+              <span class="inline-flex h-2 w-2 rounded-full bg-yellow-500"></span>
+              <span>{{ pendingCourses().length }} courses pending review</span>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  }
+
+  <!-- ════════════════ USERS TAB ════════════════ -->
+  @if (activeTab() === 'users') {
+    <div class="space-y-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-3">
+          <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)" class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+            <option value="">All roles</option>
+            <option value="ADMIN">Admin</option>
+            <option value="INSTRUCTOR">Instructor</option>
+            <option value="STUDENT">Student</option>
+          </select>
+          <select [ngModel]="activeFilter()" (ngModelChange)="activeFilter.set($event)" class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+            <option value="">All status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <span class="text-sm text-gray-500 dark:text-gray-400">{{ filteredUsers().length }} users</span>
+      </div>
+
+      @if (usersLoading()) {
+        <div class="flex items-center justify-center py-12">
+          <div class="h-8 w-8 animate-spin rounded-full border-4 border-fg-brand border-t-transparent"></div>
+        </div>
+      } @else if (filteredUsers().length === 0) {
+        <div class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+          <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No users found</h3>
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Try adjusting your filters.</p>
+        </div>
+      } @else {
+        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">User</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Role</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+              @for (user of filteredUsers(); track user.id) {
+                <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <td class="whitespace-nowrap px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      @if (user.avatar_url) {
+                        <img [src]="user.avatar_url" alt="" class="h-8 w-8 rounded-full object-cover" />
+                      } @else {
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-fg-brand/20 text-xs font-semibold text-fg-brand dark:bg-indigo-500/20 dark:text-indigo-400">{{ getInitials(user) }}</span>
+                      }
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ user.first_name }} {{ user.last_name }}</span>
+                    </div>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ user.email ?? '—' }}</td>
+                  <td class="whitespace-nowrap px-6 py-4">
+                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" [class.bg-fg-brand/10]="user.role === 'ADMIN'" [class.text-fg-brand]="user.role === 'ADMIN'" [class.bg-green-100]="user.role === 'INSTRUCTOR'" [class.text-green-800]="user.role === 'INSTRUCTOR'" [class.bg-blue-100]="user.role === 'STUDENT'" [class.text-blue-800]="user.role === 'STUDENT'" [class.dark:bg-fg-brand/20]="user.role === 'ADMIN'" [class.dark:text-indigo-400]="user.role === 'ADMIN'" [class.dark:bg-green-900/30]="user.role === 'INSTRUCTOR'" [class.dark:text-green-400]="user.role === 'INSTRUCTOR'" [class.dark:bg-blue-900/30]="user.role === 'STUDENT'" [class.dark:text-blue-400]="user.role === 'STUDENT'">{{ user.role }}</span>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4">
+                    <span class="inline-flex items-center gap-1.5 text-sm" [class.text-green-600]="user.is_active" [class.text-red-600]="!user.is_active">
+                      <span class="inline-flex h-2 w-2 rounded-full" [class.bg-green-500]="user.is_active" [class.bg-red-500]="!user.is_active"></span>
+                      {{ user.is_active ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ════════════════ MODERATION TAB ════════════════ -->
+  @if (activeTab() === 'moderation') {
+    @if (moderationLoading()) {
+      <div class="flex items-center justify-center py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-fg-brand border-t-transparent"></div>
+      </div>
+    } @else if (pendingCourses().length === 0) {
+      <div class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">All clear</h3>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">No courses pending review.</p>
+      </div>
+    } @else {
+      <div class="grid gap-6">
+        @for (course of pendingCourses(); track course.id) {
+          <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start gap-4">
+                @if (course.thumbnail_url) {
+                  <img [src]="course.thumbnail_url" alt="" class="h-16 w-24 rounded object-cover" />
+                }
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ course.title }}</h3>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ course.description }}</p>
+                  <div class="mt-2 flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+                    @if (course.instructor?.user) {
+                      <span>By {{ course.instructor!.user!.first_name }} {{ course.instructor!.user!.last_name }}</span>
+                    }
+                    @if (course.category) {
+                      <span>{{ course.category.name }}</span>
+                    }
+                    <span>${{ course.price.toFixed(2) }}</span>
+                    <span>{{ course.created_at | date:'mediumDate' }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button (click)="approveCourse(course.id)" class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700">
+                  Approve
+                </button>
+                <button (click)="rejectCourse(course.id)" class="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20">
+                  Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

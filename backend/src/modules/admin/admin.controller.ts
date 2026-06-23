@@ -46,6 +46,17 @@ export class AdminController {
     return this.adminService.find_users(filters);
   }
 
+  // ─── GET /admin/courses/pending ──────────────────────────────────────────────────
+  @ApiOperation({
+    summary: 'Ottieni corsi in attesa di approvazione',
+    description: 'Ritorna tutti i corsi con stato PENDING.',
+  })
+  @ApiOkResponse({ description: 'Corsi pending recuperati con successo.' })
+  @Get('courses/pending')
+  pending_courses() {
+    return this.adminService.findPendingCourses();
+  }
+
   // ─── PATCH /admin/courses/:id/approve ────────────────────────────────────────────────
   @ApiOperation({
     summary: 'Approva un corso',

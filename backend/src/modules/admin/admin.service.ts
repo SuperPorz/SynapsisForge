@@ -75,6 +75,13 @@ export class AdminService {
     return this.courseRepository.save(course); //importante il save: altrimenti la modifica non è persistente
   }
 
+  async findPendingCourses(): Promise<Course[]> {
+    return this.courseRepository.find({
+      where: { status: Status.PENDING },
+      relations: ['instructor', 'instructor.user', 'category'],
+    });
+  }
+
   async stats(): Promise<AdminStats> {
     const total_users_raw = await this.userRepository
       .createQueryBuilder('user')

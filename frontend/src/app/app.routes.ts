@@ -21,6 +21,8 @@ export const routes: Routes = [
 
   {
     path: 'admin',
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] },
     loadComponent: () => import('./features/admin/admin').then((m) => m.Admin),
   },
 

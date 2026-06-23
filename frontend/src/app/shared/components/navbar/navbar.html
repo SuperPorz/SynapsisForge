@@ -16,6 +16,11 @@
             Dashboard
           </a>
         }
+        @if (auth.role() === 'ADMIN') {
+          <a routerLink="/admin" routerLinkActive="text-fg-brand font-medium" class="rounded-lg px-4 py-2 text-base text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+            Admin
+          </a>
+        }
       </nav>
     </div>
     <div class="flex items-center gap-3">
