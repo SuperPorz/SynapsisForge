@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { CourseService, CreateCoursePayload, CreateLessonContentPayload } from '../../../../core/services/courses.service';
@@ -13,6 +13,8 @@ import { CourseService, CreateCoursePayload, CreateLessonContentPayload } from '
 export class CourseWizard {
   private courseService = inject(CourseService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private cdr = inject(ChangeDetectorRef);
 
   step = signal(1);
   submitting = signal(false);
@@ -20,12 +22,62 @@ export class CourseWizard {
   error = signal<string | null>(null);
 
   courseId = signal<string | null>(null);
+  isEdit = signal(false);
 
   categories = signal<{ id: string; name: string; slug: string }[]>([]);
 
   ngOnInit() {
     this.courseService.getCategories().subscribe({
       next: (cats) => this.categories.set(cats),
+    });
+
+    const editId = this.route.snapshot.paramMap.get('id');
+    if (editId) {
+      this.isEdit.set(true);
+      this.courseId.set(editId);
+      this.loadCourse(editId);
+    }
+  }
+
+  private loadCourse(id: string) {
+    this.courseService.getCourseById(id).subscribe({
+      next: (course) => {
+        Object.assign(this.step1Model, {
+          title: course.title,
+          slug: course.slug,
+          description: course.description,
+          price: course.price,
+          category_id: course.category?.id ?? '',
+          thumbnail_url: course.thumbnail_url,
+        });
+        if (course.sections) {
+          const sections = course.sections.map((s) => ({
+            title: s.title,
+            order: s.order,
+          }));
+          this.sections.set(sections);
+          this.sectionIds = course.sections.map((s) => s.id);
+          const lessonsMap: Record<number, { title: string; order: number; duration_seconds: number }[]> = {};
+          const contentsMap: Record<number, { videoUrl: string; quiz: { question: string; options: { label: string; text: string }[]; correctAnswer: string; explanation: string }[] }> = {};
+          let globalIdx = 0;
+          for (let si = 0; si < course.sections.length; si++) {
+            const sec = course.sections[si];
+            lessonsMap[si] = (sec.lessons || []).map((l) => ({
+              title: l.title,
+              order: l.order,
+              duration_seconds: l.duration_seconds,
+            }));
+            for (let li = 0; li < (sec.lessons || []).length; li++) {
+              contentsMap[globalIdx] = { videoUrl: '', quiz: [] };
+              globalIdx++;
+            }
+          }
+          this.lessons.set(lessonsMap);
+          this.contents.set(contentsMap);
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => this.error.set('Failed to load course.'),
     });
   }
 
@@ -260,6 +312,10 @@ export class CourseWizard {
   async nextStep() {
     if (this.step() === 1) {
       if (!this.step1Valid) return;
+      if (this.isEdit()) {
+        this.step.set(2);
+        return;
+      }
       this.submitting.set(true);
       this.error.set(null);
       try {
@@ -275,6 +331,10 @@ export class CourseWizard {
       }
     } else if (this.step() === 2) {
       if (!this.step2Valid) return;
+      if (this.isEdit()) {
+        this.step.set(3);
+        return;
+      }
       this.submitting.set(true);
       this.error.set(null);
       const cid = this.courseId();
@@ -294,6 +354,10 @@ export class CourseWizard {
       }
     } else if (this.step() === 3) {
       if (!this.allLessonsValid) return;
+      if (this.isEdit()) {
+        this.step.set(4);
+        return;
+      }
       this.submitting.set(true);
       this.error.set(null);
       const cid = this.courseId();
@@ -337,50 +401,62 @@ export class CourseWizard {
     this.error.set(null);
 
     try {
-      if (status === 'PENDING') {
+      if (this.isEdit()) {
         await firstValueFrom(
-          this.courseService.updateCourse(cid, { status: 'PENDING' }),
+          this.courseService.updateCourse(cid, {
+            ...this.step1Model,
+            status,
+          }),
         );
-      }
-
-      const lessonsMap = this.lessons();
-      const contentPromises: Promise<unknown>[] = [];
-      let globalIdx = 0;
-
-      for (let si = 0; si < this.sections().length; si++) {
-        const sectionLessons = lessonsMap[si] || [];
-        for (let li = 0; li < sectionLessons.length; li++) {
-          const lessonContent = this.contents()[globalIdx];
-          if (lessonContent && lessonContent.videoUrl) {
-            const payload: CreateLessonContentPayload = {
-              videoUrl: lessonContent.videoUrl,
-              quiz:
-                lessonContent.quiz.length > 0
-                  ? lessonContent.quiz.map((q) => ({
-                      ...q,
-                      explanation: q.explanation || null,
-                    }))
-                  : undefined,
-            };
-            contentPromises.push(
-              firstValueFrom(
-                this.courseService.createLessonContent(
-                  cid,
-                  this.lessonIds[globalIdx],
-                  payload,
-                ),
-              ),
-            );
-          }
-          globalIdx++;
+      } else {
+        if (status === 'PENDING') {
+          await firstValueFrom(
+            this.courseService.updateCourse(cid, { status: 'PENDING' }),
+          );
         }
       }
 
-      await Promise.all(contentPromises);
+      if (!this.isEdit()) {
+        const lessonsMap = this.lessons();
+        const contentPromises: Promise<unknown>[] = [];
+        let globalIdx = 0;
+
+        for (let si = 0; si < this.sections().length; si++) {
+          const sectionLessons = lessonsMap[si] || [];
+          for (let li = 0; li < sectionLessons.length; li++) {
+            const lessonContent = this.contents()[globalIdx];
+            if (lessonContent && lessonContent.videoUrl) {
+              const payload: CreateLessonContentPayload = {
+                videoUrl: lessonContent.videoUrl,
+                quiz:
+                  lessonContent.quiz.length > 0
+                    ? lessonContent.quiz.map((q) => ({
+                        ...q,
+                        explanation: q.explanation || null,
+                      }))
+                    : undefined,
+              };
+              contentPromises.push(
+                firstValueFrom(
+                  this.courseService.createLessonContent(
+                    cid,
+                    this.lessonIds[globalIdx],
+                    payload,
+                  ),
+                ),
+              );
+            }
+            globalIdx++;
+          }
+        }
+
+        await Promise.all(contentPromises);
+      }
+
       this.saving.set(false);
       this.router.navigate(['/dashboard/instructor']);
     } catch {
-      this.error.set('Failed to save course content. Please try again.');
+      this.error.set('Failed to save course. Please try again.');
       this.saving.set(false);
     }
   }

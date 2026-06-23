@@ -95,9 +95,14 @@
                   </td>
                   <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ course.enrollmentCount }}</td>
                   <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                    <button (click)="selectCourse(course.id)" class="text-fg-brand hover:text-fg-brand-strong font-medium transition-colors">
-                      Analytics
-                    </button>
+                    <div class="flex items-center justify-end gap-3">
+                      <a routerLink="/dashboard/instructor/edit/{{ course.id }}" class="text-fg-brand hover:text-fg-brand-strong font-medium transition-colors">
+                        Edit
+                      </a>
+                      <button (click)="selectCourse(course.id)" class="text-fg-brand hover:text-fg-brand-strong font-medium transition-colors">
+                        Analytics
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }

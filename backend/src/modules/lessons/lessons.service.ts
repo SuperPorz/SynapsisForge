@@ -65,6 +65,7 @@ export class LessonsService {
     const { section_id, ...rest } = dto;
     const lesson = this.lessonRepository.create({
       ...rest,
+      duration_seconds: rest.duration_seconds ?? 0,
       courseId,
       section: section_id ? { id: section_id } : undefined,
     });

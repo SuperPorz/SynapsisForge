@@ -17,8 +17,8 @@ export class Lesson {
   @Column({ type: 'int' })
   duration_seconds!: number;
 
-  @Column()
-  content_id!: string;
+  @Column({ nullable: true })
+  content_id?: string;
 
   @ManyToOne(() => Course, (course) => course.lessons, {
     nullable: false,
