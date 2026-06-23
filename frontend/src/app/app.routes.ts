@@ -76,7 +76,7 @@ export const routes: Routes = [
       {
         path: 'instructor',
         canActivate: [roleGuard],
-        data: { roles: ['instructor', 'admin'] },
+        data: { roles: ['INSTRUCTOR', 'ADMIN'] },
         loadComponent: () =>
           import('./features/dashboard/instructor/instructor').then(
             (m) => m.Instructor,
@@ -85,7 +85,7 @@ export const routes: Routes = [
       {
         path: 'instructor/new',
         canActivate: [roleGuard],
-        data: { roles: ['instructor', 'admin'] },
+        data: { roles: ['INSTRUCTOR', 'ADMIN'] },
         loadComponent: () =>
           import('./features/dashboard/instructor/course-wizard/course-wizard').then(
             (m) => m.CourseWizard,

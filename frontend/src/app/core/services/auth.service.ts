@@ -13,16 +13,14 @@ import { environment } from '../../../environments/environment.develop';
 interface JwtPayload {
   sub: string;
   email: string;
-  role: 'student' | 'instructor' | 'admin';
-  exp: number; // timestamp Unix — aggiunto automaticamente da jwtService.signAsync()
+  role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
+  exp: number;
 }
 
-// Forma pubblica dell'utente esposta ai componenti tramite signal.
-// Non esponiamo JwtPayload direttamente: è un dettaglio implementativo del token.
 export interface User {
-  id: string; // = payload.sub
+  id: string;
   email: string;
-  role: 'student' | 'instructor' | 'admin';
+  role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
 }
 
 interface LoginDto {
