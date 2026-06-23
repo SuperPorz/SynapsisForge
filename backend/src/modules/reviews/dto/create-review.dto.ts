@@ -1,12 +1,13 @@
-import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
-import { Rating } from 'src/common/entities/enum/reviews.enum';
+import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateReviewDto {
   @IsUUID()
   enrollmentId!: string;
 
-  @IsEnum(Rating)
-  rating!: Rating;
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  rating!: number;
 
   @IsOptional()
   @IsString()

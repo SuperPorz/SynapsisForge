@@ -168,12 +168,8 @@
 
       <div class="flex items-center justify-between">
         <button (click)="prevStep()" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">← Back</button>
-        <button (click)="nextStep()" [disabled]="!allLessonsValid || submitting()" class="rounded-lg bg-fg-brand px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
-          @if (submitting()) {
-            Creating lessons...
-          } @else {
-            Next → Content & Quiz
-          }
+        <button (click)="nextStep()" [disabled]="submitting() || (!isEdit() && !allLessonsValid)" class="rounded-lg bg-fg-brand px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
+          @if (submitting()) { Processing... } @else { Next → Content & Quiz }
         </button>
       </div>
     </div>

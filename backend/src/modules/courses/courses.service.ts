@@ -108,9 +108,19 @@ export class CoursesService {
       .getOne();
 
     if (!course) throw new NotFoundException(`Course ${id} not found`);
-    return plainToInstance(CourseDetailResponseDto, course, {
+
+    const avgResult = await this.reviewRepo
+      .createQueryBuilder('review')
+      .innerJoin('review.enrollment', 'enrollment')
+      .where('enrollment.courseId = :courseId', { courseId: id })
+      .select('AVG(review.rating)', 'avg')
+      .getRawOne();
+
+    const dto = plainToInstance(CourseDetailResponseDto, course, {
       excludeExtraneousValues: true,
     });
+    dto.rating = avgResult?.avg ? Number(Number(avgResult.avg).toFixed(1)) : null;
+    return dto;
   }
 
   async findBySlug(slug: string): Promise<Course> {
@@ -266,12 +276,20 @@ export class CoursesService {
       where: { course: { id: courseId } },
     });
 
-    const avgRating = await this.reviewRepo
-      .createQueryBuilder('review')
-      .innerJoin('review.enrollment', 'enrollment')
-      .where('enrollment."courseId" = :courseId', { courseId })
-      .select('AVG(review.rating)', 'avg')
-      .getRawOne();
+    const enrollmentIds = (await this.enrollmentRepo.find({
+      where: { course: { id: courseId } },
+      select: ['id'],
+    })).map((e) => e.id);
+
+    const avgResult: { avg?: string | number } | null | undefined =
+      enrollmentIds.length > 0
+        ? await this.reviewRepo
+            .createQueryBuilder('review')
+            .where('review.enrollmentId IN (:...ids)', { ids: enrollmentIds })
+            .select('AVG(review.rating)', 'avg')
+            .getRawOne()
+        : null;
+    const averageRating = avgResult?.avg ? Number(Number(avgResult.avg).toFixed(1)) : null;
 
     const lessons = await this.lessonRepo.find({
       where: { course: { id: courseId } },
@@ -287,14 +305,12 @@ export class CoursesService {
           .exec()
       : [];
 
-    const totalWatchTimeSeconds = watchTimeAgg.length ? watchTimeAgg[0].total : 0;
-
     return {
       courseId: course.id,
       courseTitle: course.title,
       enrollmentCount,
-      averageRating: avgRating?.avg ? Number(Number(avgRating.avg).toFixed(1)) : null,
-      totalWatchTimeSeconds,
+      averageRating,
+      totalWatchTimeSeconds: watchTimeAgg.length ? watchTimeAgg[0].total : 0,
     };
   }
 

@@ -1,5 +1,5 @@
-import { Component, input } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Course } from '../../../core/models/course-model';
 
 @Component({
@@ -9,6 +9,10 @@ import { Course } from '../../../core/models/course-model';
   styleUrl: './course-card.css',
 })
 export class CourseCard {
-  // Signal-based input (Angular 17+)
   course = input.required<Course>();
+
+  starStates = computed(() => {
+    const rating = Math.round(this.course()?.rating ?? 0);
+    return [1, 2, 3, 4, 5].map((i) => i <= rating);
+  });
 }

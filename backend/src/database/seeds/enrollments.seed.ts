@@ -3,7 +3,6 @@ import { DataSource } from 'typeorm';
 import { Enrollment } from '../../common/entities/enrollments.entity';
 import { Course } from '../../common/entities/courses.entity';
 import { StudentProfile } from '../../common/entities/student-profile.entity';
-import { Review } from '../../common/entities/reviews.entity';
 import { Payment } from '../../common/entities/payments.entity';
 import { Status } from '../../common/entities/enum/courses.enum';
 import { Certificate } from '../../common/entities/certificate.entity';
@@ -12,24 +11,12 @@ import { Certificate } from '../../common/entities/certificate.entity';
 enum Currency { EUR = 'EUR', USD = 'USD', GBP = 'GBP' }
 enum PaymentStatus { PENDING = 'PENDING', COMPLETED = 'COMPLETED', FAILED = 'FAILED' }
 
-// ── Review content pool ───────────────────────────────────────────────────────
-// Usato solo per enrollment con progress = 100% (completed)
-const REVIEW_COMMENTS = [
-  'Excellent course, very well structured. The instructor explains complex topics clearly.',
-  'One of the best courses I have taken. Practical examples and real-world projects.',
-  'Great content. Some sections could go deeper, but overall highly recommended.',
-  'The hands-on approach made everything click. Worth every penny.',
-  'Clear explanations and well-paced. I went from zero to confident in this topic.',
-  null, // some reviews have no comment — just a rating
-  null,
-];
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 function randomElement<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function pickCourses(courses: Course[], count: number): Course[] {
@@ -51,7 +38,6 @@ export async function seedEnrollments(
 ): Promise<SeededEnrollment[]> {
   const enrollmentRepo = ds.getRepository(Enrollment);
   const certificateRepo = ds.getRepository(Certificate);
-  const reviewRepo = ds.getRepository(Review);
   const paymentRepo = ds.getRepository(Payment);
 
   const publishedCourses = courses.filter((c) => c.status === Status.PUBLISHED);
@@ -120,18 +106,6 @@ export async function seedEnrollments(
         );
       }
 
-      // ── Review (only if 100% — coerente: solo chi completa può recensire) ─
-      if (progressPercent === 100) {
-        const rating = randomElement([3, 4, 4, 5]) as number;
-        const comment = randomElement(REVIEW_COMMENTS);
-        await reviewRepo.save(
-          reviewRepo.create({
-            enrollment,
-            rating: rating as any,
-            comment: comment ?? undefined,
-          }),
-        );
-      }
     }
 
     console.log(

@@ -353,11 +353,11 @@ export class CourseWizard {
         this.submitting.set(false);
       }
     } else if (this.step() === 3) {
-      if (!this.allLessonsValid) return;
       if (this.isEdit()) {
         this.step.set(4);
         return;
       }
+      if (!this.allLessonsValid) return;
       this.submitting.set(true);
       this.error.set(null);
       const cid = this.courseId();
@@ -402,9 +402,10 @@ export class CourseWizard {
 
     try {
       if (this.isEdit()) {
+        const { category_id, ...updatePayload } = this.step1Model;
         await firstValueFrom(
           this.courseService.updateCourse(cid, {
-            ...this.step1Model,
+            ...updatePayload,
             status,
           }),
         );

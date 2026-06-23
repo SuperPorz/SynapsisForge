@@ -127,6 +127,10 @@
     } @else {
       @let stats = courseStats();
       @if (stats) {
+        <button (click)="clearSelection()" class="mb-4 inline-flex items-center gap-1 text-sm text-fg-brand hover:text-fg-brand-strong transition-colors">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Back to courses
+        </button>
         <div class="grid gap-6 sm:grid-cols-3">
           <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
             <p class="text-sm text-gray-500 dark:text-gray-400">Enrollments</p>

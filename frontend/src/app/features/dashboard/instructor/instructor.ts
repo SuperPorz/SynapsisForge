@@ -66,6 +66,11 @@ export class Instructor implements OnInit {
     });
   }
 
+  clearSelection() {
+    this.selectedCourseId.set(null);
+    this.activeTab.set('courses');
+  }
+
   selectCourse(courseId: string) {
     if (this.selectedCourseId() === courseId) return;
     this.selectedCourseId.set(courseId);
@@ -74,14 +79,22 @@ export class Instructor implements OnInit {
 
     this.courseService.getCourseStats(courseId).subscribe({
       next: (stats) => {
+        console.log('[Instructor] courseStats response:', stats);
         this.courseStats.set(stats);
         this.statsLoading.set(false);
       },
-      error: () => this.statsLoading.set(false),
+      error: (err) => {
+        console.error('[Instructor] getCourseStats error:', err);
+        this.statsLoading.set(false);
+      },
     });
 
     this.courseService.getCourseLessonsWithStats(courseId).subscribe({
-      next: (lessons) => this.lessonStats.set(lessons),
+      next: (lessons) => {
+        console.log('[Instructor] lessonStats response:', lessons);
+        this.lessonStats.set(lessons);
+      },
+      error: (err) => console.error('[Instructor] getCourseLessonsWithStats error:', err),
     });
   }
 

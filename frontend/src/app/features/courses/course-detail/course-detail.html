@@ -21,17 +21,29 @@
     }
     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
 
+    <a routerLink="/courses" class="absolute left-4 top-4 z-20 flex items-center gap-1 rounded-lg bg-black/40 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-colors hover:bg-black/60">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to catalog
+    </a>
+
     <div class="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-8 sm:px-6 lg:px-8">
       <span class="mb-2 inline-block w-fit rounded-full bg-fg-brand px-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
         {{ c.category.name }}
       </span>
       <h1 class="text-3xl font-bold text-white lg:text-4xl">{{ c.title }}</h1>
       <div class="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-300">
-        <span class="flex items-center gap-1">
-          <span class="text-yellow-400">★★★★☆</span>
-          <span class="font-semibold text-white">4.5</span>
-          <span class="text-gray-400">(1.2k students)</span>
-        </span>
+        @if (c.rating) {
+          <span class="flex items-center gap-1">
+            <span class="flex items-center gap-0.5">
+              @for (filled of starStates(); track $index) {
+                <svg class="h-4 w-4" [class.text-yellow-400]="filled" [class.text-gray-500]="!filled" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+                </svg>
+              }
+            </span>
+            <span class="font-semibold text-white">{{ c.rating }}</span>
+          </span>
+        }
         @if (c.instructor?.user) {
           <span>
             Instructor:

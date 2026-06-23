@@ -22,6 +22,7 @@ import { seedUsers } from './users.seed';
 import { seedCourses } from './courses.seed';
 import { seedSections } from './sections.seed';
 import { seedEnrollments } from './enrollments.seed';
+import { seedRatings } from './ratings.seed';
 import { seedMongo } from './mongo.seed';
 import { Course } from '../../common/entities/courses.entity';
 import { Lesson } from '../../common/entities/lessons.entity';
@@ -53,8 +54,11 @@ async function main(): Promise<void> {
     console.log('\n🎬 Sections & Lessons...');
     const seededLessons = await seedSections(AppDataSource, coursesWithCategory);
 
-    console.log('\n📝 Enrollments, Payments, Reviews, Certificates...');
-    await seedEnrollments(AppDataSource, courses, studentProfiles);
+    console.log('\n📝 Enrollments, Payments, Certificates...');
+    const seededEnrollments = await seedEnrollments(AppDataSource, courses, studentProfiles);
+
+    console.log('\n⭐ Reviews...');
+    await seedRatings(AppDataSource, seededEnrollments);
 
   } finally {
     await AppDataSource.destroy();

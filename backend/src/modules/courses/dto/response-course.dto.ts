@@ -64,4 +64,7 @@ export class CourseResponseDto {
   @Expose()
   @Type(() => InstructorResponseDto)
   instructor: InstructorResponseDto;
+
+  @Expose()
+  rating?: number | null;
 }

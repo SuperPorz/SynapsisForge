@@ -50,6 +50,11 @@ export class CourseDetail {
     return sections[0]?.lessons[0]?.id ?? null;
   });
 
+  starStates = computed(() => {
+    const rating = Math.round(this.course()?.rating ?? 0);
+    return [1, 2, 3, 4, 5].map((i) => i <= rating);
+  });
+
   ngOnInit() {
     this.route.params
       .pipe(
