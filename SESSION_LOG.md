@@ -77,7 +77,7 @@
 - **maxmemory & eviction policy**: created `infra/redis/redis.conf` with `maxmemory 256mb`, `maxmemory-policy allkeys-lru`, RDB persistence, security rename-commands, healthcheck. Mounted in docker-compose with `redis-server` command override
 - **Documentation**: created `backend/docs/CACHING.md` with key naming, TTL strategy, invalidation, rate limiting, Pub/Sub, architecture diagram
 - Added `REDIS_URL` to `backend/.env.example`
-- Updated AGENT.md §10 Redis line (now fully integrated in code)
+- Updated AGENTS.md §10 Redis line (now fully integrated in code)
 - Refactored `CacheService.invalidateByPattern()` to use shared `getRedisClient()` method
 - Exported `CacheStats` interface for type-safe endpoint responses
 - Both `npm run build` (backend) and `tsc --noEmit` pass clean
@@ -179,7 +179,7 @@
 - Understand DEL vs UNLINK difference — *already done pre-session*
 
 ### Shell Commands Guidelines
-- Added §11 to AGENT.md: rules for non-interactive commands, docker/redis exec patterns, 10s timeout assumption, one-shot health checks
+- Added §11 to AGENTS.md: rules for non-interactive commands, docker/redis exec patterns, 10s timeout assumption, one-shot health checks
 
 ### Key decisions
 - Redis key prefix: `sf` (SynapsisForge)
@@ -482,7 +482,7 @@
 - [x] **Console logs restored**: `[saveProgress]` logs back after accidental removal
 - [x] **"Lezione successiva →"**: Changed from "Completa lezione" + `navigateToNextLesson()` added
 - [x] **JWT expiry**: Increased from `15m` to `2h` in `backend/.env`
-- [x] **AGENT.md rules**: Added service management policy — user always starts frontend/backend manually
+- [x] **AGENTS.md rules**: Added service management policy — user always starts frontend/backend manually
 
 ### Key discoveries
 - Missing `@theme` block caused all custom Tailwind v4 colors to not render (root cause of button "disappearing")
