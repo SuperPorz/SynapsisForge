@@ -23,6 +23,7 @@ import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { Keyv } from 'keyv';
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from './modules/cache/cache.module';
+import { QueuesModule } from './modules/queues/queues.module';
 import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
 
 @Module({
@@ -95,6 +96,7 @@ import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
     LessonsModule,
     UploadModule,
     CacheModule,
+    QueuesModule,
   ],
   controllers: [AppController],
   providers: [

@@ -55,6 +55,7 @@ They exist **solely to manage the agentic development workflow**.
 8. Changes to agentic files **are never committed** unless explicitly requested.
 9. **Pushing to any remote (GitHub/GitLab) is strictly forbidden without explicit user approval.** This includes `git push`, `git push --force`, and any deploy trigger.
 10. **Commit policy**: NEVER commit without asking the user for explicit permission first. Always wait for feedback.
+11. **NEVER create a second AGENT.md or AGENTS.md file.** The single agentic operations manual is `AGENT.md` and it must never be duplicated under any name variant. If you believe a change is needed, propose it in chat and wait for explicit authorization before modifying.
 
 ### Golden rule — planning immutability
 
@@ -75,7 +76,13 @@ This ensures the agent can self-validate its own work.
 
 ### Session lifecycle
 
-1. **At session end (post-feedback)**: When user declares work complete, move completed TODO items to a new `SESSION_LOG.md` block. Update `PLAN.md` progress markers. Update `MEMORY.md` with any new structural knowledge. **Then pre-load `TODO.md`** with the next uncompleted day's micro-tasks (derived from its ~4 "Subtasks (actual_plan)" in `PLAN.md`).
+1. **At session end (post-feedback)**: When user declares work complete ("sessione chiusa", "lavoro completato", "fine della sessione" or similar):
+   a. Review `TODO.md`, `SESSION_LOG.md`, and `MEMORY.md` to determine which TODO items were completed during the session.
+   b. In `PLAN.md`, mark the corresponding day's subtasks as `[x]` (completed) and update its status from ⬜ to ✅.
+   c. Remove completed items from `TODO.md` entirely (do not leave them checked — TODO.md contains only pending work).
+   d. Prepend a new dated block to `SESSION_LOG.md` with the session summary.
+   e. Update `MEMORY.md` with any new structural knowledge.
+   f. **Then pre-load `TODO.md`** with the next uncompleted day's micro-tasks (derived from its ~4 "Subtasks (actual_plan)" in `PLAN.md`). If multiple days were completed in the session, skip ahead to the first uncompleted day.
 2. **During session**: Work through `TODO.md`. Bug fixes discovered during work go directly to `SESSION_LOG.md` and `MEMORY.md` (if significant) — they are NOT added to `PLAN.md`.
 3. **TODO confirmation flow**: When user says "procediamo con le prossime TODO", read the current content of `TODO.md`, show it in the chat, and ask for explicit confirmation before executing. Do NOT regenerate or modify `TODO.md` at this point — only show and wait.
 4. **Safety check**: If at any point `TODO.md` is empty, inconsistent with `PLAN.md`, or otherwise problematic, do NOT modify anything. Ask the user for guidance.
