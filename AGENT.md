@@ -74,28 +74,70 @@ This ensures the agent can self-validate its own work.
 
 ## 6. Workflow
 
-### Session lifecycle
+### 6.1 Entry points
 
-1. **At session end (post-feedback)**: When user declares work complete ("sessione chiusa", "lavoro completato", "fine della sessione" or similar):
-   a. Review `TODO.md`, `SESSION_LOG.md`, and `MEMORY.md` to determine which TODO items were completed during the session.
-   b. In `PLAN.md`, mark the corresponding day's subtasks as `[x]` (completed) and update its status from ⬜ to ✅.
-   c. Remove completed items from `TODO.md` entirely (do not leave them checked — TODO.md contains only pending work).
-   d. Prepend a new dated block to `SESSION_LOG.md` with the session summary.
-   e. Update `MEMORY.md` with any new structural knowledge.
-   f. **Then pre-load `TODO.md`** with the next uncompleted day's micro-tasks (derived from its ~4 "Subtasks (actual_plan)" in `PLAN.md`). If multiple days were completed in the session, skip ahead to the first uncompleted day.
-2. **During session**: Work through `TODO.md`. Bug fixes discovered during work go directly to `SESSION_LOG.md` and `MEMORY.md` (if significant) — they are NOT added to `PLAN.md`.
-3. **TODO confirmation flow**: When user says "procediamo con le prossime TODO", read the current content of `TODO.md`, show it in the chat, and ask for explicit confirmation before executing. Do NOT regenerate or modify `TODO.md` at this point — only show and wait.
-4. **Safety check**: If at any point `TODO.md` is empty, inconsistent with `PLAN.md`, or otherwise problematic, do NOT modify anything. Ask the user for guidance.
-5. **Significant dev tasks in PLAN**: If during TODO development you add important development work beyond the actual_plan subtasks, add them as additional subtasks under the relevant day in `PLAN.md` (with an "Additional dev tasks" sub-header). Bug fixes, temporary patches, and cleanup are NEVER added to `PLAN.md`.
+Two verbal triggers map to distinct lifecycle phases:
 
-### Operational steps
+| User says… | Meaning | Action |
+|------------|---------|--------|
+| "procedi con TODO", "procediamo", "procedi" | Start session / continue working | Run **Start-flow** (6.2) |
+| "sessione chiusa", "lavoro completato", "fine della sessione" | End session | Run **End-flow** (6.3) |
 
-1. **Read**: at session start, read `MEMORY.md`, `SESSION_LOG.md`, `TODO.md`.
-2. **Analyze**: before writing code, study relevant PROGRESSO docs, `actual_plan.txt`, and involved files.
-3. **Plan**: propose strategy in `SESSION_LOG.md` **before** making changes.
-4. **Implement**: one task at a time; commit only on request.
-5. **Verify**: after each task, run relevant lint/typecheck/test commands.
-6. **Update**: update `SESSION_LOG.md` after each task; extend `MEMORY.md` if patterns, structural bugs, or important decisions are discovered.
+### 6.2 Start-flow ("procedi con TODO")
+
+1. **Read** `TODO.md`, `SESSION_LOG.md`, `MEMORY.md`.
+2. **Check if TODO is empty**:
+   - If **empty** → jump to step 4 (load next day).
+   - If **not empty** → check each item against `SESSION_LOG.md` and `MEMORY.md` to see if already completed in a prior session.
+3. **If all items are already completed** → go to step 4.
+   **If some items are still pending** → execute them now (step 5).
+4. **Load next day from PLAN**:
+   a. Find in `PLAN.md` the first day marked ⬜ (not yet started).
+   b. Read its ~4 "Subtasks (actual_plan)".
+   c. **Expand** each subtask into 2–4 actionable checkbox items (see §6.4 Expansion rule).
+   d. Write the expanded items into `TODO.md`.
+   e. Show the new TODO in chat and **ask for confirmation** before executing.
+5. **Execute**: work through TODO items one by one. During execution:
+   - Bug fixes → log in `SESSION_LOG.md` and `MEMORY.md`; do NOT add to `PLAN.md`.
+   - Significant new dev tasks beyond PLAN subtasks → add as "Additional dev tasks" in `PLAN.md` under the current day.
+   - After each item, run relevant lint/typecheck/test commands.
+
+### 6.3 End-flow ("sessione chiusa")
+
+1. **Review** which TODO items were completed in this session (from session context).
+2. **Update PLAN.md**:
+   - Mark the corresponding day's subtasks as `[x]`.
+   - Change the day header from ⬜ to ✅.
+3. **Remove** completed items from `TODO.md` entirely.
+4. **Prepend** a new dated block to `SESSION_LOG.md` with the session summary.
+5. **Extend** `MEMORY.md` with any new structural knowledge.
+6. **Pre-load next day**:
+   a. Find in `PLAN.md` the first day still marked ⬜.
+   b. Read its ~4 "Subtasks (actual_plan)".
+   c. **Expand** each subtask into 2–4 actionable items (see §6.4).
+   d. Write expanded items into `TODO.md`.
+   (No confirmation needed — the new TODO will be visible at next session start.)
+
+### 6.4 Expansion rule (PLAN subtask → TODO items)
+
+Convert each PLAN subtask into concrete, single-action checkboxes:
+
+- Each checkbox must correspond to **one file to create/modify**, **one command to run**, or **one test/verification to perform**.
+- If in doubt, err on the side of more granularity (2–4 items per PLAN subtask).
+
+**Examples:**
+
+| PLAN subtask | Expanded TODO items |
+|---|---|
+| `Install @nestjs/bullmq + bullmq` | `[ ] npm install @nestjs/bullmq bullmq` `[ ] Verify packages in package.json` |
+| `Create modules/queues/ with queue + processor` | `[ ] Create queues.module.ts with BullModule.forRootAsync + registerQueue` `[ ] Create queues.processor.ts with WorkerHost` `[ ] Create queues.controller.ts with GET endpoints` `[ ] Import QueuesModule in AppModule` `[ ] Build and verify` |
+| `Configure MailerModule with SMTP` | `[ ] Install @nestjs-modules/mailer nodemailer handlebars` `[ ] Add SMTP config to MailerModule (Gmail app password)` `[ ] Add SMTP env vars to .env` |
+
+### 6.5 Safety checks
+
+- If `TODO.md` is empty during a start-flow and no next ⬜ day exists in `PLAN.md`, ask the user for guidance.
+- If `TODO.md` content is inconsistent with `PLAN.md` (e.g. wrong day number), ask before modifying.
+- Never create agentic files (`AGENT.md`, `AGENTS.md`, `SESSION_LOG.md`, `TODO.md`, `MEMORY.md`, `PLAN.md`) without explicit user permission — propose changes in chat first.
 
 ## 7. Tool Delegation & Subagent Management
 
