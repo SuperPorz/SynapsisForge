@@ -1,4 +1,22 @@
 services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: postgres
+      MONGO_URI: mongodb://mongodb:27017
+    env_file: ../backend/.env
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+    volumes:
+      - uploads_data:/app/uploads
+    restart: unless-stopped
+
   postgres:
     image: postgres:18-alpine
     ports:  
@@ -31,3 +49,4 @@ volumes:
   pgdata:
   mongo_data:
   redis-data:
+  uploads_data:

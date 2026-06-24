@@ -9,6 +9,8 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import cookieParser from 'cookie-parser';
 import { TypeOrmExceptionFilter } from './common/filters/typeorm-exception.filter';
 import helmet from 'helmet';
+import { join } from 'path';
+import express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -32,6 +34,8 @@ async function bootstrap() {
     new TimeoutInterceptor(), // 3° — imposta il timeout
     new TransformInterceptor(), // 4° — wrappa la response finale
   );
+
+  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -18,6 +18,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guard';
 import { LessonsModule } from './modules/lessons/lessons.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { LessonsModule } from './modules/lessons/lessons.module';
     CertificatesModule,
     AdminModule,
     LessonsModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [

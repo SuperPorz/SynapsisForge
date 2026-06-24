@@ -1,7 +1,9 @@
 import { Component, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../../environments/environment.develop';
 import { CourseService, CreateCoursePayload, CreateLessonContentPayload } from '../../../../core/services/courses.service';
 
 @Component({
@@ -15,10 +17,13 @@ export class CourseWizard {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private http = inject(HttpClient);
 
   step = signal(1);
   submitting = signal(false);
   saving = signal(false);
+  uploading = signal(false);
+  thumbnailPreview = signal<string | null>(null);
   error = signal<string | null>(null);
 
   courseId = signal<string | null>(null);
@@ -50,6 +55,9 @@ export class CourseWizard {
           category_id: course.category?.id ?? '',
           thumbnail_url: course.thumbnail_url,
         });
+        if (course.thumbnail_url) {
+          this.thumbnailPreview.set(course.thumbnail_url);
+        }
         if (course.sections) {
           const sections = course.sections.map((s) => ({
             title: s.title,
@@ -86,6 +94,43 @@ export class CourseWizard {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+  }
+
+  async uploadThumbnail(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.error.set('Invalid file type. Allowed: JPEG, PNG, WebP.');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.error.set('File too large. Maximum size: 2MB.');
+      return;
+    }
+
+    this.uploading.set(true);
+    this.error.set(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await firstValueFrom(
+        this.http.post<{ url: string }>(
+          `${environment.apiUrl}/uploads/course-thumbnail`,
+          formData,
+        ),
+      );
+      this.step1Model.thumbnail_url = res.url;
+      this.thumbnailPreview.set(res.url);
+    } catch {
+      this.error.set('Upload failed. Please try again.');
+    } finally {
+      this.uploading.set(false);
+    }
   }
 
   step1Model: CreateCoursePayload = {

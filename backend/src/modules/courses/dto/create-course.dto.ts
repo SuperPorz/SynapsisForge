@@ -51,7 +51,9 @@ export class CreateCourseDto {
   @ApiProperty({
     description: 'The thumbnail URL of the course',
     example: 'https://example.com/thumbnail.jpg',
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  thumbnail_url!: string;
+  thumbnail_url?: string;
 }
