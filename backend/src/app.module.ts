@@ -19,6 +19,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guard';
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { Keyv } from 'keyv';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
@@ -59,6 +62,19 @@ import { UploadModule } from './modules/upload/upload.module';
       // Configurazioni opzionali di event-emitter2
       wildcard: true,
       delimiter: '.',
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: (configService: ConfigService) => ({
+        stores: [
+          new Keyv({
+            store: new KeyvRedis(
+              configService.get<string>('REDIS_URL', 'redis://localhost:6379'),
+            ),
+          }),
+        ],
+      }),
+      inject: [ConfigService],
     }),
     UsersModule,
     CoursesModule,

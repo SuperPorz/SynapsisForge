@@ -1,5 +1,5 @@
 // prettier-ignore
-import { ConflictException, ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -19,6 +19,8 @@ import { InstructorProfile } from 'src/common/entities/instructor-profile.entity
 import { CreateSectionDto } from './dto/create-section.dto';
 import { UpdateSectionDto } from './dto/update-section.dto';
 import { ReorderSectionsDto } from './dto/reorder-sections.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class CoursesService {
@@ -46,6 +48,9 @@ export class CoursesService {
 
     @InjectModel(LessonProgress.name, 'mongo_synapsis')
     private lessonProgressModel: Model<LessonProgress>,
+
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
   ) {}
 
   async findAll(
@@ -57,103 +62,123 @@ export class CoursesService {
     minPrice?: number,
     maxPrice?: number,
   ) {
-    const qb = this.coursesRepo
-      .createQueryBuilder('course')
-      .leftJoinAndSelect('course.instructor', 'instructor')
-      .leftJoinAndSelect('instructor.user', 'user')
-      .leftJoinAndSelect('course.category', 'category');
+    const cacheKey = `sf:cache:courses:list:${page}:${limit}:${category ?? ''}:${featured ?? ''}:${q ?? ''}:${minPrice ?? ''}:${maxPrice ?? ''}`;
 
-    if (category) {
-      qb.andWhere('category.slug = :category', { category });
-    }
+    return this.cacheManager.wrap(
+      cacheKey,
+      async () => {
+        const qb = this.coursesRepo
+          .createQueryBuilder('course')
+          .leftJoinAndSelect('course.instructor', 'instructor')
+          .leftJoinAndSelect('instructor.user', 'user')
+          .leftJoinAndSelect('course.category', 'category');
 
-    if (featured !== undefined) {
-      qb.andWhere('course.featured = :featured', { featured });
-    }
+        if (category) {
+          qb.andWhere('category.slug = :category', { category });
+        }
 
-    if (q) {
-      qb.andWhere('(course.title ILIKE :q OR course.description ILIKE :q)', {
-        q: `%${q}%`,
-      });
-    }
+        if (featured !== undefined) {
+          qb.andWhere('course.featured = :featured', { featured });
+        }
 
-    if (minPrice !== undefined) {
-      qb.andWhere('course.price >= :minPrice', { minPrice });
-    }
+        if (q) {
+          qb.andWhere('(course.title ILIKE :q OR course.description ILIKE :q)', {
+            q: `%${q}%`,
+          });
+        }
 
-    if (maxPrice !== undefined) {
-      qb.andWhere('course.price <= :maxPrice', { maxPrice });
-    }
+        if (minPrice !== undefined) {
+          qb.andWhere('course.price >= :minPrice', { minPrice });
+        }
 
-    const [data, total] = await qb
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
+        if (maxPrice !== undefined) {
+          qb.andWhere('course.price <= :maxPrice', { maxPrice });
+        }
 
-    const courseIds = data.map((c) => c.id);
-    const avgRatings: { courseId: string; avg: string }[] = courseIds.length
-      ? await this.reviewRepo
-          .createQueryBuilder('review')
-          .innerJoin('review.enrollment', 'enrollment')
-          .select('enrollment."courseId"', 'courseId')
-          .addSelect('AVG(review.rating)', 'avg')
-          .where('enrollment."courseId" IN (:...courseIds)', { courseIds })
-          .groupBy('enrollment."courseId"')
-          .getRawMany()
-      : [];
+        const [data, total] = await qb
+          .skip((page - 1) * limit)
+          .take(limit)
+          .getManyAndCount();
 
-    const ratingMap: Record<string, number | null> = {};
-    for (const row of avgRatings) {
-      ratingMap[row.courseId] = Number(Number(row.avg).toFixed(1));
-    }
+        const courseIds = data.map((c) => c.id);
+        const avgRatings: { courseId: string; avg: string }[] = courseIds.length
+          ? await this.reviewRepo
+              .createQueryBuilder('review')
+              .innerJoin('review.enrollment', 'enrollment')
+              .select('enrollment."courseId"', 'courseId')
+              .addSelect('AVG(review.rating)', 'avg')
+              .where('enrollment."courseId" IN (:...courseIds)', { courseIds })
+              .groupBy('enrollment."courseId"')
+              .getRawMany()
+          : [];
 
-    return {
-      data: data.map((c) => ({
-        ...c,
-        rating: ratingMap[c.id] ?? null,
-      })),
-      total,
-    };
+        const ratingMap: Record<string, number | null> = {};
+        for (const row of avgRatings) {
+          ratingMap[row.courseId] = Number(Number(row.avg).toFixed(1));
+        }
+
+        return {
+          data: data.map((c) => ({
+            ...c,
+            rating: ratingMap[c.id] ?? null,
+          })),
+          total,
+        };
+      },
+      300_000,
+    );
   }
 
   //prettier-ignore
   async findOne(id: string): Promise<CourseDetailResponseDto> {
-    const course = await this.coursesRepo
-      .createQueryBuilder('course')
-      .leftJoinAndSelect('course.category', 'category')
-      .leftJoinAndSelect('course.instructor', 'instructor')
-      .leftJoinAndSelect('instructor.user', 'user')
-      .leftJoinAndSelect('course.sections', 'sections')
-      .leftJoinAndSelect('sections.lessons', 'lessons')
-      .where('course.id = :id', { id })
-      .orderBy('sections.order', 'ASC')
-      .addOrderBy('lessons.order', 'ASC')
-      .getOne();
+    return this.cacheManager.wrap(
+      `sf:cache:course:${id}`,
+      async () => {
+        const course = await this.coursesRepo
+          .createQueryBuilder('course')
+          .leftJoinAndSelect('course.category', 'category')
+          .leftJoinAndSelect('course.instructor', 'instructor')
+          .leftJoinAndSelect('instructor.user', 'user')
+          .leftJoinAndSelect('course.sections', 'sections')
+          .leftJoinAndSelect('sections.lessons', 'lessons')
+          .where('course.id = :id', { id })
+          .orderBy('sections.order', 'ASC')
+          .addOrderBy('lessons.order', 'ASC')
+          .getOne();
 
-    if (!course) throw new NotFoundException(`Course ${id} not found`);
+        if (!course) throw new NotFoundException(`Course ${id} not found`);
 
-    const avgResult = await this.reviewRepo
-      .createQueryBuilder('review')
-      .innerJoin('review.enrollment', 'enrollment')
-      .where('enrollment.courseId = :courseId', { courseId: id })
-      .select('AVG(review.rating)', 'avg')
-      .getRawOne();
+        const avgResult = await this.reviewRepo
+          .createQueryBuilder('review')
+          .innerJoin('review.enrollment', 'enrollment')
+          .where('enrollment.courseId = :courseId', { courseId: id })
+          .select('AVG(review.rating)', 'avg')
+          .getRawOne();
 
-    const dto = plainToInstance(CourseDetailResponseDto, course, {
-      excludeExtraneousValues: true,
-    });
-    dto.rating = avgResult?.avg ? Number(Number(avgResult.avg).toFixed(1)) : null;
-    return dto;
+        const dto = plainToInstance(CourseDetailResponseDto, course, {
+          excludeExtraneousValues: true,
+        });
+        dto.rating = avgResult?.avg ? Number(Number(avgResult.avg).toFixed(1)) : null;
+        return dto;
+      },
+      600_000,
+    );
   }
 
   async findBySlug(slug: string): Promise<Course> {
-    const course = await this.coursesRepo.findOne({
-      where: { slug },
-      relations: ['instructor', 'category'],
-    });
-    if (!course)
-      throw new NotFoundException(`Course with slug ${slug} not found`);
-    return course;
+    return this.cacheManager.wrap(
+      `sf:cache:course:slug:${slug}`,
+      async () => {
+        const course = await this.coursesRepo.findOne({
+          where: { slug },
+          relations: ['instructor', 'category'],
+        });
+        if (!course)
+          throw new NotFoundException(`Course with slug ${slug} not found`);
+        return course;
+      },
+      600_000,
+    );
   }
 
   private async verifyOwnership(courseId: string, userId: string): Promise<Course> {
