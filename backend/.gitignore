@@ -60,4 +60,6 @@ scripts/sync-ids.json
 /extra
 
 # Uploaded files
-/uploads
+/uploads/*
+!/uploads/seed-thumbnails/
+!/uploads/seed-thumbnails/**
