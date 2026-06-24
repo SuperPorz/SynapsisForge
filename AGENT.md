@@ -21,7 +21,6 @@ Complete the remaining platform: Instructor dashboard (Day 48+), admin panels, p
 - No `tailwind.config.js/ts` — Tailwind v4 with `@theme` block only
 - frontend-design skill (`anthropics/skills@frontend-design`) installed globally
 - Color branding leans purple/violet (`fg-brand: #6366f1`)
-- **NEVER modify `progress_default.json`** — the user handles it manually
 - All UI text must be in English (no Italian)
 - `extra/` folder in frontend is gitignored and never committed
 
@@ -42,12 +41,6 @@ They exist **solely to manage the agentic development workflow**.
 | `MEMORY.md` | Persistent knowledge: architectural decisions, patterns, structural bugs discovered, test data, configuration quirks. Never rewritten — only extended. | English |
 | `COMMANDS.md` | Quick-reference CLI commands for both projects | English |
 
-**External companion files** (not "agentic files" but must be kept in sync):
-
-| File | Role |
-|------|------|
-| `C:\Users\test\Desktop\WORK\SynapsisForge.plan\progress_default.json` | Progress tracker — each task key maps to PLAN.md tasks. **Must be updated whenever PLAN.md checkboxes change** (`false` → `true`). |
-
 ## 5. Rules
 
 ### General
@@ -67,18 +60,6 @@ They exist **solely to manage the agentic development workflow**.
 
 **Macro-tasks, phase structure, day assignments, and the multi-level hierarchy in `PLAN.md` must never be changed without explicit user approval.**
 Subtasks within a day may be refined as needed during implementation (e.g., splitting a task into more specific subtasks in `TODO.md`).
-
-### progress_default.json sync rule
-
-`C:\Users\test\Desktop\WORK\SynapsisForge.plan\progress_default.json` is the binary progress tracker.
-Whenever a task checkbox in `PLAN.md` transitions from unchecked (` `) to checked (`x`), the corresponding entry in `progress_default.json` must also change from `false` to `true`.
-
-Task key format: `ph{phase}-task-{day}-{sequentialId}`
-- Phase mapping: `ph0` = Phase 1, `ph1` = Phase 2, ..., `ph9` = Phase 10
-- Each day has 4 sequential IDs (one per task slot)
-- Example: Day 46 → keys `ph3-task-46-174` through `ph3-task-46-177`
-
-The agent **must keep both files in sync** at all times.
 
 ### Test-driven feedback rule
 
@@ -107,8 +88,7 @@ This ensures the agent can self-validate its own work.
 3. **Plan**: propose strategy in `SESSION_LOG.md` **before** making changes.
 4. **Implement**: one task at a time; commit only on request.
 5. **Verify**: after each task, run relevant lint/typecheck/test commands.
-6. **Sync**: update `progress_default.json` when marking PLAN.md tasks done.
-7. **Update**: update `SESSION_LOG.md` after each task; extend `MEMORY.md` if patterns, structural bugs, or important decisions are discovered.
+6. **Update**: update `SESSION_LOG.md` after each task; extend `MEMORY.md` if patterns, structural bugs, or important decisions are discovered.
 
 ## 7. Tool Delegation & Subagent Management
 
