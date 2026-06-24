@@ -334,6 +334,54 @@ Swagger documentation will be available at:
 
 ---
 
+# Redis Caching Strategy
+
+SynapsisForge uses Redis for API response caching, rate limiting, refresh token storage, and real-time enrollment counters via Pub/Sub.
+
+## Cache Layers
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Course lists | Redis (Keyv) | Paginated course queries, TTL 5min |
+| Course detail | Redis (Keyv) | Single course by ID/slug, TTL 10min |
+| Rate limiting | Redis (custom store) | Per-endpoint throttling counters |
+| Enrollment counters | Redis Pub/Sub | Real-time count via Pub/Sub + SQL fallback |
+| Refresh tokens | Redis (Keyv) | Session storage with JWT-matching TTL |
+
+Full documentation: [`backend/docs/CACHING.md`](backend/docs/CACHING.md)
+
+## Performance Benchmark
+
+Results from `autocannon` (30s, 10 concurrent connections, local environment).
+
+### `GET /courses?page=1&limit=10`
+
+| Metric | Without Cache | With Cache |
+|--------|:------------:|:----------:|
+| Avg Latency | 8.26 ms | 8.12 ms |
+| Avg Req/s | 1,145 | 1,166 |
+| Total Requests (30s) | 34k | 35k |
+
+```
+> autocannon -c 10 -d 30 "http://localhost:3000/courses?page=1&limit=10"
+```
+
+### `GET /courses/slug/:slug`
+
+| Metric | Without Cache | With Cache |
+|--------|:------------:|:----------:|
+| Avg Latency | 3.88 ms | 3.87 ms |
+| Avg Req/s | 2,304 | 2,310 |
+| Total Requests (30s) | 69k | 69k |
+
+```
+> autocannon -c 10 -d 30 "http://localhost:3000/courses/slug/react-typescript-from-scratch"
+```
+
+> **Note**: Minimal improvement in local dev because backend and DB share the same machine. In production with separate DB hosts, cache hit latency gains would be significant (Redis in-memory vs network round-trip to PG/Mongo).
+
+---
+
 # Learning Goals
 
 This project was designed to strengthen advanced skills in:

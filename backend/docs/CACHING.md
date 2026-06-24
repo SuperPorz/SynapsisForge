@@ -90,6 +90,32 @@ A subscriber increments `sf:enrollment-count:{courseId}` with 24h TTL.
                      [Enrollment counter cache]
 ```
 
+## Performance Benchmark (Day 64)
+
+Results from autocannon benchmark (30s, 10 concurrent connections) on local dev environment:
+
+### `GET /courses?page=1&limit=10`
+
+| Metric | Without Cache | With Cache | Improvement |
+|--------|:------------:|:----------:|:-----------:|
+| Avg Latency | 8.26 ms | 8.12 ms | ~1.7% |
+| Avg Req/s | 1,145 | 1,166 | ~1.8% |
+| Total Requests (30s) | 34k | 35k | ~2.9% |
+
+### `GET /courses/slug/:slug`
+
+| Metric | Without Cache | With Cache | Improvement |
+|--------|:------------:|:----------:|:-----------:|
+| Avg Latency | 3.88 ms | 3.87 ms | ~0.3% |
+| Avg Req/s | 2,304 | 2,310 | ~0.3% |
+| Total Requests (30s) | 69k | 69k | ~0.0% |
+
+**Note**: The minimal improvement is expected in local dev because:
+- Backend and DB share the same machine (no network latency)
+- Queries are simple single-table lookups with few joins
+- Redis serialization/deserialization overhead offsets the DB query time
+- In production with separate DB hosts, cache hit latency gains would be significant (Redis in-memory vs network round-trip to PG/Mongo)
+
 ## Running Locally
 
 ```bash
