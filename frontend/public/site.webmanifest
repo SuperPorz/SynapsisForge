@@ -1,7 +1,7 @@
 {
-  "name": "SynapsisForge",
-  "short_name": "SynapsisForge",
-  "description": "Piattaforma di corsi online per imparare, creare e crescere",
+  "name": "Synapsis Forge",
+  "short_name": "Synapsis",
+  "description": "Online course platform to learn, create, and grow",
   "start_url": "/",
   "scope": "/",
   "lang": "en",
