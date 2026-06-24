@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseUUIDPipe } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -10,6 +10,7 @@ export class QueuesController {
   constructor(
     @InjectQueue('test') private readonly testQueue: Queue,
     @InjectQueue('email') private readonly emailQueue: Queue,
+    @InjectQueue('certificate') private readonly certificateQueue: Queue,
   ) {}
 
   @Public()
@@ -29,5 +30,13 @@ export class QueuesController {
   async sendTestEmail(@Body('to') to: string) {
     const job = await this.emailQueue.add('test-email', { to });
     return { jobId: job.id, message: `Test email queued to ${to}` };
+  }
+
+  @Public()
+  @Post('certificate/test/:enrollmentId')
+  @ApiOperation({ summary: 'Queue a test certificate generation job' })
+  async testCertificate(@Param('enrollmentId', ParseUUIDPipe) enrollmentId: string) {
+    const job = await this.certificateQueue.add('generate-certificate', { enrollmentId });
+    return { jobId: job.id, enrollmentId, message: 'Certificate job queued' };
   }
 }

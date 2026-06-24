@@ -1,6 +1,5 @@
 // prettier-ignore
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Certificate } from 'src/common/entities/certificate.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
@@ -15,27 +14,6 @@ export class CertificatesService {
     @InjectRepository(Enrollment)
     private enrollmentRepository: Repository<Enrollment>,
   ) {}
-
-  @OnEvent('enrollment.completed')
-  async create(payload: { enrollmentId: string }): Promise<void> {
-    const enrollment = await this.enrollmentRepository.findOne({
-      where: { id: payload.enrollmentId },
-      relations: { student: { user: true }, course: true },
-    });
-
-    if (!enrollment) {
-      throw new NotFoundException(
-        `Enrollment ${payload.enrollmentId} not found`,
-      );
-    }
-
-    const certificate = this.certificateRepository.create({
-      enrollment,
-      pdf_url: `something/${payload.enrollmentId}`, //da modificare più avanti
-    });
-
-    await this.certificateRepository.save(certificate);
-  }
 
   async findOne(id: string): Promise<Certificate> {
     const certificate = await this.certificateRepository.findOne({

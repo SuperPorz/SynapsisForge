@@ -63,4 +63,5 @@ scripts/sync-ids.json
 /uploads/*
 !/uploads/seed-thumbnails/
 !/uploads/seed-thumbnails/**
+!/uploads/certificates/.gitkeep
 cookies.txt
