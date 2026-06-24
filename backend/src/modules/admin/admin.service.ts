@@ -8,6 +8,7 @@ import { FilterUsersDto } from './dto/filter-users.dto';
 import { Status } from 'src/common/entities/enum/courses.enum';
 import { CourseActionsDto } from './dto/course-actions.dto';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
+import { CacheService, CacheStats } from 'src/modules/cache/cache.service';
 
 export interface AdminStats {
   total_users: number;
@@ -27,7 +28,13 @@ export class AdminService {
 
     @InjectRepository(Enrollment)
     private enrollmentRepository: Repository<Enrollment>,
+
+    private readonly cacheService: CacheService,
   ) {}
+
+  async getCacheStats(): Promise<CacheStats> {
+    return this.cacheService.getCacheStats();
+  }
 
   async find_users(filters: FilterUsersDto): Promise<User[]> {
     const where: FindOptionsWhere<User> = {}; // variabile tipizzata con il tipo di TypeOrm specifico per le condizioni di find()

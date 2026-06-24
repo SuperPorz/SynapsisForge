@@ -109,4 +109,16 @@ export class AdminController {
   get_stats() {
     return this.adminService.stats();
   }
+
+  // ─── GET /admin/cache-stats ──────────────────────────────────────────
+  @ApiOperation({
+    summary: 'Statistiche Redis / cache',
+    description:
+      'Ritorna metriche della cache Redis (hit rate, memoria, chiavi per prefisso, policy di evizione).',
+  })
+  @ApiOkResponse({ description: 'Metriche cache recuperate con successo.' })
+  @Get('cache-stats')
+  get_cache_stats() {
+    return this.adminService.getCacheStats();
+  }
 }

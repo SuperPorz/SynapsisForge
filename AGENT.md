@@ -175,7 +175,7 @@ Three Docker containers are always running in the background:
 |---------|------|-------------|
 | PostgreSQL 18 | `5432` | `admin` / `qwerty` / `pg_database` |
 | MongoDB | `27017` | `admin` / `qwerty` (connection name: `mongo_synapsis`) |
-| Redis | `6379` | No auth (not yet integrated in code) |
+| Redis | `6379` | No auth (integrated: caching, rate limiting, refresh tokens, Pub/Sub enrollment counters, monitoring via RedisInsight) |
 
 Containers are defined in `infra/docker-compose.yaml`.
 

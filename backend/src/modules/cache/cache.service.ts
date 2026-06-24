@@ -1,11 +1,26 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 
 const KEYV_PREFIX = 'keyv::keyv:';
 
+export interface CacheStats {
+  hit_rate: number | null;
+  used_memory_human: string;
+  used_memory_peak_human: string;
+  total_keys: number;
+  keys_by_prefix: Record<string, number>;
+  evicted_keys: number;
+  connected_clients: number;
+  uptime_in_seconds: number;
+  maxmemory_policy: string;
+  maxmemory_human: string;
+}
+
 @Injectable()
 export class CacheService {
+  private readonly logger = new Logger(CacheService.name);
+
   constructor(
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
@@ -23,21 +38,91 @@ export class CacheService {
     await this.cacheManager.del(key);
   }
 
-  async invalidateByPattern(pattern: string): Promise<void> {
+  private async getRedisClient() {
     const keyvStore = (this.cacheManager as any).stores?.[0];
-    if (!keyvStore) return;
-
+    if (!keyvStore) return null;
     const redisClient = keyvStore.opts?.store?.client;
-    if (!redisClient?.scan) return;
+    return redisClient ?? null;
+  }
 
-    if (!redisClient.isOpen) await redisClient.connect();
+  async getCacheStats(): Promise<CacheStats> {
+    const client = await this.getRedisClient();
+    if (!client) {
+      return {
+        hit_rate: null,
+        used_memory_human: 'N/A',
+        used_memory_peak_human: 'N/A',
+        total_keys: 0,
+        keys_by_prefix: {},
+        evicted_keys: 0,
+        connected_clients: 0,
+        uptime_in_seconds: 0,
+        maxmemory_policy: 'N/A',
+        maxmemory_human: 'N/A',
+      };
+    }
+
+    if (!client.isOpen) await client.connect();
+
+    const infoRaw = await client.info('stats');
+    const infoMemory = await client.info('memory');
+    const infoServer = await client.info('server');
+    const infoClients = await client.info('clients');
+    const dbSize = await client.dbSize();
+
+    const allInfo = `${infoServer}\n${infoRaw}\n${infoMemory}\n${infoClients}`;
+
+    const parseInfo = (section: string, key: string): string => {
+      const re = new RegExp(`^${key}:(.+)$`, 'm');
+      const m = section.match(re);
+      return m ? m[1].trim() : '0';
+    };
+
+    const keyspaceHits = parseInt(parseInfo(infoRaw, 'keyspace_hits'), 10);
+    const keyspaceMisses = parseInt(parseInfo(infoRaw, 'keyspace_misses'), 10);
+    const totalOps = keyspaceHits + keyspaceMisses;
+    const hitRate = totalOps > 0 ? keyspaceHits / totalOps : null;
+
+    const keysByPrefix: Record<string, number> = {};
+    let cursor = '0';
+    const prefixes = ['sf:cache:', 'sf:rate:', 'sf:enrollment-count:', 'keyv::'];
+    for (const prefix of prefixes) {
+      let count = 0;
+      cursor = '0';
+      do {
+        const result = await client.scan(cursor, { MATCH: `${prefix}*`, COUNT: 500 });
+        cursor = result.cursor;
+        count += (result.keys as string[]).length;
+      } while (cursor !== '0');
+      keysByPrefix[prefix] = count;
+    }
+
+    return {
+      hit_rate: hitRate !== null ? parseFloat((hitRate * 100).toFixed(2)) : null,
+      used_memory_human: parseInfo(infoMemory, 'used_memory_human'),
+      used_memory_peak_human: parseInfo(infoMemory, 'used_memory_peak_human'),
+      total_keys: dbSize,
+      keys_by_prefix: keysByPrefix,
+      evicted_keys: parseInt(parseInfo(allInfo, 'evicted_keys'), 10),
+      connected_clients: parseInt(parseInfo(infoClients, 'connected_clients'), 10),
+      uptime_in_seconds: parseInt(parseInfo(infoServer, 'uptime_in_seconds'), 10),
+      maxmemory_policy: parseInfo(infoMemory, 'maxmemory_policy'),
+      maxmemory_human: parseInfo(infoMemory, 'maxmemory_human') || '0',
+    };
+  }
+
+  async invalidateByPattern(pattern: string): Promise<void> {
+    const client = await this.getRedisClient();
+    if (!client?.scan) return;
+
+    if (!client.isOpen) await client.connect();
 
     const fullPattern = `${KEYV_PREFIX}${pattern}`;
     let cursor = '0';
     const keysToDelete: string[] = [];
 
     do {
-      const result = await redisClient.scan(cursor, { MATCH: fullPattern, COUNT: 100 });
+      const result = await client.scan(cursor, { MATCH: fullPattern, COUNT: 100 });
       cursor = result.cursor;
       const found = result.keys as string[];
       keysToDelete.push(
