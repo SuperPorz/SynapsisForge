@@ -18,6 +18,7 @@ import { PasswordResetDto } from './dto/password-reset.dto';
 import { PasswordConfirmDto } from './dto/password-confirm.dto';
 import { EnvironmentVariables } from 'src/common/types/env';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { CacheService } from 'src/modules/cache/cache.service';
 
 export interface JwtPayload {
   sub: string;
@@ -38,6 +39,7 @@ export class AuthService {
     private configService: ConfigService<EnvironmentVariables, true>,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private readonly cacheService: CacheService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -138,7 +140,7 @@ export class AuthService {
     const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('Utente non trovato');
 
-    await this.usersRepository.update(userId, { refresh_token_hash: null });
+    await this.cacheService.del(`sf:session:refresh:${userId}`);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -151,16 +153,17 @@ export class AuthService {
     const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('Utente non trovato');
 
-    if (!user.refresh_token_hash) {
+    const storedHash = await this.cacheService.get<string>(
+      `sf:session:refresh:${userId}`,
+    );
+
+    if (!storedHash) {
       throw new UnauthorizedException(
         'Sessione scaduta, effettua nuovamente il login',
       );
     }
 
-    const tokenMatch = await bcrypt.compare(
-      refreshToken,
-      user.refresh_token_hash,
-    );
+    const tokenMatch = await bcrypt.compare(refreshToken, storedHash);
     if (!tokenMatch) {
       throw new UnauthorizedException('Refresh token non valido');
     }
@@ -247,8 +250,8 @@ export class AuthService {
       password: hashedPassword,
       password_reset_token: null,
       password_reset_expires_at: null,
-      refresh_token_hash: null, // forza re-login su tutti i dispositivi
     });
+    await this.cacheService.del(`sf:session:refresh:${user.id}`);
 
     return { message: 'Password aggiornata. Effettua nuovamente il login.' };
   }
@@ -327,6 +330,22 @@ export class AuthService {
     refreshToken: string,
   ): Promise<void> {
     const hash = await bcrypt.hash(refreshToken, 10);
-    await this.usersRepository.update(userId, { refresh_token_hash: hash });
+    const ttl = this.parseTtl(
+      this.configService.get('JWT_REFRESH_EXPIRES_IN', { infer: true }) ?? '7d',
+    );
+    await this.cacheService.set(`sf:session:refresh:${userId}`, hash, ttl);
+  }
+
+  private parseTtl(expiresIn: string): number {
+    const match = expiresIn.match(/^(\d+)([smhd])$/);
+    if (!match) return 7 * 24 * 60 * 60 * 1000;
+    const value = parseInt(match[1], 10);
+    switch (match[2]) {
+      case 's': return value * 1000;
+      case 'm': return value * 60 * 1000;
+      case 'h': return value * 60 * 60 * 1000;
+      case 'd': return value * 24 * 60 * 60 * 1000;
+      default: return 7 * 24 * 60 * 60 * 1000;
+    }
   }
 }
