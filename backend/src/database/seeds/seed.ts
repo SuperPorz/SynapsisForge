@@ -24,6 +24,7 @@ import { seedSections } from './sections.seed';
 import { seedEnrollments } from './enrollments.seed';
 import { seedRatings } from './ratings.seed';
 import { seedMongo } from './mongo.seed';
+import { seedRedisCounters } from './redis-counter.seed';
 import { Course } from '../../common/entities/courses.entity';
 import { Lesson } from '../../common/entities/lessons.entity';
 
@@ -85,6 +86,10 @@ async function main(): Promise<void> {
   }));
 
   await seedMongo(seededLessonsForMongo);
+
+  // ── Redis ───────────────────────────────────────────────────────────────────
+  console.log('\n🔴 Redis enrollment counters...');
+  await seedRedisCounters();
 
   // ── Done ───────────────────────────────────────────────────────────────────
   console.log('\n' + '─'.repeat(55));

@@ -12,6 +12,7 @@
 import 'dotenv/config';
 import { Client } from 'pg';
 import mongoose from 'mongoose';
+import { createClient } from '@redis/client';
 import { getMongoUri } from '../shared/mongo-uri.util';
 
 async function resetPostgres(): Promise<void> {
@@ -72,12 +73,30 @@ async function resetMongo(): Promise<void> {
   await mongoose.disconnect();
 }
 
+async function resetRedis(): Promise<void> {
+  const client = createClient({
+    url: process.env.REDIS_URL ?? 'redis://localhost:6379',
+  });
+  client.on('error', () => {});
+
+  try {
+    await client.connect();
+    await client.flushDb();
+    console.log('  ✅ Redis: all keys flushed');
+  } catch {
+    console.log('  ⚠️  Redis not available — skipping flush');
+  } finally {
+    await client.quit();
+  }
+}
+
 async function main(): Promise<void> {
   console.log('🗑️  Resetting databases...\n');
 
   try {
     await resetPostgres();
     await resetMongo();
+    await resetRedis();
     console.log('\n✅ Reset complete. Run "npm run db:seed" to repopulate.\n');
   } catch (err) {
     console.error('\n❌ Reset failed:', (err as Error).message);
