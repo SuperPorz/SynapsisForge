@@ -1,5 +1,6 @@
 // prettier-ignore
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtService } from '@nestjs/jwt';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response, Request } from 'express';
@@ -25,6 +26,7 @@ const REFRESH_COOKIE_OPTIONS = {
 
 @ApiTags('auth')
 @Controller('auth')
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 export class AuthController {
   constructor(
     private readonly authService: AuthService,

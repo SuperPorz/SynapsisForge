@@ -14,6 +14,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -46,6 +47,7 @@ export class CoursesController {
   constructor(private readonly CoursesService: CoursesService) {}
 
   @Public()
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
   @ApiOperation({
     summary: 'Get all courses with pagination and optional filters',
   })
@@ -88,6 +90,7 @@ export class CoursesController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
   @ApiOperation({ summary: 'Get all available course categories' })
   @ApiResponse({
     status: 200,
@@ -99,6 +102,7 @@ export class CoursesController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
   @ApiOperation({ summary: 'Search for courses by title or description' })
   @ApiResponse({ status: 200, description: 'Matching courses found.' })
   @ApiResponse({
@@ -144,6 +148,7 @@ export class CoursesController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
   @ApiOperation({ summary: 'Get a course by its ID' })
   @ApiResponse({ status: 200, description: 'Course retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
@@ -153,6 +158,7 @@ export class CoursesController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
   @ApiOperation({ summary: 'Find a course by its slug' })
   @ApiResponse({ status: 200, description: 'Course found by slug.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })

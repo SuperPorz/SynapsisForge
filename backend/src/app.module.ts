@@ -23,19 +23,27 @@ import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { Keyv } from 'keyv';
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from './modules/cache/cache.module';
+import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          ttl: 60000, // tempo in millisecondi (1 minuto)
-          limit: 100, // massimo 100 richieste per IP ogni minuto
-        },
-      ],
+    ThrottlerModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        throttlers: [
+          {
+            name: 'default',
+            ttl: 60000,
+            limit: 100,
+          },
+        ],
+        storage: new RedisThrottlerStorage(
+          configService.get<string>('REDIS_URL', 'redis://localhost:6379'),
+        ),
+      }),
+      inject: [ConfigService],
     }),
     // Database primario (PostgreSQL)
     TypeOrmModule.forRoot({
