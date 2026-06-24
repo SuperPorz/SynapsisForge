@@ -179,7 +179,16 @@ Three Docker containers are always running in the background:
 
 Containers are defined in `infra/docker-compose.yaml`.
 
-## 11. Service management
+## 11. Shell Commands Guidelines
+
+- Always use non-interactive forms of commands.
+- For docker: prefer `docker exec CONTAINER COMMAND` without `-it` flags.
+- For redis: use `docker exec CONTAINER redis-cli COMMAND` (never interactive shell).
+- After any bash tool call, do NOT wait indefinitely — if a command takes more than 10 seconds and produces no output, assume it succeeded and proceed.
+- Avoid piping to processes that keep stdout open (tail -f, watch, etc.).
+- When checking service health, prefer one-shot commands: `redis-cli PING`, `curl -s --max-time 5`.
+
+## 12. Service management
 
 **CRITICAL: Never start, stop, or restart the Angular dev server or NestJS backend.**
 
@@ -195,14 +204,14 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000  # → 401 (no auth
 
 If a service is down, **ask the user** to start it rather than attempting to start it yourself.
 
-## 12. Relevant API endpoints
+## 13. Relevant API endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/enrollments/:eid/lessons/:lid/video` | Video URL + quiz + progress + sections |
 | PATCH | `/enrollments/:eid/lessons/:lid/progress` | Save lesson progress (position, completed, quizAnswers) |
 
-## 13. Relevant Files
+## 14. Relevant Files
 
 - `actual_plan.txt`: Full roadmap (phases, days, tasks)
 - `PLAN.md`: Tracked progress with detailed subtasks
@@ -225,7 +234,7 @@ If a service is down, **ask the user** to start it rather than attempting to sta
 - `backend/src/modules/courses/courses.service.ts`: findAll() with query builder + multi-filter
 - `frontend/.gitignore`: Added `/extra`
 
-## 14. Agent states
+## 15. Agent states
 
 - 🟢 Ready: awaiting instructions
 - 🔍 Analyzing: studying codebase
