@@ -24,6 +24,7 @@ import { Keyv } from 'keyv';
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from './modules/cache/cache.module';
 import { QueuesModule } from './modules/queues/queues.module';
+import { MailModule } from './modules/mail/mail.module';
 import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
 
 @Module({
@@ -97,6 +98,7 @@ import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
     UploadModule,
     CacheModule,
     QueuesModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

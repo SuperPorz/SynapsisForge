@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -24,14 +24,10 @@ export class QueuesController {
   }
 
   @Public()
-  @Get('email')
-  @ApiOperation({ summary: 'Add a test job to the email queue' })
-  async addTestEmailJob() {
-    const job = await this.emailQueue.add('test-email', {
-      to: 'test@example.com',
-      subject: 'Test BullMQ Email',
-      template: 'welcome',
-    });
-    return { jobId: job.id, message: 'Test email job added' };
+  @Post('email/test')
+  @ApiOperation({ summary: 'Send a test email via the email queue' })
+  async sendTestEmail(@Body('to') to: string) {
+    const job = await this.emailQueue.add('test-email', { to });
+    return { jobId: job.id, message: `Test email queued to ${to}` };
   }
 }

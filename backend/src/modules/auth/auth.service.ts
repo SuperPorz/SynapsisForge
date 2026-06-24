@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 
 import { User } from 'src/common/entities/users.entity';
@@ -40,6 +41,7 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private readonly cacheService: CacheService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -65,10 +67,11 @@ export class AuthService {
       email_verification_token: token,
     });
 
-    // TODO: sostituire con un MailService reale
-    console.log(
-      `[EMAIL] Link verifica: http://localhost:3000/auth/verify-email/${token}`,
-    );
+    this.eventEmitter.emit('user.registered', {
+      userId: user.id,
+      email: user.email,
+      name: `${user.first_name} ${user.last_name}`,
+    });
 
     return { message: 'Registrazione completata. Controlla la tua email.' };
   }

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enrollment Confirmed</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .container { max-width: 600px; margin: 0 auto; padding: 24px; }
+    .card { background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; text-align: center; }
+    .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }
+    .body { padding: 32px 24px; }
+    .body p { color: #374151; line-height: 1.6; margin: 0 0 16px; font-size: 16px; }
+    .course-title { font-size: 20px; font-weight: 700; color: #6366f1; margin: 16px 0; }
+    .button { display: inline-block; background-color: #6366f1; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; }
+    .footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>Enrollment Confirmed</h1>
+      </div>
+      <div class="body">
+        <p>Hi <strong>{{userName}}</strong>,</p>
+        <p>You have been successfully enrolled in:</p>
+        <p class="course-title">{{courseTitle}}</p>
+        <p>You can now access all lessons and start learning right away.</p>
+        <p style="text-align: center; margin-top: 24px;">
+          <a href="{{courseUrl}}" class="button">Go to Course</a>
+        </p>
+        <p>Best of luck with your studies!</p>
+        <p style="margin: 0;">— The SynapsisForge Team</p>
+      </div>
+    </div>
+    <div class="footer">
+      <p>&copy; {{year}} SynapsisForge. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

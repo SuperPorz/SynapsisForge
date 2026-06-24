@@ -63,6 +63,7 @@ export class EnrollmentsService {
     // 1. Verifica che lo StudentProfile esista
     const studentProfile = await this.studentProfileRepository.findOne({
       where: { userId: dto.userId },
+      relations: ['user'],
     });
     if (!studentProfile) {
       throw new NotFoundException(
@@ -118,6 +119,15 @@ export class EnrollmentsService {
     });
 
     const saved = await this.enrollmentRepository.save(enrollment);
+
+    this.eventEmitter.emit('enrollment.created', {
+      enrollmentId: saved.id,
+      userId: dto.userId,
+      email: studentProfile.user.email,
+      userName: `${studentProfile.user.first_name} ${studentProfile.user.last_name}`,
+      courseId: course.id,
+      courseTitle: course.title,
+    });
 
     await this.redisPubSub.publish('sf:enrollments', {
       courseId: course.id,

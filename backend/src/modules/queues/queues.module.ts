@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QueuesProcessor } from './queues.processor';
+import { EmailQueueProcessor } from './email-queue.processor';
+import { EmailListener } from './email-listener';
 import { QueuesController } from './queues.controller';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -24,9 +27,10 @@ import { QueuesController } from './queues.controller';
     BullModule.registerQueue({
       name: 'email',
     }),
+    MailModule,
   ],
   controllers: [QueuesController],
-  providers: [QueuesProcessor],
+  providers: [QueuesProcessor, EmailQueueProcessor, EmailListener],
   exports: [BullModule],
 })
 export class QueuesModule {}
