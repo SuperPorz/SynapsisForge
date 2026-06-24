@@ -22,6 +22,7 @@ import { ReorderSectionsDto } from './dto/reorder-sections.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { CacheService } from 'src/modules/cache/cache.service';
+import { RedisPubSubService } from 'src/modules/cache/redis-pubsub.service';
 
 @Injectable()
 export class CoursesService {
@@ -53,6 +54,7 @@ export class CoursesService {
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     private readonly cacheService: CacheService,
+    private readonly redisPubSub: RedisPubSubService,
   ) {}
 
   async findAll(
@@ -84,9 +86,12 @@ export class CoursesService {
         }
 
         if (q) {
-          qb.andWhere('(course.title ILIKE :q OR course.description ILIKE :q)', {
-            q: `%${q}%`,
-          });
+          qb.andWhere(
+            '(course.title ILIKE :q OR course.description ILIKE :q)',
+            {
+              q: `%${q}%`,
+            },
+          );
         }
 
         if (minPrice !== undefined) {
@@ -183,7 +188,10 @@ export class CoursesService {
     );
   }
 
-  private async verifyOwnership(courseId: string, userId: string): Promise<Course> {
+  private async verifyOwnership(
+    courseId: string,
+    userId: string,
+  ): Promise<Course> {
     const course = await this.coursesRepo.findOne({
       where: { id: courseId },
       relations: ['instructor'],
@@ -221,7 +229,11 @@ export class CoursesService {
     return course;
   }
 
-  async update(id: string, dto: UpdateCourseDto, userId: string): Promise<Course | null> {
+  async update(
+    id: string,
+    dto: UpdateCourseDto,
+    userId: string,
+  ): Promise<Course | null> {
     await this.verifyOwnership(id, userId);
     await this.coursesRepo.update({ id }, dto);
     const updated = await this.findOneEntity(id);
@@ -288,19 +300,32 @@ export class CoursesService {
 
     const courseIds = courses.map((c) => c.id);
 
-    const enrollmentCounts = courseIds.length
-      ? await this.enrollmentRepo
+    const countMap: Record<string, number> = {};
+    if (courseIds.length) {
+      const redisCounts = await Promise.all(
+        courseIds.map(async (id) => {
+          const count = await this.redisPubSub.getEnrollmentCount(id);
+          return { courseId: id, count };
+        }),
+      );
+
+      const allFromRedis = redisCounts.every((r) => r.count > 0);
+      if (allFromRedis) {
+        for (const row of redisCounts) {
+          countMap[row.courseId] = row.count;
+        }
+      } else {
+        const rows = await this.enrollmentRepo
           .createQueryBuilder('enrollment')
           .select('enrollment."courseId"', 'courseId')
           .addSelect('COUNT(*)', 'count')
           .where('enrollment."courseId" IN (:...courseIds)', { courseIds })
           .groupBy('enrollment."courseId"')
-          .getRawMany()
-      : [];
-
-    const countMap: Record<string, number> = {};
-    for (const row of enrollmentCounts) {
-      countMap[row.courseId] = Number(row.count);
+          .getRawMany();
+        for (const row of rows) {
+          countMap[row.courseId] = Number(row.count);
+        }
+      }
     }
 
     const avgRatings: { courseId: string; avg: string }[] = courseIds.length
@@ -345,14 +370,20 @@ export class CoursesService {
 
     if (!course) throw new NotFoundException(`Course ${courseId} not found`);
 
-    const enrollmentCount = await this.enrollmentRepo.count({
-      where: { course: { id: courseId } },
-    });
+    const redisCount = await this.redisPubSub.getEnrollmentCount(courseId);
+    const enrollmentCount =
+      redisCount > 0
+        ? redisCount
+        : await this.enrollmentRepo.count({
+            where: { course: { id: courseId } },
+          });
 
-    const enrollmentIds = (await this.enrollmentRepo.find({
-      where: { course: { id: courseId } },
-      select: ['id'],
-    })).map((e) => e.id);
+    const enrollmentIds = (
+      await this.enrollmentRepo.find({
+        where: { course: { id: courseId } },
+        select: ['id'],
+      })
+    ).map((e) => e.id);
 
     const avgResult: { avg?: string | number } | null | undefined =
       enrollmentIds.length > 0
@@ -362,7 +393,9 @@ export class CoursesService {
             .select('AVG(review.rating)', 'avg')
             .getRawOne()
         : null;
-    const averageRating = avgResult?.avg ? Number(Number(avgResult.avg).toFixed(1)) : null;
+    const averageRating = avgResult?.avg
+      ? Number(Number(avgResult.avg).toFixed(1))
+      : null;
 
     const lessons = await this.lessonRepo.find({
       where: { course: { id: courseId } },
@@ -373,7 +406,9 @@ export class CoursesService {
       ? await this.lessonProgressModel
           .aggregate([
             { $match: { lessonId: { $in: lessonIds } } },
-            { $group: { _id: null, total: { $sum: '$last_position_seconds' } } },
+            {
+              $group: { _id: null, total: { $sum: '$last_position_seconds' } },
+            },
           ])
           .exec()
       : [];
@@ -419,7 +454,10 @@ export class CoursesService {
       ])
       .exec();
 
-    const statsMap: Record<string, { totalWatchTime: number; completions: number }> = {};
+    const statsMap: Record<
+      string,
+      { totalWatchTime: number; completions: number }
+    > = {};
     for (const row of watchTimeAgg) {
       statsMap[row._id] = {
         totalWatchTime: row.totalWatchTime,
@@ -473,7 +511,11 @@ export class CoursesService {
   // Section CRUD
   // ---------------------------------------------------------------------------
 
-  async createSection(courseId: string, dto: CreateSectionDto, userId: string): Promise<Section> {
+  async createSection(
+    courseId: string,
+    dto: CreateSectionDto,
+    userId: string,
+  ): Promise<Section> {
     await this.verifyOwnership(courseId, userId);
 
     const maxOrder = await this.sectionRepo
@@ -499,7 +541,9 @@ export class CoursesService {
     userId: string,
   ): Promise<Section> {
     await this.verifyOwnership(courseId, userId);
-    const section = await this.sectionRepo.findOne({ where: { id: sectionId, course: { id: courseId } } });
+    const section = await this.sectionRepo.findOne({
+      where: { id: sectionId, course: { id: courseId } },
+    });
     if (!section) throw new NotFoundException(`Section ${sectionId} not found`);
 
     Object.assign(section, dto);
@@ -508,16 +552,26 @@ export class CoursesService {
     return saved;
   }
 
-  async deleteSection(courseId: string, sectionId: string, userId: string): Promise<void> {
+  async deleteSection(
+    courseId: string,
+    sectionId: string,
+    userId: string,
+  ): Promise<void> {
     await this.verifyOwnership(courseId, userId);
-    const section = await this.sectionRepo.findOne({ where: { id: sectionId, course: { id: courseId } } });
+    const section = await this.sectionRepo.findOne({
+      where: { id: sectionId, course: { id: courseId } },
+    });
     if (!section) throw new NotFoundException(`Section ${sectionId} not found`);
 
     await this.sectionRepo.remove(section);
     await this.cacheService.invalidateCourse(courseId);
   }
 
-  async reorderSections(courseId: string, dto: ReorderSectionsDto, userId: string): Promise<Section[]> {
+  async reorderSections(
+    courseId: string,
+    dto: ReorderSectionsDto,
+    userId: string,
+  ): Promise<Section[]> {
     await this.verifyOwnership(courseId, userId);
 
     const sections = await this.sectionRepo.find({

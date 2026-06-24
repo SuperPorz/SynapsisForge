@@ -17,6 +17,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
 import { ResponseEnrollmentDto } from './dto/response-enrollment.dto';
 import { DashboardEnrollmentDto } from './dto/dashboard-enrollment.dto';
+import { RedisPubSubService } from 'src/modules/cache/redis-pubsub.service';
 
 @Injectable()
 export class EnrollmentsService {
@@ -40,6 +41,7 @@ export class EnrollmentsService {
     private lessonProgressModel: Model<LessonProgress>,
 
     private eventEmitter: EventEmitter2,
+    private readonly redisPubSub: RedisPubSubService,
   ) {}
 
   // Helper per trasformare l'entità Enrollment in ResponseEnrollmentDto
@@ -116,6 +118,13 @@ export class EnrollmentsService {
     });
 
     const saved = await this.enrollmentRepository.save(enrollment);
+
+    await this.redisPubSub.publish('sf:enrollments', {
+      courseId: course.id,
+      userId: dto.userId,
+      timestamp: new Date().toISOString(),
+    });
+
     return this.toDto(saved);
   }
   ///////////////////////////////////// UPDATE PROGRESS ///////////////////////////////////////////
