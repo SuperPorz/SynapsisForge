@@ -21,6 +21,7 @@ import { UpdateSectionDto } from './dto/update-section.dto';
 import { ReorderSectionsDto } from './dto/reorder-sections.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { CacheService } from 'src/modules/cache/cache.service';
 
 @Injectable()
 export class CoursesService {
@@ -51,6 +52,7 @@ export class CoursesService {
 
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
+    private readonly cacheService: CacheService,
   ) {}
 
   async findAll(
@@ -200,7 +202,9 @@ export class CoursesService {
         instructor: { userId },
         category: { id: dto.category_id },
       });
-      return await this.coursesRepo.save(course);
+      const saved = await this.coursesRepo.save(course);
+      await this.cacheService.invalidateCourseList();
+      return saved;
     } catch (err) {
       const pgError = err as { code?: string };
       if (pgError.code === '23505') {
@@ -220,12 +224,15 @@ export class CoursesService {
   async update(id: string, dto: UpdateCourseDto, userId: string): Promise<Course | null> {
     await this.verifyOwnership(id, userId);
     await this.coursesRepo.update({ id }, dto);
-    return await this.findOneEntity(id);
+    const updated = await this.findOneEntity(id);
+    await this.cacheService.invalidateCourse(id);
+    return updated;
   }
 
   async delete(id: string, userId: string): Promise<{ message: string }> {
     const course = await this.verifyOwnership(id, userId);
     await this.coursesRepo.softDelete({ id });
+    await this.cacheService.invalidateCourse(id);
     return {
       message: `Course "${course.title}" has been deactivated successfully`,
     };
@@ -260,6 +267,7 @@ export class CoursesService {
     if (!course.deleted_at)
       throw new ConflictException(`Course "${course.title}" is already active`);
     await this.coursesRepo.restore({ id });
+    await this.cacheService.invalidateCourse(id);
     return {
       message: `Course "${course.title}" has been restored successfully`,
     };
@@ -479,7 +487,9 @@ export class CoursesService {
       order: dto.order ?? (maxOrder?.max ?? 0) + 1,
       course: { id: courseId },
     });
-    return await this.sectionRepo.save(section);
+    const saved = await this.sectionRepo.save(section);
+    await this.cacheService.invalidateCourse(courseId);
+    return saved;
   }
 
   async updateSection(
@@ -493,7 +503,9 @@ export class CoursesService {
     if (!section) throw new NotFoundException(`Section ${sectionId} not found`);
 
     Object.assign(section, dto);
-    return await this.sectionRepo.save(section);
+    const saved = await this.sectionRepo.save(section);
+    await this.cacheService.invalidateCourse(courseId);
+    return saved;
   }
 
   async deleteSection(courseId: string, sectionId: string, userId: string): Promise<void> {
@@ -502,6 +514,7 @@ export class CoursesService {
     if (!section) throw new NotFoundException(`Section ${sectionId} not found`);
 
     await this.sectionRepo.remove(section);
+    await this.cacheService.invalidateCourse(courseId);
   }
 
   async reorderSections(courseId: string, dto: ReorderSectionsDto, userId: string): Promise<Section[]> {
@@ -520,6 +533,8 @@ export class CoursesService {
       }
     }
 
-    return await this.sectionRepo.save(sections);
+    const saved = await this.sectionRepo.save(sections);
+    await this.cacheService.invalidateCourse(courseId);
+    return saved;
   }
 }

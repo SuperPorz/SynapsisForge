@@ -19,9 +19,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guard';
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { UploadModule } from './modules/upload/upload.module';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { Keyv } from 'keyv';
 import KeyvRedis from '@keyv/redis';
+import { CacheModule } from './modules/cache/cache.module';
 
 @Module({
   imports: [
@@ -63,7 +64,7 @@ import KeyvRedis from '@keyv/redis';
       wildcard: true,
       delimiter: '.',
     }),
-    CacheModule.registerAsync({
+    NestCacheModule.registerAsync({
       isGlobal: true,
       useFactory: (configService: ConfigService) => ({
         stores: [
@@ -85,6 +86,7 @@ import KeyvRedis from '@keyv/redis';
     AdminModule,
     LessonsModule,
     UploadModule,
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [
