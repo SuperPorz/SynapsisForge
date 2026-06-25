@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
-import { ConfigService } from '@nestjs/config';
+import type { Transporter } from 'nodemailer';
+import type { TemplateDelegate } from 'handlebars';
 
 export interface SendWelcomeEmailInput {
   to: string;
@@ -14,56 +14,73 @@ export interface SendEnrollmentConfirmationInput {
   courseUrl: string;
 }
 
+export interface SendDailyDigestInput {
+  to: string;
+  name: string;
+  courseTitle: string;
+  progress: number;
+}
+
 @Injectable()
 export class MailService {
-  private readonly frontendUrl: string;
-
   constructor(
-    private readonly mailerService: MailerService,
-    private readonly configService: ConfigService,
-  ) {
-    this.frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
+    private readonly transporter: Transporter,
+    private readonly templates: Record<string, TemplateDelegate>,
+    private readonly from: string,
+    private readonly frontendUrl: string,
+  ) {}
+
+  private async send(
+    template: string,
+    to: string,
+    subject: string,
+    context: Record<string, unknown>,
+  ): Promise<void> {
+    const html = this.templates[template]({
+      ...context,
+      frontendUrl: this.frontendUrl,
+      year: new Date().getFullYear(),
+    });
+    await this.transporter.sendMail({ from: this.from, to, subject, html });
   }
 
   async sendWelcomeEmail(input: SendWelcomeEmailInput): Promise<void> {
-    await this.mailerService.sendMail({
-      to: input.to,
-      subject: 'Welcome to SynapsisForge!',
-      template: './welcome',
-      context: {
-        name: input.name,
-        frontendUrl: this.frontendUrl,
-        year: new Date().getFullYear(),
-      },
+    await this.send('welcome', input.to, 'Welcome to SynapsisForge!', {
+      name: input.name,
     });
   }
 
   async sendEnrollmentConfirmation(
     input: SendEnrollmentConfirmationInput,
   ): Promise<void> {
-    await this.mailerService.sendMail({
-      to: input.to,
-      subject: `Enrolled: ${input.courseTitle}`,
-      template: './enrollment-confirmation',
-      context: {
+    await this.send(
+      'enrollment-confirmation',
+      input.to,
+      `Enrolled: ${input.courseTitle}`,
+      {
         userName: input.userName,
         courseTitle: input.courseTitle,
         courseUrl: input.courseUrl,
-        year: new Date().getFullYear(),
       },
-    });
+    );
+  }
+
+  async sendDailyDigest(input: SendDailyDigestInput): Promise<void> {
+    await this.send(
+      'daily-digest',
+      input.to,
+      'Your Daily Learning Digest',
+      {
+        name: input.name,
+        courseTitle: input.courseTitle,
+        progress: input.progress,
+      },
+    );
   }
 
   async sendTestEmail(to: string): Promise<void> {
-    await this.mailerService.sendMail({
-      to,
-      subject: 'Test Email from SynapsisForge',
-      template: './welcome',
-      context: {
-        name: 'Test User',
-        frontendUrl: this.frontendUrl,
-        year: new Date().getFullYear(),
-      },
+    await this.send('welcome', to, 'Test Email from SynapsisForge', {
+      name: 'Test User',
     });
   }
 }

@@ -1,15 +1,30 @@
 import { Module } from '@nestjs/common';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { MailService } from './mail.service';
+import { createTransport } from 'nodemailer';
+import { compile } from 'handlebars';
+import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
+function loadTemplates(): Record<string, ReturnType<typeof compile>> {
+  const templatesDir = join(__dirname, 'templates');
+  if (!existsSync(templatesDir)) return {};
+  const files = readdirSync(templatesDir).filter((f) => f.endsWith('.hbs'));
+  const templates: Record<string, ReturnType<typeof compile>> = {};
+  for (const file of files) {
+    const name = file.replace('.hbs', '');
+    templates[name] = compile(readFileSync(join(templatesDir, file), 'utf-8'));
+  }
+  return templates;
+}
+
 @Module({
-  imports: [
-    MailerModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
-        transport: {
+  imports: [],
+  providers: [
+    {
+      provide: MailService,
+      useFactory: (configService: ConfigService) => {
+        const transporter = createTransport({
           host: configService.get<string>('SMTP_HOST', 'smtp.gmail.com'),
           port: configService.get<number>('SMTP_PORT', 587),
           secure: false,
@@ -17,22 +32,18 @@ import { join } from 'path';
             user: configService.get<string>('SMTP_USER'),
             pass: configService.get<string>('SMTP_PASS'),
           },
-        },
-        defaults: {
-          from: configService.get<string>('SMTP_FROM', 'noreply@synapsisforge.com'),
-        },
-        template: {
-          dir: join(__dirname, 'templates'),
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
-          },
-        },
-      }),
+        });
+        const templates = loadTemplates();
+        return new MailService(
+          transporter,
+          templates,
+          configService.get<string>('SMTP_FROM', 'noreply@synapsisforge.com'),
+          configService.get<string>('FRONTEND_URL', 'http://localhost:4200'),
+        );
+      },
       inject: [ConfigService],
-    }),
+    },
   ],
-  providers: [MailService],
   exports: [MailService],
 })
 export class MailModule {}

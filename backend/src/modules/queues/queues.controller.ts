@@ -11,6 +11,7 @@ export class QueuesController {
     @InjectQueue('test') private readonly testQueue: Queue,
     @InjectQueue('email') private readonly emailQueue: Queue,
     @InjectQueue('certificate') private readonly certificateQueue: Queue,
+    @InjectQueue('maintenance') private readonly maintenanceQueue: Queue,
   ) {}
 
   @Public()
@@ -38,5 +39,14 @@ export class QueuesController {
   async testCertificate(@Param('enrollmentId', ParseUUIDPipe) enrollmentId: string) {
     const job = await this.certificateQueue.add('generate-certificate', { enrollmentId });
     return { jobId: job.id, enrollmentId, message: 'Certificate job queued' };
+  }
+
+  @Public()
+  @Post('maintenance/test')
+  @ApiOperation({ summary: 'Trigger maintenance jobs manually' })
+  async triggerMaintenance(@Body('jobName') jobName: string) {
+    const name = jobName || 'cleanup-expired-tokens';
+    const job = await this.maintenanceQueue.add(name, {});
+    return { jobId: job.id, jobName: name, message: 'Maintenance job queued' };
   }
 }
