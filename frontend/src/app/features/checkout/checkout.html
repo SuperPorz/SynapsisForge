@@ -14,20 +14,10 @@
       </div>
     }
 
-    @if (error() && !successMessage()) {
+    @if (error()) {
       <div class="rounded-xl bg-card-bg p-8 text-center">
         <p class="mb-4 text-red-500">{{ error() }}</p>
         <a routerLink="/courses" class="text-fg-brand hover:underline">Browse courses</a>
-      </div>
-    }
-
-    @if (successMessage()) {
-      <div class="rounded-xl bg-green-50 dark:bg-green-900/20 p-8 text-center">
-        <svg class="mx-auto mb-4 h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <p class="mb-2 text-lg font-semibold text-green-700 dark:text-green-300">{{ successMessage() }}</p>
-        @if (!isCartCheckout) {
-          <a routerLink="/dashboard/my-enrolls" class="text-fg-brand hover:underline">Go to my courses</a>
-        }
       </div>
     }
 
@@ -51,8 +41,11 @@
             <h2 class="mb-4 text-lg font-semibold text-heading">Payment</h2>
             <div #dropinContainer class="min-h-[200px]"></div>
             @if (error()) { <p class="mt-2 text-sm text-red-500">{{ error() }}</p> }
-            <button (click)="pay()" [disabled]="paying()" class="mt-4 w-full rounded-lg bg-fg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
-              @if (paying()) { Processing... } @else { Pay {{ c.price | currency:'EUR':'symbol':'1.2-2' }} }
+            <button (click)="pay()" [disabled]="paying()" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-fg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
+              @if (paying()) {
+                <svg class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                Processing...
+              } @else { Pay {{ c.price | currency:'EUR':'symbol':'1.2-2' }} }
             </button>
             <p class="mt-3 text-center text-xs text-fg-muted">Your payment info is securely processed by Braintree.</p>
           </div>
@@ -88,8 +81,11 @@
             <h2 class="mb-4 text-lg font-semibold text-heading">Payment</h2>
             <div #dropinContainer class="min-h-[200px]"></div>
             @if (error()) { <p class="mt-2 text-sm text-red-500">{{ error() }}</p> }
-            <button (click)="pay()" [disabled]="paying()" class="mt-4 w-full rounded-lg bg-fg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
-              @if (paying()) { Processing... } @else { Pay {{ cartTotal() | currency:'EUR':'symbol':'1.2-2' }} }
+            <button (click)="pay()" [disabled]="paying()" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-fg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
+              @if (paying()) {
+                <svg class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                Processing...
+              } @else { Pay {{ cartTotal() | currency:'EUR':'symbol':'1.2-2' }} }
             </button>
             <p class="mt-3 text-center text-xs text-fg-muted">Your payment info is securely processed by Braintree.</p>
           </div>

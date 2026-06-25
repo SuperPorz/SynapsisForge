@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.develop';
@@ -28,6 +28,14 @@ export interface ActivityItem {
 export class EnrollmentService {
   private http = inject(HttpClient);
   private baseUrl = `${environment.apiUrl}/enrollments`;
+
+  enrolledCourseIds = signal<Set<string>>(new Set());
+
+  loadEnrolledCourseIds() {
+    this.http.get<string[]>(`${this.baseUrl}/my/ids`).subscribe({
+      next: (ids) => this.enrolledCourseIds.set(new Set(ids)),
+    });
+  }
 
   getMyEnrollment(courseId: string): Observable<EnrollmentResponse | null> {
     return this.http.get<EnrollmentResponse | null>(`${this.baseUrl}/my`, {

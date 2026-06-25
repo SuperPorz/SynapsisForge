@@ -4,6 +4,7 @@ import { CurrencyPipe } from '@angular/common';
 import { CourseService } from '../../core/services/courses.service';
 import { CartService, CartItem } from '../../core/services/cart.service';
 import { PaymentsService } from '../../core/services/payments.service';
+import { ToastService } from '../../core/services/toast.service';
 import { Course } from '../../core/models/course-model';
 import * as dropin from 'braintree-web-drop-in';
 
@@ -19,6 +20,7 @@ export class Checkout implements OnInit, OnDestroy {
   private courseService = inject(CourseService);
   private cartService = inject(CartService);
   private paymentsService = inject(PaymentsService);
+  private toast = inject(ToastService);
 
   dropinContainer = viewChild<ElementRef<HTMLDivElement>>('dropinContainer');
 
@@ -29,7 +31,6 @@ export class Checkout implements OnInit, OnDestroy {
   loading = signal(true);
   paying = signal(false);
   error = signal<string | null>(null);
-  successMessage = signal<string | null>(null);
 
   private dropinInstance: dropin.Dropin | null = null;
 
@@ -88,7 +89,6 @@ export class Checkout implements OnInit, OnDestroy {
     if (!this.dropinInstance || this.paying()) return;
     this.paying.set(true);
     this.error.set(null);
-    this.successMessage.set(null);
 
     this.dropinInstance.requestPaymentMethod().then((payload) => {
       const amount = this.isCartCheckout ? this.cartTotal() : this.course()!.price;
@@ -96,9 +96,10 @@ export class Checkout implements OnInit, OnDestroy {
       if (this.isCartCheckout) {
         this.cartService.checkout(payload.nonce, amount).subscribe({
           next: (res) => {
-            this.successMessage.set(`Payment successful! You've been enrolled in ${res.itemCount} course(s).`);
             this.paying.set(false);
             this.dropinInstance?.teardown().catch(() => {});
+            this.toast.show(`Successfully enrolled in ${res.itemCount} course(s)!`);
+            this.router.navigate(['/dashboard/my-enrolls']);
           },
           error: (err) => {
             this.error.set(err.error?.message ?? err.message ?? 'Payment failed.');
@@ -108,11 +109,16 @@ export class Checkout implements OnInit, OnDestroy {
       } else {
         const courseId = this.course()!.id;
         this.paymentsService.processCheckout(courseId, payload.nonce, amount).subscribe({
-          next: (res) => {
-            this.successMessage.set('Payment successful! Redirecting to your courses...');
+          next: () => {
             this.paying.set(false);
             this.dropinInstance?.teardown().catch(() => {});
-            setTimeout(() => this.router.navigate(['/dashboard/my-enrolls']), 2000);
+            // Remove purchased course from local cart state
+            this.cartService.items.update((prev) => prev.filter((i) => i.courseId !== courseId));
+            this.cartService.total.update((prev) => prev - amount);
+            this.cartService.count.update((prev) => prev - 1);
+            this.cartService.courseIds.update((prev) => { prev.delete(courseId); return new Set(prev); });
+            this.toast.show('Successfully enrolled!');
+            this.router.navigate(['/dashboard/my-enrolls']);
           },
           error: (err) => {
             this.error.set(err.error?.message ?? err.message ?? 'Payment failed.');

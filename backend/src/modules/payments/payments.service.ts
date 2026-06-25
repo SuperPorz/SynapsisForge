@@ -4,6 +4,8 @@ import { BadRequestException, ConflictException, Inject, Injectable, Logger, Not
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BraintreeGateway } from 'braintree';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { Payment } from 'src/common/entities/payments.entity';
 import { Currency, Status } from 'src/common/entities/enum/payments.enum';
 import { CheckoutDto } from './dto/checkout.dto';
@@ -12,6 +14,7 @@ import { Course } from 'src/common/entities/courses.entity';
 import { Status as CourseStatus } from 'src/common/entities/enum/courses.enum';
 import { StudentProfile } from 'src/common/entities/student-profile.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
+import { CartItem } from 'src/common/entities/cart-item.entity';
 
 @Injectable()
 export class PaymentsService {
@@ -27,6 +30,10 @@ export class PaymentsService {
     private studentProfileRepository: Repository<StudentProfile>,
     @InjectRepository(Enrollment)
     private enrollmentRepository: Repository<Enrollment>,
+    @InjectRepository(CartItem)
+    private cartRepository: Repository<CartItem>,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
     private enrollmentsService: EnrollmentsService,
   ) {}
 
@@ -39,13 +46,15 @@ export class PaymentsService {
   async checkout(userId: string, dto: CheckoutDto) {
     const { courseId, nonce, amount } = dto;
 
-    // 1. Verify student profile exists
-    const studentProfile = await this.studentProfileRepository.findOne({
+    // 1. Verify student profile exists (auto-create if missing — supports INSTRUCTOR/ADMIN purchasing)
+    let studentProfile = await this.studentProfileRepository.findOne({
       where: { userId },
       relations: ['user'],
     });
     if (!studentProfile) {
-      throw new NotFoundException('Student profile not found');
+      studentProfile = this.studentProfileRepository.create({ userId });
+      studentProfile = await this.studentProfileRepository.save(studentProfile);
+      this.logger.log(`Auto-created StudentProfile for user ${userId}`);
     }
 
     // 2. Verify course exists and is published
@@ -126,6 +135,16 @@ export class PaymentsService {
     );
 
     await this.enrollmentsService.enroll({ userId, courseId });
+
+    // 6. Remove purchased course from cart (if present)
+    await this.cartRepository.delete({
+      user: { id: userId },
+      course: { id: courseId },
+    });
+    await Promise.all([
+      this.cacheManager.del(`sf:cart:${userId}`),
+      this.cacheManager.del(`sf:cart:count:${userId}`),
+    ]);
 
     this.logger.log(
       `Checkout completed: user=${userId}, course=${courseId}, tx=${transactionId}`,

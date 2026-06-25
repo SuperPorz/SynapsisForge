@@ -14,6 +14,7 @@ import { InstructorProfile } from './common/entities/instructor-profile.entity';
 import { StudentProfile } from './common/entities/student-profile.entity';
 import { Section } from './common/entities/section.entity';
 import { UserProviders } from './common/entities/user_providers.entity';
+import { CartItem } from './common/entities/cart-item.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -35,6 +36,7 @@ export const AppDataSource = new DataSource({
     StudentProfile,
     Section,
     UserProviders,
+    CartItem,
   ],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: false,

@@ -60,15 +60,14 @@ export class EnrollmentsService {
   }
 
   async enroll(dto: CreateEnrollmentDto): Promise<ResponseEnrollmentDto> {
-    // 1. Verifica che lo StudentProfile esista
-    const studentProfile = await this.studentProfileRepository.findOne({
+    // 1. Verifica che lo StudentProfile esista (auto-create se manca — supporta INSTRUCTOR/ADMIN)
+    let studentProfile = await this.studentProfileRepository.findOne({
       where: { userId: dto.userId },
       relations: ['user'],
     });
     if (!studentProfile) {
-      throw new NotFoundException(
-        `StudentProfile not found for user ${dto.userId}`,
-      );
+      studentProfile = this.studentProfileRepository.create({ userId: dto.userId });
+      studentProfile = await this.studentProfileRepository.save(studentProfile);
     }
 
     // 2. Verifica che il corso esista e sia pubblicato
@@ -194,6 +193,17 @@ export class EnrollmentsService {
 
     const enrollment = await query.getOne();
     return enrollment ? this.toDto(enrollment) : null;
+  }
+
+  async findMyEnrolledCourseIds(userId: string): Promise<string[]> {
+    const rows = await this.enrollmentRepository
+      .createQueryBuilder('e')
+      .innerJoin('e.student', 's')
+      .innerJoin('e.course', 'c')
+      .where('s.userId = :userId', { userId })
+      .select('c.id')
+      .getRawMany();
+    return rows.map((r) => r.c_id);
   }
 
   async findMyActivity(

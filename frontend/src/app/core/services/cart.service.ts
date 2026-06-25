@@ -84,6 +84,13 @@ export class CartService {
     return this.http.post<{ success: boolean; transactionId: string; itemCount: number }>(
       `${this.baseUrl}/checkout`,
       { nonce, total },
+    ).pipe(
+      tap(() => {
+        this.items.set([]);
+        this.total.set(0);
+        this.count.set(0);
+        this.courseIds.set(new Set());
+      }),
     );
   }
 

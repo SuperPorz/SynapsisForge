@@ -29,7 +29,12 @@
 
     <div class="mt-4 flex items-center justify-between">
       <span class="text-2xl font-extrabold text-heading"> ${{ course().price }} </span>
-      @if (inCart()) {
+      @if (isEnrolled()) {
+        <a routerLink="/dashboard/my-enrolls" class="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          Go to course
+        </a>
+      } @else if (inCart()) {
         <button type="button" disabled class="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm opacity-70 cursor-not-allowed">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
           In cart

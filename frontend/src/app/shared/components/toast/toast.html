@@ -1,0 +1,18 @@
+@if (toastService.toast(); as t) {
+  <div class="fixed bottom-6 right-6 z-50 animate-slide-up rounded-xl px-6 py-4 shadow-lg backdrop-blur-sm"
+    [class.bg-green-600]="t.type === 'success'"
+    [class.bg-red-600]="t.type === 'error'"
+    [class.bg-indigo-600]="t.type === 'info'"
+  >
+    <p class="flex items-center gap-2 text-sm font-medium text-white">
+      @if (t.type === 'success') {
+        <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      } @else if (t.type === 'error') {
+        <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      } @else {
+        <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      }
+      {{ t.message }}
+    </p>
+  </div>
+}

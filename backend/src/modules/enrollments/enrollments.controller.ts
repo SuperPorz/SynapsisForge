@@ -32,6 +32,15 @@ export class EnrollmentsController {
     return this.enrollmentsService.findMyEnrollments(userId);
   }
 
+  // ─── GET /enrollments/my/ids ─────────────────────────────────
+  @Get('my/ids')
+  @ApiOperation({ summary: "Restituisce gli ID dei corsi a cui l'utente è iscritto" })
+  async getMyEnrolledCourseIds(
+    @Req() req: Request & { user: { id: string } },
+  ): Promise<string[]> {
+    return this.enrollmentsService.findMyEnrolledCourseIds(req.user['id']);
+  }
+
   // ─── GET /enrollments/my/activity ────────────────────────────
   @Get('my/activity')
   @ApiOperation({ summary: "Ultime 10 lezioni completate dall'utente" })

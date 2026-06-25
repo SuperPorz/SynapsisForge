@@ -167,8 +167,11 @@ export async function seedUsers(ds: DataSource): Promise<SeededUsers> {
   const hash = await bcrypt.hash('Password123!', 10);
 
   // ── Admin ─────────────────────────────────────────────────────────────────
-  await userRepo.save(
+  const adminUser = await userRepo.save(
     userRepo.create({ ...ADMIN, password: hash, is_active: true }),
+  );
+  await studentRepo.save(
+    studentRepo.create({ userId: adminUser.id, user: adminUser }),
   );
   console.log(`  ✅ admin: ${ADMIN.email}`);
 
@@ -182,6 +185,10 @@ export async function seedUsers(ds: DataSource): Promise<SeededUsers> {
       instructorRepo.create({ userId: user.id, user }),
     );
     instructorProfiles.push(profile);
+    // Create StudentProfile so instructors can purchase courses
+    await studentRepo.save(
+      studentRepo.create({ userId: user.id, user }),
+    );
     const tag = data.isVerified ? '✅' : '⚠️ (unverified)';
     console.log(`  ${tag} instructor: ${data.email}`);
   }
