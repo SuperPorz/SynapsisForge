@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BraintreeGateway, Environment } from 'braintree';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Payment } from 'src/common/entities/payments.entity';
+import { Course } from 'src/common/entities/courses.entity';
+import { StudentProfile } from 'src/common/entities/student-profile.entity';
+import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { PaymentsService } from './payments.service';
 import { PaymentsController } from './payments.controller';
+import { EnrollmentsModule } from '../enrollments/enrollments.module';
 
 @Module({
+  imports: [
+    TypeOrmModule.forFeature([Payment, Course, StudentProfile, Enrollment]),
+    EnrollmentsModule,
+  ],
   controllers: [PaymentsController],
   providers: [
     PaymentsService,
