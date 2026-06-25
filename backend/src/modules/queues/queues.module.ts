@@ -35,15 +35,36 @@ import { adminAuthMiddleware } from './admin-auth.middleware';
     }),
     BullModule.registerQueue({
       name: 'test',
+      defaultJobOptions: {
+        removeOnComplete: 100,
+        removeOnFail: 50,
+      },
     }),
     BullModule.registerQueue({
       name: 'email',
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 },
+        removeOnComplete: 100,
+        removeOnFail: 50,
+      },
     }),
     BullModule.registerQueue({
       name: 'certificate',
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 },
+        removeOnComplete: 100,
+        removeOnFail: 50,
+      },
     }),
     BullModule.registerQueue({
       name: 'maintenance',
+      defaultJobOptions: {
+        attempts: 1,
+        removeOnComplete: 100,
+        removeOnFail: 50,
+      },
     }),
     BullBoardModule.forRoot({
       route: '/admin/queues',

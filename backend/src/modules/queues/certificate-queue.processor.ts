@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -68,5 +68,10 @@ export class CertificateQueueProcessor extends WorkerHost {
     await this.certificateRepository.save(saved);
 
     this.logger.log(`Certificate ${saved.id} generated → ${pdfUrl}`);
+  }
+
+  @OnWorkerEvent('failed')
+  async onFailed(job: Job | undefined, error: Error) {
+    this.logger.error(`Certificate job ${job?.id} (enrollment: ${(job?.data as any)?.enrollmentId}) failed after ${job?.attemptsMade} attempts: ${error.message}`);
   }
 }

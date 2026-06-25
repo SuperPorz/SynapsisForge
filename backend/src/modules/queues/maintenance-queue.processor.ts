@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { createClient } from '@redis/client';
@@ -19,6 +19,11 @@ export class MaintenanceQueueProcessor extends WorkerHost {
     }
 
     this.logger.log(`Maintenance job ${job.id} completed`);
+  }
+
+  @OnWorkerEvent('failed')
+  async onFailed(job: Job | undefined, error: Error) {
+    this.logger.error(`Maintenance job ${job?.id} (${job?.name}) failed: ${error.message}`);
   }
 
   private async handleCleanupExpiredTokens() {
