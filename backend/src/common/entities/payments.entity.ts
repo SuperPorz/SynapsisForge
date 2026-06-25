@@ -24,6 +24,9 @@ export class Payment {
   @Column()
   gateway_id!: string;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  payment_method?: string;
+
   @Column({ type: 'enum', enum: Status })
   status!: Status;
 

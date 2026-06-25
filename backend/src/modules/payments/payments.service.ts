@@ -124,7 +124,9 @@ export class PaymentsService {
     }
 
     // 5. Success — create payment + enrollment
-    const transactionId = transactionResult.transaction!.id;
+    const transaction = transactionResult.transaction!;
+    const transactionId = transaction.id;
+    const paymentMethod = (transaction as any).paymentInstrumentType ?? null;
     await this.savePayment(
       userId,
       courseId,
@@ -132,6 +134,7 @@ export class PaymentsService {
       Currency.EUR,
       Status.COMPLETED,
       transactionId,
+      paymentMethod,
     );
 
     await this.enrollmentsService.enroll({ userId, courseId });
@@ -191,9 +194,11 @@ export class PaymentsService {
       throw new BadRequestException(`Payment failed: ${btError}`);
     }
 
-    const transactionId = transactionResult.transaction!.id;
+    const transaction = transactionResult.transaction!;
+    const transactionId = transaction.id;
+    const paymentMethod = (transaction as any).paymentInstrumentType ?? null;
     for (const item of items) {
-      await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.COMPLETED, transactionId);
+      await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.COMPLETED, transactionId, paymentMethod);
       await this.enrollmentsService.enroll({ userId, courseId: item.courseId });
     }
 
@@ -213,6 +218,7 @@ export class PaymentsService {
     currency: Currency,
     status: Status,
     transactionId: string | null,
+    paymentMethod?: string | null,
   ) {
     const payment = this.paymentRepository.create({
       user: { id: userId } as any,
@@ -221,6 +227,7 @@ export class PaymentsService {
       currency,
       gateway_id: transactionId ?? '',
       status,
+      payment_method: paymentMethod ?? undefined,
     });
     return this.paymentRepository.save(payment);
   }

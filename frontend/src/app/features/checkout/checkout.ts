@@ -63,6 +63,7 @@ export class Checkout implements OnInit, OnDestroy {
   }
 
   private initDropin() {
+    const amount = this.isCartCheckout ? this.cartTotal() : this.course()?.price ?? 0;
     this.paymentsService.getClientToken().subscribe({
       next: (res) => {
         const container = this.dropinContainer()?.nativeElement;
@@ -70,6 +71,11 @@ export class Checkout implements OnInit, OnDestroy {
         dropin.create({
           authorization: res.clientToken,
           container,
+          paypal: {
+            flow: 'checkout',
+            amount: amount.toFixed(2),
+            currency: 'EUR',
+          },
         }).then((instance) => {
           this.dropinInstance = instance;
           this.loading.set(false);
