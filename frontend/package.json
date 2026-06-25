@@ -10,6 +10,11 @@
   },
   "private": true,
   "packageManager": "npm@11.14.1",
+  "overrides": {
+    "undici": "7.28.0",
+    "@babel/core": "7.29.7",
+    "vite": "7.3.6"
+  },
   "dependencies": {
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",
