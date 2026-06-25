@@ -37,6 +37,18 @@ export const routes: Routes = [
       import('./features/courses/course-detail/course-detail').then((m) => m.CourseDetail),
   },
   {
+    path: 'cart',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/cart/cart').then((m) => m.Cart),
+  },
+  {
+    path: 'checkout',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/checkout/checkout').then((m) => m.Checkout),
+  },
+  {
     path: 'checkout/:courseId',
     loadComponent: () =>
       import('./features/checkout/checkout').then((m) => m.Checkout),

@@ -1,6 +1,7 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { CourseService } from '../../../core/services/courses.service';
 import { EnrollmentService, EnrollmentResponse } from '../../../core/services/enrollment.service';
+import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Course } from '../../../core/models/course-model';
@@ -18,6 +19,7 @@ export class CourseDetail {
   private router = inject(Router);
   private courseService = inject(CourseService);
   private enrollmentService = inject(EnrollmentService);
+  private cartService = inject(CartService);
   private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
@@ -108,6 +110,26 @@ export class CourseDetail {
         this.enrolling.set(false);
       },
     });
+  }
+
+  inCart = computed(() => this.cartService.isInCart(this.course()?.id ?? ''));
+
+  addToCart() {
+    const courseId = this.course()?.id;
+    if (!courseId || this.inCart()) return;
+    this.cartService.addItem(courseId).subscribe();
+  }
+
+  buyNow() {
+    const courseId = this.course()?.id;
+    if (!courseId) return;
+    if (!this.inCart()) {
+      this.cartService.addItem(courseId).subscribe({
+        next: () => this.router.navigate(['/cart']),
+      });
+    } else {
+      this.router.navigate(['/cart']);
+    }
   }
 
   navigateToLesson(lessonId: string) {

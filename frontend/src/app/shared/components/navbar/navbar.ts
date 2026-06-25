@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-navbar',
@@ -9,8 +10,13 @@ import { ThemeService } from '../../../core/services/theme.service';
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
-export class Navbar {
+export class Navbar implements OnInit {
   auth = inject(AuthService);
   theme = inject(ThemeService);
+  cart = inject(CartService);
   _mobileMenuOpen = signal(false);
+
+  ngOnInit() {
+    this.cart.loadCart();
+  }
 }

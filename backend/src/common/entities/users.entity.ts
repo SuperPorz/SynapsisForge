@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne } from 'typeorm';
 import { Country, UserRole } from './enum/users.enum';
 import { Payment } from './payments.entity';
+import { CartItem } from './cart-item.entity';
 import { StudentProfile } from './student-profile.entity';
 import { InstructorProfile } from './instructor-profile.entity';
 import { UserProviders } from './user_providers.entity';
@@ -61,6 +62,9 @@ export class User {
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments?: Payment[];
+
+  @OneToMany(() => CartItem, (item) => item.user)
+  cartItems?: CartItem[];
 
   @OneToOne(() => InstructorProfile, (profile) => profile.user)
   instructorProfile?: InstructorProfile;

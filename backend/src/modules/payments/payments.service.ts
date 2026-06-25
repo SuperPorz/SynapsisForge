@@ -138,6 +138,55 @@ export class PaymentsService {
     };
   }
 
+  async cartCheckout(
+    userId: string,
+    items: { courseId: string; price: number }[],
+    nonce: string,
+  ) {
+    const total = items.reduce((sum, i) => sum + i.price, 0);
+
+    let transactionResult: { success: boolean; transaction?: { id: string }; message?: string };
+    try {
+      transactionResult = await this.gateway.transaction.sale({
+        amount: total.toString(),
+        paymentMethodNonce: nonce,
+        options: { submitForSettlement: true },
+      });
+    } catch (err: any) {
+      this.logger.error(`Braintree SDK error: ${err.message}`);
+      for (const item of items) {
+        await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.FAILED, null);
+      }
+      throw new BadRequestException(`Payment processing error: ${err.message}`);
+    }
+
+    if (!transactionResult.success) {
+      const btError = transactionResult.message ?? 'Unknown Braintree error';
+      this.logger.warn(`Braintree declined: ${btError}`);
+      for (const item of items) {
+        await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.FAILED, null);
+      }
+      if (btError.includes('processor declined') || btError.includes('gateway rejected')) {
+        throw new BadRequestException('Card was declined. Please try a different payment method.');
+      }
+      throw new BadRequestException(`Payment failed: ${btError}`);
+    }
+
+    const transactionId = transactionResult.transaction!.id;
+    for (const item of items) {
+      await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.COMPLETED, transactionId);
+      await this.enrollmentsService.enroll({ userId, courseId: item.courseId });
+    }
+
+    this.logger.log(`Cart checkout completed: user=${userId}, items=${items.length}, tx=${transactionId}`);
+
+    return {
+      success: true,
+      transactionId,
+      itemCount: items.length,
+    };
+  }
+
   private async savePayment(
     userId: string,
     courseId: string,

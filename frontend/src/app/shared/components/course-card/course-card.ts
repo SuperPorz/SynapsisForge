@@ -1,6 +1,7 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Course } from '../../../core/models/course-model';
+import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-course-card',
@@ -10,9 +11,20 @@ import { Course } from '../../../core/models/course-model';
 })
 export class CourseCard {
   course = input.required<Course>();
+  cart = inject(CartService);
 
   starStates = computed(() => {
     const rating = Math.round(this.course()?.rating ?? 0);
     return [1, 2, 3, 4, 5].map((i) => i <= rating);
   });
+
+  inCart = computed(() => this.cart.isInCart(this.course()?.id));
+
+  adding = computed(() => this.cart.loading());
+
+  addToCart() {
+    const id = this.course()?.id;
+    if (!id || this.inCart()) return;
+    this.cart.addItem(id).subscribe();
+  }
 }

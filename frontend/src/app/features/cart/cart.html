@@ -1,0 +1,75 @@
+<div class="min-h-screen bg-surface-alt dark:bg-gray-900 py-8 px-4">
+  <div class="mx-auto max-w-4xl">
+    <a routerLink="/courses" class="mb-6 inline-flex items-center text-sm text-fg-muted hover:text-fg-brand">
+      <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to catalog
+    </a>
+
+    <h1 class="mb-8 text-2xl font-bold text-heading">Shopping Cart</h1>
+
+    @if (cart.loading()) {
+      <div class="animate-pulse space-y-4">
+        @for (_ of [1,2,3]; track $index) {
+          <div class="flex gap-4 rounded-xl bg-card-bg p-4">
+            <div class="h-20 w-32 rounded-lg bg-gray-300 dark:bg-gray-700"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 w-3/4 rounded bg-gray-300 dark:bg-gray-700"></div>
+              <div class="h-3 w-1/4 rounded bg-gray-300 dark:bg-gray-700"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (cart.items().length === 0) {
+      <div class="rounded-xl bg-card-bg p-12 text-center">
+        <svg class="mx-auto mb-4 h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
+        </svg>
+        <h2 class="mb-2 text-xl font-semibold text-heading">Your cart is empty</h2>
+        <p class="mb-6 text-fg-muted">Browse our courses and add some to your cart!</p>
+        <a routerLink="/courses" class="inline-block rounded-lg bg-fg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-fg-brand-strong">
+          Browse courses
+        </a>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="space-y-4 lg:col-span-2">
+          @for (item of cart.items(); track item.courseId) {
+            <div class="flex gap-4 rounded-xl bg-card-bg p-4 shadow-sm">
+              <img [src]="item.thumbnail_url" [alt]="item.title" class="h-20 w-32 shrink-0 rounded-lg object-cover" />
+              <div class="flex min-w-0 flex-1 flex-col justify-between">
+                <div>
+                  <a [routerLink]="['/courses', item.courseId]" class="font-semibold text-heading hover:text-fg-brand line-clamp-1">{{ item.title }}</a>
+                  <p class="mt-1 text-lg font-bold text-fg-brand">{{ item.price | currency:'EUR':'symbol':'1.2-2' }}</p>
+                </div>
+                <button (click)="removeItem(item.courseId)" class="inline-flex items-center gap-1 text-sm text-red-500 hover:text-red-700 w-fit">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  Remove
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="lg:col-span-1">
+          <div class="sticky top-24 rounded-xl bg-card-bg p-6 shadow-sm">
+            <h3 class="mb-4 text-lg font-semibold text-heading">Order Summary</h3>
+            <div class="space-y-2 text-sm text-fg-muted">
+              <div class="flex justify-between">
+                <span>Items ({{ cart.count() }})</span>
+                <span>{{ cart.total() | currency:'EUR':'symbol':'1.2-2' }}</span>
+              </div>
+              <hr class="border-gray-200 dark:border-gray-700" />
+              <div class="flex justify-between text-lg font-bold text-heading">
+                <span>Total</span>
+                <span class="text-fg-brand">{{ cart.total() | currency:'EUR':'symbol':'1.2-2' }}</span>
+              </div>
+            </div>
+            <button (click)="proceedToCheckout()" class="mt-6 w-full rounded-xl bg-fg-brand px-4 py-3 font-semibold text-white transition-colors hover:bg-fg-brand-strong">
+              Proceed to Checkout
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
