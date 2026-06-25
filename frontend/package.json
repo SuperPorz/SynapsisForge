@@ -24,8 +24,8 @@
     "@angular/router": "^21.2.0",
     "@angular/service-worker": "^21.2.17",
     "@tailwindcss/postcss": "^4.3.0",
+    "braintree-web-drop-in": "^1.47.0",
     "chart.js": "^4.5.1",
-
     "ng2-charts": "^10.0.0",
     "postcss": "^8.5.15",
     "rxjs": "~7.8.0",
