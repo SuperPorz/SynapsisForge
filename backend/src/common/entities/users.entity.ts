@@ -1,6 +1,6 @@
 // prettier-ignore
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne } from 'typeorm';
-import { Country, UserRole } from './enum/users.enum';
+import { Country, UserRole, SubscriptionPlan } from './enum/users.enum';
 import { Payment } from './payments.entity';
 import { CartItem } from './cart-item.entity';
 import { StudentProfile } from './student-profile.entity';
@@ -44,6 +44,12 @@ export class User {
 
   @Column({ type: 'varchar', nullable: true })
   refresh_token_hash!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  subscription_id!: string | null;
+
+  @Column({ type: 'enum', enum: SubscriptionPlan, default: SubscriptionPlan.FREE })
+  plan!: SubscriptionPlan;
 
   @Column({ type: 'uuid', nullable: true })
   email_verification_token!: string | null;

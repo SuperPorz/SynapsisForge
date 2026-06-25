@@ -15,3 +15,8 @@ export enum UserRole {
   INSTRUCTOR = 'INSTRUCTOR',
   ADMIN = 'ADMIN',
 }
+
+export enum SubscriptionPlan {
+  FREE = 'FREE',
+  PREMIUM = 'PREMIUM',
+}

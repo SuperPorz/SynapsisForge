@@ -25,4 +25,16 @@ export class PaymentsService {
   processCheckout(courseId: string, nonce: string, amount: number): Observable<CheckoutResponse> {
     return this.http.post<CheckoutResponse>(`${this.baseUrl}/checkout`, { courseId, nonce, amount });
   }
+
+  subscribe(nonce: string, planId: string): Observable<{ success: boolean; subscriptionId: string; plan: string; message: string }> {
+    return this.http.post<{ success: boolean; subscriptionId: string; plan: string; message: string }>(`${this.baseUrl}/subscribe`, { nonce, planId });
+  }
+
+  getSubscriptionStatus(): Observable<{ plan: string; subscriptionId: string | null; isPremium: boolean }> {
+    return this.http.get<{ plan: string; subscriptionId: string | null; isPremium: boolean }>(`${this.baseUrl}/subscription/status`);
+  }
+
+  cancelSubscription(): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.baseUrl}/subscription/cancel`, {});
+  }
 }

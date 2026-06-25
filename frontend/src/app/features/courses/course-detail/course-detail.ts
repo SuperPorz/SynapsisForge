@@ -20,7 +20,7 @@ export class CourseDetail {
   private courseService = inject(CourseService);
   private enrollmentService = inject(EnrollmentService);
   private cartService = inject(CartService);
-  private authService = inject(AuthService);
+  authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
   ////// signals /////////

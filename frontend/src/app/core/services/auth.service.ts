@@ -5,6 +5,7 @@ import { map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.develop';
 
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TIPI
 // ─────────────────────────────────────────────────────────────────────────────
@@ -21,6 +22,7 @@ export interface User {
   id: string;
   email: string;
   role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
+  plan?: 'FREE' | 'PREMIUM';
 }
 
 interface LoginDto {
@@ -68,6 +70,13 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this._currentUser() !== null);
   readonly role = computed(() => this._currentUser()?.role ?? null);
   readonly userId = computed(() => this._currentUser()?.id ?? null);
+
+  private readonly _plan = signal<'FREE' | 'PREMIUM'>('FREE');
+  readonly plan = this._plan.asReadonly();
+
+  setPlan(plan: 'FREE' | 'PREMIUM') {
+    this._plan.set(plan);
+  }
 
   // ─── IDRATAZIONE ALL'AVVIO ────────────────────────────────────────────────
   //

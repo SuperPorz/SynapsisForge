@@ -9,12 +9,15 @@ import type { Cache } from 'cache-manager';
 import { Payment } from 'src/common/entities/payments.entity';
 import { Currency, Status } from 'src/common/entities/enum/payments.enum';
 import { CheckoutDto } from './dto/checkout.dto';
+import { SubscribeDto } from './dto/subscribe.dto';
 import { EnrollmentsService } from '../enrollments/enrollments.service';
 import { Course } from 'src/common/entities/courses.entity';
 import { Status as CourseStatus } from 'src/common/entities/enum/courses.enum';
 import { StudentProfile } from 'src/common/entities/student-profile.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { CartItem } from 'src/common/entities/cart-item.entity';
+import { User } from 'src/common/entities/users.entity';
+import { SubscriptionPlan } from 'src/common/entities/enum/users.enum';
 
 @Injectable()
 export class PaymentsService {
@@ -32,10 +35,134 @@ export class PaymentsService {
     private enrollmentRepository: Repository<Enrollment>,
     @InjectRepository(CartItem)
     private cartRepository: Repository<CartItem>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
     private enrollmentsService: EnrollmentsService,
   ) {}
+
+  async getSubscriptionStatus(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return {
+      plan: user.plan,
+      subscriptionId: user.subscription_id,
+      isPremium: user.plan === SubscriptionPlan.PREMIUM,
+    };
+  }
+
+  async cancelSubscription(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.plan !== SubscriptionPlan.PREMIUM || !user.subscription_id) {
+      throw new BadRequestException('No active premium subscription to cancel');
+    }
+
+    try {
+      await this.gateway.subscription.cancel(user.subscription_id);
+    } catch (err: any) {
+      this.logger.error(`Braintree cancel error: ${err.message}`);
+    }
+
+    user.plan = SubscriptionPlan.FREE;
+    user.subscription_id = null;
+    await this.userRepository.save(user);
+
+    this.logger.log(`Subscription cancelled: user=${userId}`);
+
+    return {
+      success: true,
+      message: 'Subscription cancelled. You will retain access until the end of the current billing period.',
+    };
+  }
+
+  async subscribe(userId: string, dto: SubscribeDto) {
+    const { nonce, planId } = dto;
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.plan === SubscriptionPlan.PREMIUM && user.subscription_id) {
+      throw new ConflictException('User already has an active premium subscription');
+    }
+
+    let customerResult: { success: boolean; customer?: { id: string }; message?: string };
+    try {
+      customerResult = await this.gateway.customer.create({
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email ?? undefined,
+      });
+    } catch (err: any) {
+      this.logger.error(`Braintree customer creation error: ${err.message}`);
+      throw new BadRequestException(`Customer creation error: ${err.message}`);
+    }
+
+    if (!customerResult.success) {
+      throw new BadRequestException(`Customer creation failed: ${customerResult.message}`);
+    }
+
+    const customerId = customerResult.customer!.id;
+
+    let paymentMethodResult: { success: boolean; paymentMethod?: { token: string }; message?: string };
+    try {
+      paymentMethodResult = await this.gateway.paymentMethod.create({
+        customerId,
+        paymentMethodNonce: nonce,
+      });
+    } catch (err: any) {
+      this.logger.error(`Braintree payment method error: ${err.message}`);
+      throw new BadRequestException(`Payment method creation error: ${err.message}`);
+    }
+
+    if (!paymentMethodResult.success) {
+      throw new BadRequestException(`Payment method creation failed: ${paymentMethodResult.message}`);
+    }
+
+    const paymentToken = paymentMethodResult.paymentMethod!.token;
+
+    let subscriptionResult: { success: boolean; subscription?: { id: string }; message?: string };
+    try {
+      subscriptionResult = await this.gateway.subscription.create({
+        paymentMethodToken: paymentToken,
+        planId,
+      });
+    } catch (err: any) {
+      this.logger.error(`Braintree subscription SDK error: ${err.message}`);
+      throw new BadRequestException(`Subscription creation error: ${err.message}`);
+    }
+
+    if (!subscriptionResult.success) {
+      const btError = subscriptionResult.message ?? 'Unknown Braintree error';
+      this.logger.warn(`Braintree subscription declined: ${btError}`);
+      throw new BadRequestException(`Subscription failed: ${btError}`);
+    }
+
+    const subscription = subscriptionResult.subscription!;
+    const subscriptionId = subscription.id;
+
+    user.subscription_id = subscriptionId;
+    user.plan = dto.plan ?? SubscriptionPlan.PREMIUM;
+    await this.userRepository.save(user);
+
+    this.logger.log(
+      `Subscription created: user=${userId}, subscription=${subscriptionId}, plan=${user.plan}`,
+    );
+
+    return {
+      success: true,
+      subscriptionId,
+      plan: user.plan,
+      message: 'Subscription created successfully',
+    };
+  }
 
   async generateClientToken(): Promise<{ clientToken: string }> {
     const response = await this.gateway.clientToken.generate({});

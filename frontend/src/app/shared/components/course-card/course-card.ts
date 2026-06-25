@@ -1,6 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Course } from '../../../core/models/course-model';
+import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 
@@ -12,6 +13,7 @@ import { EnrollmentService } from '../../../core/services/enrollment.service';
 })
 export class CourseCard {
   course = input.required<Course>();
+  auth = inject(AuthService);
   cart = inject(CartService);
   enrollment = inject(EnrollmentService);
 

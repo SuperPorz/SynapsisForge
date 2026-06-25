@@ -1,0 +1,69 @@
+<div class="min-h-screen bg-surface-alt dark:bg-gray-900 py-8 px-4">
+  <div class="mx-auto max-w-4xl">
+
+    <a routerLink="/" class="mb-6 inline-flex items-center text-sm text-fg-muted hover:text-fg-brand">
+      <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to home
+    </a>
+
+    @if (loading()) {
+      <div class="animate-pulse space-y-4 rounded-xl bg-card-bg p-8">
+        <div class="h-6 w-1/3 rounded bg-gray-300 dark:bg-gray-700"></div>
+        <div class="h-4 w-1/2 rounded bg-gray-300 dark:bg-gray-700"></div>
+        <div class="h-48 rounded bg-gray-300 dark:bg-gray-700"></div>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="rounded-xl bg-card-bg p-8 text-center">
+        <p class="mb-4 text-red-500">{{ error() }}</p>
+        <button (click)="error.set(null); initDropin()" class="rounded-lg bg-fg-brand px-6 py-2 font-semibold text-white hover:bg-fg-brand-strong">Try again</button>
+      </div>
+    }
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-5">
+      <div class="lg:col-span-2">
+        <div class="rounded-xl bg-card-bg p-6">
+          <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-fg-brand/10">
+            <svg class="h-7 w-7 text-fg-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          </div>
+          <h1 class="mb-2 text-xl font-bold text-heading">Premium Monthly</h1>
+          <p class="mb-4 text-3xl font-bold text-fg-brand">9.99 &euro;<span class="text-base font-normal text-fg-muted">/mo</span></p>
+          <ul class="space-y-2 text-sm text-fg-muted">
+            <li class="flex items-center gap-2">
+              <svg class="h-4 w-4 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Unlimited course access
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="h-4 w-4 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Certificates of completion
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="h-4 w-4 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Priority support
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="h-4 w-4 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Cancel anytime
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="lg:col-span-3">
+        <div class="rounded-xl bg-card-bg p-6">
+          <h2 class="mb-4 text-lg font-semibold text-heading">Payment Method</h2>
+          <div #dropinContainer class="min-h-[200px]"></div>
+          @if (error()) { <p class="mt-2 text-sm text-red-500">{{ error() }}</p> }
+          <button (click)="subscribe()" [disabled]="subscribing()" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-fg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-fg-brand-strong disabled:cursor-not-allowed disabled:opacity-50">
+            @if (subscribing()) {
+              <svg class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+              Processing...
+            } @else { Subscribe &mdash; 9.99 &euro;/mo }
+          </button>
+          <p class="mt-3 text-center text-xs text-fg-muted">Your payment info is securely processed by Braintree.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

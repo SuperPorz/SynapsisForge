@@ -7,13 +7,14 @@ import { Course } from 'src/common/entities/courses.entity';
 import { StudentProfile } from 'src/common/entities/student-profile.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { CartItem } from 'src/common/entities/cart-item.entity';
+import { User } from 'src/common/entities/users.entity';
 import { PaymentsService } from './payments.service';
 import { PaymentsController } from './payments.controller';
 import { EnrollmentsModule } from '../enrollments/enrollments.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Payment, Course, StudentProfile, Enrollment, CartItem]),
+    TypeOrmModule.forFeature([Payment, Course, StudentProfile, Enrollment, CartItem, User]),
     EnrollmentsModule,
   ],
   controllers: [PaymentsController],

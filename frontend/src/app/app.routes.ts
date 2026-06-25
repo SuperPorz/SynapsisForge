@@ -54,6 +54,12 @@ export const routes: Routes = [
       import('./features/checkout/checkout').then((m) => m.Checkout),
   },
   {
+    path: 'subscribe',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/subscription/subscription').then((m) => m.Subscription),
+  },
+  {
     path: 'enrollments/:enrollmentId/lessons/:lessonId',
   canActivate: [authGuard],
   loadComponent: () =>
@@ -90,6 +96,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard/certificates/certificates').then(
             (m) => m.Certificates,
+          ),
+      },
+      {
+        path: 'subscription',
+        loadComponent: () =>
+          import('./features/dashboard/subscription-status/subscription-status').then(
+            (m) => m.SubscriptionStatus,
           ),
       },
       {
