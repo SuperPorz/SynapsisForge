@@ -1,30 +1,4 @@
 declare module 'pdfmake' {
-  interface TCanvasLine {
-    type: 'line';
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-    lineWidth?: number;
-    lineColor?: string;
-    dash?: { length: number; space: number };
-  }
-
-  interface TCanvasRect {
-    type: 'rect';
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-    r?: number;
-    lineWidth?: number;
-    strokeColor?: string;
-    color?: string;
-    fillOpacity?: number;
-  }
-
-
-
   interface TDocumentDefinitions {
     pageSize?: string;
     pageOrientation?: 'portrait' | 'landscape';

@@ -18,7 +18,7 @@ async function bootstrap() {
   app.use(cookieParser()); // serve per abilitare il parse cookie nel modulo Auth
 
   app.enableCors({
-    origin: 'http://localhost:4200', // frontend temporaneo
+    origin: process.env.CORS_ORIGIN?.split(',') || 'http://localhost:4200',
     credentials: true,
   });
 

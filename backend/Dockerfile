@@ -1,17 +1,15 @@
-FROM node:22-alpine AS build
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-COPY . .
+COPY tsconfig*.json nest-cli.json ./
+COPY src ./src
 RUN npm run build
 
-FROM node:22-alpine AS production
+FROM node:22-alpine AS runner
 WORKDIR /app
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
-COPY --from=build /app/dist ./dist
-RUN mkdir -p /app/uploads/courses && chown -R appuser:appgroup /app/uploads
-USER appuser
+COPY --from=builder /app/dist ./dist
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/main"]
