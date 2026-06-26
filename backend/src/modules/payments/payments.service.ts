@@ -7,6 +7,7 @@ import { BraintreeGateway } from 'braintree';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { createHash } from 'node:crypto';
 import { Payment } from 'src/common/entities/payments.entity';
 import { Currency, Status } from 'src/common/entities/enum/payments.enum';
 import { CheckoutDto } from './dto/checkout.dto';
@@ -92,6 +93,14 @@ export class PaymentsService {
       throw new BadRequestException('Invalid webhook signature');
     }
 
+    const idempotencyKey = createHash('sha256').update(payload).digest('hex');
+    const alreadyProcessed = await this.cacheManager.get(`sf:webhook:idempotent:${idempotencyKey}`);
+    if (alreadyProcessed) {
+      this.logger.log(`Duplicate webhook skipped (hash=${idempotencyKey.slice(0, 12)}...)`);
+      return { received: true };
+    }
+    await this.cacheManager.set(`sf:webhook:idempotent:${idempotencyKey}`, true, 3600);
+
     const kind: string = notification.kind;
     const subscription = notification.subject?.subscription;
 
@@ -128,6 +137,12 @@ export class PaymentsService {
     user.subscription_id = subId;
     user.subscription_status = 'active';
     await this.userRepository.save(user);
+
+    const tx = subscription.transactions?.[0];
+    const txId = tx?.id ?? subId;
+    const amount = tx?.amount ? parseFloat(tx.amount) : 0;
+    await this.savePayment(user.id, null, amount, Currency.EUR, Status.COMPLETED, txId);
+
     this.logger.log(`Subscription ${subId} charged successfully — user ${user.id} plan renewed`);
   }
 
@@ -138,6 +153,12 @@ export class PaymentsService {
       this.logger.warn(`No user found for subscription ${subId}`);
       return;
     }
+
+    const tx = subscription.transactions?.[0];
+    const txId = tx?.id ?? subId;
+    const amount = tx?.amount ? parseFloat(tx.amount) : 0;
+    await this.savePayment(user.id, null, amount, Currency.EUR, Status.FAILED, txId);
+
     this.logger.warn(
       `Subscription ${subId} charge failed for user ${user.id} (${user.email})`,
     );
@@ -328,14 +349,15 @@ export class PaymentsService {
 
     if (!transactionResult.success) {
       const btError = transactionResult.message ?? 'Unknown Braintree error';
-      this.logger.warn(`Braintree declined: ${btError}`);
+      const failedTxId = transactionResult.transaction?.id ?? null;
+      this.logger.warn(`Braintree declined: ${btError} (tx=${failedTxId})`);
       await this.savePayment(
         userId,
         courseId,
         amount,
         Currency.EUR,
         Status.FAILED,
-        null,
+        failedTxId,
       );
       if (
         btError.includes('processor declined') ||
@@ -409,9 +431,10 @@ export class PaymentsService {
 
     if (!transactionResult.success) {
       const btError = transactionResult.message ?? 'Unknown Braintree error';
-      this.logger.warn(`Braintree declined: ${btError}`);
+      const failedTxId = transactionResult.transaction?.id ?? null;
+      this.logger.warn(`Braintree declined: ${btError} (tx=${failedTxId})`);
       for (const item of items) {
-        await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.FAILED, null);
+        await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.FAILED, failedTxId);
       }
       if (btError.includes('processor declined') || btError.includes('gateway rejected')) {
         throw new BadRequestException('Card was declined. Please try a different payment method.');
@@ -438,22 +461,25 @@ export class PaymentsService {
 
   private async savePayment(
     userId: string,
-    courseId: string,
+    courseId: string | null,
     amount: number,
     currency: Currency,
     status: Status,
     transactionId: string | null,
     paymentMethod?: string | null,
   ) {
-    const payment = this.paymentRepository.create({
-      user: { id: userId } as any,
-      course: { id: courseId } as any,
+    const paymentData: any = {
+      user: { id: userId },
       amount,
       currency,
       gateway_id: transactionId ?? '',
       status,
       payment_method: paymentMethod ?? undefined,
-    });
+    };
+    if (courseId) {
+      paymentData.course = { id: courseId };
+    }
+    const payment = this.paymentRepository.create(paymentData);
     return this.paymentRepository.save(payment);
   }
 }

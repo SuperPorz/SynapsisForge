@@ -1,10 +1,12 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Index } from 'typeorm';
 import { Course } from './courses.entity';
 import { User } from './users.entity';
 import { Currency, Status } from './enum/payments.enum';
 
 @Entity('payments')
+@Index(['user', 'course', 'status'])
+@Index(['gateway_id'])
 export class Payment {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -12,8 +14,8 @@ export class Payment {
   @ManyToOne(() => User, (user) => user.payments, { nullable: false })
   user!: User;
 
-  @ManyToOne(() => Course, { nullable: false })
-  course!: Course;
+  @ManyToOne(() => Course, { nullable: true })
+  course?: Course;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount!: number;
