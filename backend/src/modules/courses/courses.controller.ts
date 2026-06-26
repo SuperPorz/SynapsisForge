@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
@@ -62,8 +63,8 @@ export class CoursesController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async findAll(
-    @Query('page', ParsePositiveIntPipe) page: number = 1,
-    @Query('limit', ParsePositiveIntPipe) limit: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParsePositiveIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParsePositiveIntPipe) limit: number,
     @Query('category') category?: string,
     @Query('featured', new ParseBoolPipe({ optional: true }))
     featured?: boolean,

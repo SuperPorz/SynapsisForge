@@ -24,7 +24,19 @@ async function bootstrap() {
 
   app.use(
     helmet({
-      contentSecurityPolicy: process.env.NODE_ENV === 'production', // disabilita CSP solo per l'env di sviluppo
+      contentSecurityPolicy:
+        process.env.NODE_ENV === 'production'
+          ? {
+              directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
+                connectSrc: ["'self'"],
+                fontSrc: ["'self'"],
+              },
+            }
+          : false,
     }),
   );
 
