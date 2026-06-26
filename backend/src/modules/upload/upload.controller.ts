@@ -5,6 +5,7 @@ import {
   UseGuards,
   UseInterceptors,
   BadRequestException,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -15,6 +16,8 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nes
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/entities/enum/users.enum';
+import { S3Service } from '../s3/s3.service';
+import { PresignedUrlDto } from './dto/presigned-url.dto';
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 2 * 1024 * 1024; // 2MB
@@ -28,6 +31,7 @@ if (!existsSync(uploadsDir)) {
 @Controller('uploads')
 @UseGuards(RolesGuard)
 export class UploadController {
+  constructor(private readonly s3Service: S3Service) {}
   @Post('course-thumbnail')
   @Roles(UserRole.INSTRUCTOR, UserRole.ADMIN)
   @ApiBearerAuth()
@@ -81,5 +85,20 @@ export class UploadController {
       size: file.size,
       mimetype: file.mimetype,
     };
+  }
+
+  @Post('presigned-url')
+  @Roles(UserRole.INSTRUCTOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate a presigned PUT URL for video upload to S3' })
+  async generatePresignedUrl(@Body() dto: PresignedUrlDto) {
+    const ext = extname(dto.fileName);
+    const key = `videos/${randomUUID()}${ext}`;
+    const uploadUrl = await this.s3Service.generatePresignedPutUrl(key, dto.contentType);
+    const bucket = process.env.S3_MEDIA_BUCKET ?? 'synapsisforge-media';
+    const region = process.env.AWS_REGION ?? 'eu-south-1';
+    const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+
+    return { uploadUrl, key, publicUrl };
   }
 }

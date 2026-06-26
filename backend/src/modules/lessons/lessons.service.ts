@@ -161,6 +161,22 @@ export class LessonsService {
     return await this.lessonContentModel.findOne({ lessonId }).exec();
   }
 
+  async updateS3Key(
+    lessonId: string,
+    s3Key: string,
+  ): Promise<LessonContentDocument> {
+    const updated = await this.lessonContentModel
+      .findOneAndUpdate({ lessonId }, { $set: { s3Key } }, { new: true })
+      .exec();
+
+    if (!updated)
+      throw new NotFoundException(
+        `Contenuto per lezione ${lessonId} non trovato`,
+      );
+
+    return updated;
+  }
+
   // ---------------------------------------------------------------------------
   // Player — video + progresso
   // ---------------------------------------------------------------------------

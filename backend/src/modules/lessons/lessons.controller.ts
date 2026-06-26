@@ -25,6 +25,7 @@ import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { CreateLessonContentDto } from './dto/create-lesson-content.dto';
 import { UpdateLessonContentDto } from './dto/update-lesson-content.dto';
+import { UpdateS3KeyDto } from './dto/update-s3-key.dto';
 import { UserRole } from 'src/common/entities/enum/users.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 
@@ -147,5 +148,19 @@ export class LessonsController {
     //qui verifichiamo solo se la lezione esiste; se si, si procede alla riga successiva
     await this.lessonsService.findLesson(courseId, id);
     return this.lessonsService.updateContent(id, dto);
+  }
+
+  @Roles(UserRole.INSTRUCTOR)
+  @ApiOperation({ summary: 'Update S3 key for a lesson video (instructor only)' })
+  @ApiResponse({ status: 200, description: 'S3 key updated successfully.' })
+  @ApiNotFoundResponse({ description: 'Lesson content not found.' })
+  @Patch(':id/s3-key')
+  async updateS3Key(
+    @Param('courseId', ParseUuidPipe) courseId: string,
+    @Param('id', ParseUuidPipe) id: string,
+    @Body() dto: UpdateS3KeyDto,
+  ) {
+    await this.lessonsService.findLesson(courseId, id);
+    return this.lessonsService.updateS3Key(id, dto.s3Key);
   }
 }
