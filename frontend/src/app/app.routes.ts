@@ -106,6 +106,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'payment-history',
+        loadComponent: () =>
+          import('./features/dashboard/payment-history/payment-history').then(
+            (m) => m.PaymentHistory,
+          ),
+      },
+      {
         path: 'instructor',
         canActivate: [roleGuard],
         data: { roles: ['INSTRUCTOR', 'ADMIN'] },

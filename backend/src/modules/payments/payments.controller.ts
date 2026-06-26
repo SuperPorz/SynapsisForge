@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Req, HttpCode } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Req, HttpCode, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { PaymentsService } from './payments.service';
 import { CheckoutDto } from './dto/checkout.dto';
@@ -39,6 +39,22 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Cancel the current subscription' })
   async cancel(@Req() req: any) {
     return this.paymentsService.cancelSubscription(req.user.id);
+  }
+
+  @Get('history')
+  @ApiOperation({ summary: 'Get payment history for the authenticated user' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 20 })
+  async getHistory(
+    @Req() req: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.paymentsService.getHistory(
+      req.user.id,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
   }
 
   @Public()

@@ -8,10 +8,12 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { createHash } from 'node:crypto';
+import { plainToInstance } from 'class-transformer';
 import { Payment } from 'src/common/entities/payments.entity';
 import { Currency, Status } from 'src/common/entities/enum/payments.enum';
 import { CheckoutDto } from './dto/checkout.dto';
 import { SubscribeDto } from './dto/subscribe.dto';
+import { PaymentHistoryItem } from './dto/payment-history.dto';
 import { EnrollmentsService } from '../enrollments/enrollments.service';
 import { Course } from 'src/common/entities/courses.entity';
 import { Status as CourseStatus } from 'src/common/entities/enum/courses.enum';
@@ -456,6 +458,27 @@ export class PaymentsService {
       success: true,
       transactionId,
       itemCount: items.length,
+    };
+  }
+
+  async getHistory(
+    userId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<{ data: PaymentHistoryItem[]; total: number; page: number; limit: number }> {
+    const [rows, total] = await this.paymentRepository.findAndCount({
+      where: { user: { id: userId } },
+      relations: ['course'],
+      order: { created_at: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      data: rows.map((r) => plainToInstance(PaymentHistoryItem, r, { excludeExtraneousValues: true })),
+      total,
+      page,
+      limit,
     };
   }
 

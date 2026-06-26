@@ -12,6 +12,7 @@ export class QueuesController {
     @InjectQueue('email') private readonly emailQueue: Queue,
     @InjectQueue('certificate') private readonly certificateQueue: Queue,
     @InjectQueue('maintenance') private readonly maintenanceQueue: Queue,
+    @InjectQueue('receipt') private readonly receiptQueue: Queue,
   ) {}
 
   @Public()
@@ -39,6 +40,14 @@ export class QueuesController {
   async testCertificate(@Param('enrollmentId', ParseUUIDPipe) enrollmentId: string) {
     const job = await this.certificateQueue.add('generate-certificate', { enrollmentId });
     return { jobId: job.id, enrollmentId, message: 'Certificate job queued' };
+  }
+
+  @Public()
+  @Post('receipt/test/:paymentId')
+  @ApiOperation({ summary: 'Queue a test receipt PDF generation job' })
+  async testReceipt(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
+    const job = await this.receiptQueue.add('generate-receipt-pdf', { paymentId });
+    return { jobId: job.id, paymentId, message: 'Receipt job queued' };
   }
 
   @Public()

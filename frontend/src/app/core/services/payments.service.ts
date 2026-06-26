@@ -13,6 +13,26 @@ export interface CheckoutResponse {
   message: string;
 }
 
+export interface PaymentHistoryItem {
+  id: string;
+  amount: string;
+  currency: string;
+  payment_method: string | null;
+  gateway_id: string;
+  status: string;
+  receipt_url: string | null;
+  created_at: string;
+  courseId: string | null;
+  courseTitle: string | null;
+}
+
+export interface PaymentHistoryResponse {
+  data: PaymentHistoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PaymentsService {
   private http = inject(HttpClient);
@@ -36,5 +56,11 @@ export class PaymentsService {
 
   cancelSubscription(): Observable<{ success: boolean; message: string }> {
     return this.http.post<{ success: boolean; message: string }>(`${this.baseUrl}/subscription/cancel`, {});
+  }
+
+  getHistory(page = 1, limit = 20) {
+    return this.http.get<PaymentHistoryResponse>(`${this.baseUrl}/history`, {
+      params: { page, limit },
+    });
   }
 }

@@ -11,12 +11,14 @@ import { EmailListener } from './email-listener';
 import { CertificateListener } from './certificate-listener';
 import { CertificateQueueProcessor } from './certificate-queue.processor';
 import { MaintenanceQueueProcessor } from './maintenance-queue.processor';
+import { ReceiptQueueProcessor } from './receipt-queue.processor';
 import { CronJobSetup } from './cron-job-setup';
 import { QueuesController } from './queues.controller';
 import { MailModule } from '../mail/mail.module';
 import { PdfModule } from '../pdf/pdf.module';
 import { Certificate } from '../../common/entities/certificate.entity';
 import { Enrollment } from '../../common/entities/enrollments.entity';
+import { Payment } from '../../common/entities/payments.entity';
 import { adminAuthMiddleware } from './admin-auth.middleware';
 
 @Module({
@@ -66,6 +68,15 @@ import { adminAuthMiddleware } from './admin-auth.middleware';
         removeOnFail: 50,
       },
     }),
+    BullModule.registerQueue({
+      name: 'receipt',
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 },
+        removeOnComplete: 100,
+        removeOnFail: 50,
+      },
+    }),
     BullBoardModule.forRoot({
       route: '/admin/queues',
       adapter: ExpressAdapter,
@@ -75,9 +86,10 @@ import { adminAuthMiddleware } from './admin-auth.middleware';
     BullBoardModule.forFeature({ name: 'email', adapter: BullMQAdapter }),
     BullBoardModule.forFeature({ name: 'certificate', adapter: BullMQAdapter }),
     BullBoardModule.forFeature({ name: 'maintenance', adapter: BullMQAdapter }),
+    BullBoardModule.forFeature({ name: 'receipt', adapter: BullMQAdapter }),
     MailModule,
     PdfModule,
-    TypeOrmModule.forFeature([Certificate, Enrollment]),
+    TypeOrmModule.forFeature([Certificate, Enrollment, Payment]),
   ],
   controllers: [QueuesController],
   providers: [
@@ -87,6 +99,7 @@ import { adminAuthMiddleware } from './admin-auth.middleware';
     EmailListener,
     CertificateListener,
     CertificateQueueProcessor,
+    ReceiptQueueProcessor,
     CronJobSetup,
   ],
   exports: [BullModule],

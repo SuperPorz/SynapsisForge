@@ -32,6 +32,9 @@ export class Payment {
   @Column({ type: 'enum', enum: Status })
   status!: Status;
 
+  @Column({ type: 'varchar', nullable: true })
+  receipt_url?: string;
+
   @CreateDateColumn()
   created_at!: Date;
 }

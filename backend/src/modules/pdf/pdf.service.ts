@@ -3,6 +3,17 @@ import PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export interface GenerateReceiptInput {
+  paymentId: string;
+  transactionId: string;
+  amount: number;
+  currency: string;
+  paymentMethod: string | null;
+  createdAt: Date;
+  customerName: string;
+  courseTitle: string | null;
+}
+
 export interface GenerateCertificateInput {
   studentName: string;
   courseTitle: string;
@@ -13,6 +24,68 @@ export interface GenerateCertificateInput {
 @Injectable()
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
+
+  generateReceipt(input: GenerateReceiptInput, outputPath: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ layout: 'portrait', size: 'A4', margin: 40 });
+      const stream = fs.createWriteStream(outputPath);
+
+      stream.on('finish', () => resolve());
+      stream.on('error', reject);
+
+      doc.pipe(stream);
+
+      // Header
+      doc.font('Helvetica-Bold').fontSize(24).fillColor('#6366f1');
+      doc.text('SynapsisForge', { align: 'center' });
+
+      doc.font('Helvetica').fontSize(10).fillColor('#6b7280');
+      doc.text('Payment Receipt', { align: 'center' });
+      doc.moveDown(2);
+
+      // Divider
+      doc.moveTo(40, doc.y).lineTo(552, doc.y).strokeColor('#e5e7eb').stroke();
+      doc.moveDown(1);
+
+      const leftX = 40;
+      const rightX = 320;
+      const labelStyle = { font: 'Helvetica-Bold', size: 10, color: '#374151' };
+      const valueStyle = { font: 'Helvetica', size: 10, color: '#6b7280' };
+
+      const fieldY = (y: number, label: string, value: string) => {
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#374151').text(label, leftX, y);
+        doc.font('Helvetica').fontSize(10).fillColor('#6b7280').text(value, rightX, y);
+      };
+
+      let y = doc.y + 5;
+      fieldY(y, 'Transaction ID:', input.transactionId);
+      y += 18;
+      fieldY(y, 'Date:', input.createdAt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
+      y += 18;
+      fieldY(y, 'Customer:', input.customerName);
+      y += 18;
+      fieldY(y, 'Amount:', `${input.currency} ${input.amount.toFixed(2)}`);
+      y += 18;
+      fieldY(y, 'Payment method:', input.paymentMethod ?? 'Unknown');
+      y += 18;
+      if (input.courseTitle) {
+        fieldY(y, 'Course:', input.courseTitle);
+        y += 18;
+      }
+
+      // Divider
+      y += 8;
+      doc.moveTo(40, y).lineTo(552, y).strokeColor('#e5e7eb').stroke();
+      doc.moveDown(1);
+
+      // Footer
+      doc.font('Helvetica').fontSize(8).fillColor('#9ca3af');
+      doc.text(`Receipt ID: ${input.paymentId}`, { align: 'center' });
+      doc.text('Thank you for your purchase!', { align: 'center' });
+
+      doc.end();
+    });
+  }
 
   generateCertificate(
     input: GenerateCertificateInput,
