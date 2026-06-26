@@ -303,10 +303,12 @@ export async function seedMongo(seededLessons: SeededLesson[]): Promise<void> {
     const videoUrl = TEST_VIDEOS[index % TEST_VIDEOS.length];
     const transcript = TRANSCRIPTS[index % TRANSCRIPTS.length];
 
+    const s3Key = `videos/${videoUrl.substring(videoUrl.lastIndexOf('/') + 1).toLowerCase().replace(/[^a-z0-9._-]/g, '_')}`;
+
     return {
       lessonId: lesson.id, // ← UUID reale da PostgreSQL
       videoUrl,
-      s3Key: `videos/placeholder.mp4`,
+      s3Key,
       transcript,
       attachments: [],
       quiz,
