@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { BraintreeGateway } from 'braintree';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Payment } from 'src/common/entities/payments.entity';
 import { Currency, Status } from 'src/common/entities/enum/payments.enum';
 import { CheckoutDto } from './dto/checkout.dto';
@@ -40,6 +41,7 @@ export class PaymentsService {
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
     private enrollmentsService: EnrollmentsService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async getSubscriptionStatus(userId: string) {
@@ -79,6 +81,101 @@ export class PaymentsService {
       success: true,
       message: 'Subscription cancelled. You will retain access until the end of the current billing period.',
     };
+  }
+
+  async handleWebhook(signature: string, payload: string): Promise<{ received: boolean }> {
+    let notification: any;
+    try {
+      notification = this.gateway.webhookNotification.parse(signature, payload);
+    } catch (err: any) {
+      this.logger.error(`Webhook signature verification failed: ${err.message}`);
+      throw new BadRequestException('Invalid webhook signature');
+    }
+
+    const kind: string = notification.kind;
+    const subscription = notification.subject?.subscription;
+
+    this.logger.log(`Webhook received: ${kind}, subscription=${subscription?.id}`);
+
+    switch (kind) {
+      case 'subscription_charged_successfully':
+        await this.handleSubscriptionChargedSuccessfully(subscription);
+        break;
+      case 'subscription_charged_unsuccessfully':
+        await this.handleSubscriptionChargedUnsuccessfully(subscription);
+        break;
+      case 'subscription_went_past_due':
+        await this.handleSubscriptionWentPastDue(subscription);
+        break;
+      case 'subscription_canceled':
+        await this.handleSubscriptionCanceled(subscription);
+        break;
+      default:
+        this.logger.log(`Unhandled webhook kind: ${kind}`);
+    }
+
+    return { received: true };
+  }
+
+  private async handleSubscriptionChargedSuccessfully(subscription: any) {
+    const subId = subscription.id;
+    const user = await this.userRepository.findOne({ where: { subscription_id: subId } });
+    if (!user) {
+      this.logger.warn(`No user found for subscription ${subId}`);
+      return;
+    }
+    user.plan = SubscriptionPlan.PREMIUM;
+    user.subscription_id = subId;
+    user.subscription_status = 'active';
+    await this.userRepository.save(user);
+    this.logger.log(`Subscription ${subId} charged successfully — user ${user.id} plan renewed`);
+  }
+
+  private async handleSubscriptionChargedUnsuccessfully(subscription: any) {
+    const subId = subscription.id;
+    const user = await this.userRepository.findOne({ where: { subscription_id: subId } });
+    if (!user) {
+      this.logger.warn(`No user found for subscription ${subId}`);
+      return;
+    }
+    this.logger.warn(
+      `Subscription ${subId} charge failed for user ${user.id} (${user.email})`,
+    );
+    this.eventEmitter.emit('subscription.charge_failed', {
+      userId: user.id,
+      email: user.email,
+      name: `${user.first_name} ${user.last_name}`,
+    });
+  }
+
+  private async handleSubscriptionWentPastDue(subscription: any) {
+    const subId = subscription.id;
+    const user = await this.userRepository.findOne({ where: { subscription_id: subId } });
+    if (!user) {
+      this.logger.warn(`No user found for subscription ${subId}`);
+      return;
+    }
+    user.subscription_status = 'past_due';
+    await this.userRepository.save(user);
+    this.logger.log(
+      `Subscription ${subId} went past due — user ${user.id} flagged`,
+    );
+  }
+
+  private async handleSubscriptionCanceled(subscription: any) {
+    const subId = subscription.id;
+    const user = await this.userRepository.findOne({ where: { subscription_id: subId } });
+    if (!user) {
+      this.logger.warn(`No user found for subscription ${subId}`);
+      return;
+    }
+    user.plan = SubscriptionPlan.FREE;
+    user.subscription_id = null;
+    user.subscription_status = null;
+    await this.userRepository.save(user);
+    this.logger.log(
+      `Subscription ${subId} canceled — user ${user.id} downgraded to FREE`,
+    );
   }
 
   async subscribe(userId: string, dto: SubscribeDto) {
@@ -150,6 +247,7 @@ export class PaymentsService {
 
     user.subscription_id = subscriptionId;
     user.plan = dto.plan ?? SubscriptionPlan.PREMIUM;
+    user.subscription_status = 'active';
     await this.userRepository.save(user);
 
     this.logger.log(

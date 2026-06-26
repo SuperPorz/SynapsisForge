@@ -51,6 +51,9 @@ export class User {
   @Column({ type: 'enum', enum: SubscriptionPlan, default: SubscriptionPlan.FREE })
   plan!: SubscriptionPlan;
 
+  @Column({ type: 'varchar', nullable: true })
+  subscription_status!: string | null;
+
   @Column({ type: 'uuid', nullable: true })
   email_verification_token!: string | null;
 

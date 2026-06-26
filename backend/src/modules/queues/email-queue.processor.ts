@@ -1,6 +1,6 @@
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { MailService, SendDailyDigestInput } from '../mail/mail.service';
+import { MailService, SendDailyDigestInput, SendSubscriptionFailedInput } from '../mail/mail.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -30,6 +30,9 @@ export class EmailQueueProcessor extends WorkerHost {
         break;
       case 'test-email':
         await this.mailService.sendTestEmail(job.data.to);
+        break;
+      case 'send-subscription-failed':
+        await this.mailService.sendSubscriptionFailed(job.data);
         break;
       case 'daily-student-digest':
         await this.handleDailyDigest();

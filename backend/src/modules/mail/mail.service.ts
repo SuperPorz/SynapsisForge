@@ -21,6 +21,11 @@ export interface SendDailyDigestInput {
   progress: number;
 }
 
+export interface SendSubscriptionFailedInput {
+  to: string;
+  name: string;
+}
+
 @Injectable()
 export class MailService {
   constructor(
@@ -76,6 +81,12 @@ export class MailService {
         progress: input.progress,
       },
     );
+  }
+
+  async sendSubscriptionFailed(input: SendSubscriptionFailedInput): Promise<void> {
+    await this.send('subscription-failed', input.to, 'Payment Failed — Subscription Issue', {
+      name: input.name,
+    });
   }
 
   async sendTestEmail(to: string): Promise<void> {

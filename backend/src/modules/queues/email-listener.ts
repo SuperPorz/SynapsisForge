@@ -37,4 +37,16 @@ export class EmailListener {
       courseUrl: `http://localhost:4200/courses/${payload.courseId}`,
     });
   }
+
+  @OnEvent('subscription.charge_failed')
+  async handleSubscriptionChargeFailed(payload: {
+    userId: string;
+    email: string | null;
+    name: string;
+  }): Promise<void> {
+    await this.emailQueue.add('send-subscription-failed', {
+      to: payload.email,
+      name: payload.name,
+    });
+  }
 }
