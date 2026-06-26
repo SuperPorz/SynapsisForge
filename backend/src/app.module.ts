@@ -28,6 +28,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { PdfModule } from './modules/pdf/pdf.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { CartModule } from './modules/cart/cart.module';
+import { S3Module } from './modules/s3/s3.module';
 import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
 
 @Module({
@@ -105,6 +106,7 @@ import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
     PdfModule,
     PaymentsModule,
     CartModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [

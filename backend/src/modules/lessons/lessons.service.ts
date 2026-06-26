@@ -14,17 +14,13 @@ import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { LessonProgress, LessonProgressDocument } from '../enrollments/schemas/lesson-progress.schema';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { EnrollmentsService } from '../enrollments/enrollments.service';
-import { S3Client } from '@aws-sdk/client-s3';
+import { S3Service } from '../s3/s3.service';
 import { ConfigService } from '@nestjs/config';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { UpdateLessonProgressDto } from './dto/update-lesson-progress.dto';
 import { Section } from 'src/common/entities/section.entity';
 
 @Injectable()
 export class LessonsService {
-  private s3Client: S3Client;
-
   constructor(
     @InjectModel(LessonContent.name, 'mongo_synapsis')
     private lessonContentModel: Model<LessonContentDocument>,
@@ -43,19 +39,8 @@ export class LessonsService {
 
     private enrollmentsService: EnrollmentsService,
     private configService: ConfigService,
-  ) {
-    // S3Client si istanzia qui, non si inietta
-    this.s3Client = new S3Client({
-      region: this.configService.get<string>('AWS_REGION', ''),
-      credentials: {
-        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID', ''),
-        secretAccessKey: this.configService.get<string>(
-          'AWS_SECRET_ACCESS_KEY',
-          '',
-        ),
-      },
-    });
-  }
+    private s3Service: S3Service,
+  ) { }
 
   // ---------------------------------------------------------------------------
   // PostgreSQL — CRUD lezioni
@@ -233,13 +218,7 @@ export class LessonsService {
     let videoUrl: string;
 
     if (useS3) {
-      const command = new GetObjectCommand({
-        Bucket: this.configService.get<string>('AWS_S3_BUCKET_NAME', ''),
-        Key: content.s3Key,
-      });
-      videoUrl = await getSignedUrl(this.s3Client, command, {
-        expiresIn: 3600,
-      });
+      videoUrl = await this.s3Service.generatePresignedGetUrl(content.s3Key, undefined, 3600);
     } else {
       videoUrl = content.videoUrl;
     }

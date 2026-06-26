@@ -8,6 +8,7 @@ import { LessonsController } from './lessons.controller';
 import { LessonsService } from './lessons.service';
 import { Section } from 'src/common/entities/section.entity';
 import { EnrollmentsModule } from '../enrollments/enrollments.module';
+import { S3Module } from '../s3/s3.module';
 // prettier-ignore
 import { LessonPlayerController } from './lesson-player.controller';
 // prettier-ignore
@@ -25,6 +26,7 @@ import { Enrollment } from 'src/common/entities/enrollments.entity';
       'mongo_synapsis',
     ), // <--- DEVE ESSERE IDENTICO al connectionName in AppModule),
     EnrollmentsModule,
+    S3Module,
   ],
   controllers: [LessonsController, LessonPlayerController],
   providers: [LessonsService],
