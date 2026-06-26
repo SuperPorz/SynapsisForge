@@ -25,6 +25,7 @@ import { seedEnrollments } from './enrollments.seed';
 import { seedRatings } from './ratings.seed';
 import { seedMongo } from './mongo.seed';
 import { seedRedisCounters } from './redis-counter.seed';
+import { seedPayments } from './payments.seed';
 import { Course } from '../../common/entities/courses.entity';
 import { Lesson } from '../../common/entities/lessons.entity';
 
@@ -60,6 +61,9 @@ async function main(): Promise<void> {
 
     console.log('\n⭐ Reviews...');
     await seedRatings(AppDataSource, seededEnrollments);
+
+    console.log('\n💳 Payments...');
+    await seedPayments(AppDataSource, courses, studentProfiles);
 
   } finally {
     await AppDataSource.destroy();

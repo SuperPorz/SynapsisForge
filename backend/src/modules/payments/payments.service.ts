@@ -82,31 +82,47 @@ export class PaymentsService {
 
     return {
       success: true,
-      message: 'Subscription cancelled. You will retain access until the end of the current billing period.',
+      message:
+        'Subscription cancelled. You will retain access until the end of the current billing period.',
     };
   }
 
-  async handleWebhook(signature: string, payload: string): Promise<{ received: boolean }> {
+  async handleWebhook(
+    signature: string,
+    payload: string,
+  ): Promise<{ received: boolean }> {
     let notification: any;
     try {
       notification = this.gateway.webhookNotification.parse(signature, payload);
     } catch (err: any) {
-      this.logger.error(`Webhook signature verification failed: ${err.message}`);
+      this.logger.error(
+        `Webhook signature verification failed: ${err.message}`,
+      );
       throw new BadRequestException('Invalid webhook signature');
     }
 
     const idempotencyKey = createHash('sha256').update(payload).digest('hex');
-    const alreadyProcessed = await this.cacheManager.get(`sf:webhook:idempotent:${idempotencyKey}`);
+    const alreadyProcessed = await this.cacheManager.get(
+      `sf:webhook:idempotent:${idempotencyKey}`,
+    );
     if (alreadyProcessed) {
-      this.logger.log(`Duplicate webhook skipped (hash=${idempotencyKey.slice(0, 12)}...)`);
+      this.logger.log(
+        `Duplicate webhook skipped (hash=${idempotencyKey.slice(0, 12)}...)`,
+      );
       return { received: true };
     }
-    await this.cacheManager.set(`sf:webhook:idempotent:${idempotencyKey}`, true, 3600);
+    await this.cacheManager.set(
+      `sf:webhook:idempotent:${idempotencyKey}`,
+      true,
+      3600,
+    );
 
     const kind: string = notification.kind;
     const subscription = notification.subject?.subscription;
 
-    this.logger.log(`Webhook received: ${kind}, subscription=${subscription?.id}`);
+    this.logger.log(
+      `Webhook received: ${kind}, subscription=${subscription?.id}`,
+    );
 
     switch (kind) {
       case 'subscription_charged_successfully':
@@ -130,7 +146,9 @@ export class PaymentsService {
 
   private async handleSubscriptionChargedSuccessfully(subscription: any) {
     const subId = subscription.id;
-    const user = await this.userRepository.findOne({ where: { subscription_id: subId } });
+    const user = await this.userRepository.findOne({
+      where: { subscription_id: subId },
+    });
     if (!user) {
       this.logger.warn(`No user found for subscription ${subId}`);
       return;
@@ -143,14 +161,25 @@ export class PaymentsService {
     const tx = subscription.transactions?.[0];
     const txId = tx?.id ?? subId;
     const amount = tx?.amount ? parseFloat(tx.amount) : 0;
-    await this.savePayment(user.id, null, amount, Currency.EUR, Status.COMPLETED, txId);
+    await this.savePayment(
+      user.id,
+      null,
+      amount,
+      Currency.EUR,
+      Status.COMPLETED,
+      txId,
+    );
 
-    this.logger.log(`Subscription ${subId} charged successfully — user ${user.id} plan renewed`);
+    this.logger.log(
+      `Subscription ${subId} charged successfully — user ${user.id} plan renewed`,
+    );
   }
 
   private async handleSubscriptionChargedUnsuccessfully(subscription: any) {
     const subId = subscription.id;
-    const user = await this.userRepository.findOne({ where: { subscription_id: subId } });
+    const user = await this.userRepository.findOne({
+      where: { subscription_id: subId },
+    });
     if (!user) {
       this.logger.warn(`No user found for subscription ${subId}`);
       return;
@@ -159,7 +188,14 @@ export class PaymentsService {
     const tx = subscription.transactions?.[0];
     const txId = tx?.id ?? subId;
     const amount = tx?.amount ? parseFloat(tx.amount) : 0;
-    await this.savePayment(user.id, null, amount, Currency.EUR, Status.FAILED, txId);
+    await this.savePayment(
+      user.id,
+      null,
+      amount,
+      Currency.EUR,
+      Status.FAILED,
+      txId,
+    );
 
     this.logger.warn(
       `Subscription ${subId} charge failed for user ${user.id} (${user.email})`,
@@ -173,7 +209,9 @@ export class PaymentsService {
 
   private async handleSubscriptionWentPastDue(subscription: any) {
     const subId = subscription.id;
-    const user = await this.userRepository.findOne({ where: { subscription_id: subId } });
+    const user = await this.userRepository.findOne({
+      where: { subscription_id: subId },
+    });
     if (!user) {
       this.logger.warn(`No user found for subscription ${subId}`);
       return;
@@ -187,7 +225,9 @@ export class PaymentsService {
 
   private async handleSubscriptionCanceled(subscription: any) {
     const subId = subscription.id;
-    const user = await this.userRepository.findOne({ where: { subscription_id: subId } });
+    const user = await this.userRepository.findOne({
+      where: { subscription_id: subId },
+    });
     if (!user) {
       this.logger.warn(`No user found for subscription ${subId}`);
       return;
@@ -210,10 +250,16 @@ export class PaymentsService {
     }
 
     if (user.plan === SubscriptionPlan.PREMIUM && user.subscription_id) {
-      throw new ConflictException('User already has an active premium subscription');
+      throw new ConflictException(
+        'User already has an active premium subscription',
+      );
     }
 
-    let customerResult: { success: boolean; customer?: { id: string }; message?: string };
+    let customerResult: {
+      success: boolean;
+      customer?: { id: string };
+      message?: string;
+    };
     try {
       customerResult = await this.gateway.customer.create({
         firstName: user.first_name,
@@ -226,12 +272,18 @@ export class PaymentsService {
     }
 
     if (!customerResult.success) {
-      throw new BadRequestException(`Customer creation failed: ${customerResult.message}`);
+      throw new BadRequestException(
+        `Customer creation failed: ${customerResult.message}`,
+      );
     }
 
     const customerId = customerResult.customer!.id;
 
-    let paymentMethodResult: { success: boolean; paymentMethod?: { token: string }; message?: string };
+    let paymentMethodResult: {
+      success: boolean;
+      paymentMethod?: { token: string };
+      message?: string;
+    };
     try {
       paymentMethodResult = await this.gateway.paymentMethod.create({
         customerId,
@@ -239,16 +291,24 @@ export class PaymentsService {
       });
     } catch (err: any) {
       this.logger.error(`Braintree payment method error: ${err.message}`);
-      throw new BadRequestException(`Payment method creation error: ${err.message}`);
+      throw new BadRequestException(
+        `Payment method creation error: ${err.message}`,
+      );
     }
 
     if (!paymentMethodResult.success) {
-      throw new BadRequestException(`Payment method creation failed: ${paymentMethodResult.message}`);
+      throw new BadRequestException(
+        `Payment method creation failed: ${paymentMethodResult.message}`,
+      );
     }
 
     const paymentToken = paymentMethodResult.paymentMethod!.token;
 
-    let subscriptionResult: { success: boolean; subscription?: { id: string }; message?: string };
+    let subscriptionResult: {
+      success: boolean;
+      subscription?: { id: string };
+      message?: string;
+    };
     try {
       subscriptionResult = await this.gateway.subscription.create({
         paymentMethodToken: paymentToken,
@@ -256,7 +316,9 @@ export class PaymentsService {
       });
     } catch (err: any) {
       this.logger.error(`Braintree subscription SDK error: ${err.message}`);
-      throw new BadRequestException(`Subscription creation error: ${err.message}`);
+      throw new BadRequestException(
+        `Subscription creation error: ${err.message}`,
+      );
     }
 
     if (!subscriptionResult.success) {
@@ -416,7 +478,11 @@ export class PaymentsService {
   ) {
     const total = items.reduce((sum, i) => sum + i.price, 0);
 
-    let transactionResult: { success: boolean; transaction?: { id: string }; message?: string };
+    let transactionResult: {
+      success: boolean;
+      transaction?: { id: string };
+      message?: string;
+    };
     try {
       transactionResult = await this.gateway.transaction.sale({
         amount: total.toString(),
@@ -426,7 +492,14 @@ export class PaymentsService {
     } catch (err: any) {
       this.logger.error(`Braintree SDK error: ${err.message}`);
       for (const item of items) {
-        await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.FAILED, null);
+        await this.savePayment(
+          userId,
+          item.courseId,
+          item.price,
+          Currency.EUR,
+          Status.FAILED,
+          null,
+        );
       }
       throw new BadRequestException(`Payment processing error: ${err.message}`);
     }
@@ -436,10 +509,22 @@ export class PaymentsService {
       const failedTxId = transactionResult.transaction?.id ?? null;
       this.logger.warn(`Braintree declined: ${btError} (tx=${failedTxId})`);
       for (const item of items) {
-        await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.FAILED, failedTxId);
+        await this.savePayment(
+          userId,
+          item.courseId,
+          item.price,
+          Currency.EUR,
+          Status.FAILED,
+          failedTxId,
+        );
       }
-      if (btError.includes('processor declined') || btError.includes('gateway rejected')) {
-        throw new BadRequestException('Card was declined. Please try a different payment method.');
+      if (
+        btError.includes('processor declined') ||
+        btError.includes('gateway rejected')
+      ) {
+        throw new BadRequestException(
+          'Card was declined. Please try a different payment method.',
+        );
       }
       throw new BadRequestException(`Payment failed: ${btError}`);
     }
@@ -448,11 +533,21 @@ export class PaymentsService {
     const transactionId = transaction.id;
     const paymentMethod = (transaction as any).paymentInstrumentType ?? null;
     for (const item of items) {
-      await this.savePayment(userId, item.courseId, item.price, Currency.EUR, Status.COMPLETED, transactionId, paymentMethod);
+      await this.savePayment(
+        userId,
+        item.courseId,
+        item.price,
+        Currency.EUR,
+        Status.COMPLETED,
+        transactionId,
+        paymentMethod,
+      );
       await this.enrollmentsService.enroll({ userId, courseId: item.courseId });
     }
 
-    this.logger.log(`Cart checkout completed: user=${userId}, items=${items.length}, tx=${transactionId}`);
+    this.logger.log(
+      `Cart checkout completed: user=${userId}, items=${items.length}, tx=${transactionId}`,
+    );
 
     return {
       success: true,
@@ -465,7 +560,12 @@ export class PaymentsService {
     userId: string,
     page = 1,
     limit = 20,
-  ): Promise<{ data: PaymentHistoryItem[]; total: number; page: number; limit: number }> {
+  ): Promise<{
+    data: PaymentHistoryItem[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     const [rows, total] = await this.paymentRepository.findAndCount({
       where: { user: { id: userId } },
       relations: ['course'],
@@ -475,7 +575,11 @@ export class PaymentsService {
     });
 
     return {
-      data: rows.map((r) => plainToInstance(PaymentHistoryItem, r, { excludeExtraneousValues: true })),
+      data: rows.map((r) =>
+        plainToInstance(PaymentHistoryItem, r, {
+          excludeExtraneousValues: true,
+        }),
+      ),
       total,
       page,
       limit,

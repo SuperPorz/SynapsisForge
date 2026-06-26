@@ -14,7 +14,14 @@ import { EnrollmentsModule } from '../enrollments/enrollments.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Payment, Course, StudentProfile, Enrollment, CartItem, User]),
+    TypeOrmModule.forFeature([
+      Payment,
+      Course,
+      StudentProfile,
+      Enrollment,
+      CartItem,
+      User,
+    ]),
     EnrollmentsModule,
   ],
   controllers: [PaymentsController],

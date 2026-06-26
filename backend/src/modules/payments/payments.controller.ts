@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Req, HttpCode, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  HttpCode,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { PaymentsService } from './payments.service';
@@ -62,6 +70,9 @@ export class PaymentsController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Handle Braintree webhook notifications' })
   async handleWebhook(@Body() body: Record<string, any>) {
-    return this.paymentsService.handleWebhook(body.bt_signature, body.bt_payload);
+    return this.paymentsService.handleWebhook(
+      body.bt_signature,
+      body.bt_payload,
+    );
   }
 }
