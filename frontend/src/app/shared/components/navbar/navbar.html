@@ -15,7 +15,7 @@
           <a routerLink="/dashboard" routerLinkActive="text-fg-brand font-medium" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
             Dashboard
           </a>
-          <a routerLink="/subscribe" routerLinkActive="ring-2 ring-fg-brand" class="rounded-lg bg-fg-brand px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-fg-brand-strong">
+          <a [routerLink]="auth.plan() === 'PREMIUM' ? '/dashboard/subscription' : '/subscribe'" routerLinkActive="ring-2 ring-fg-brand" class="rounded-lg bg-fg-brand px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-fg-brand-strong">
             Premium
           </a>
         }
@@ -83,7 +83,7 @@
             <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
             Dashboard
           </a>
-          <a (click)="_mobileMenuOpen.set(false)" routerLink="/subscribe" routerLinkActive="text-fg-brand font-semibold" class="flex items-center gap-3 px-5 py-4 text-base font-semibold text-fg-brand transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+          <a (click)="_mobileMenuOpen.set(false)" [routerLink]="auth.plan() === 'PREMIUM' ? '/dashboard/subscription' : '/subscribe'" routerLinkActive="text-fg-brand font-semibold" class="flex items-center gap-3 px-5 py-4 text-base font-semibold text-fg-brand transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
             <svg class="h-5 w-5 shrink-0 text-fg-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
             Premium
           </a>

@@ -26,6 +26,10 @@ export class Subscription implements OnInit, OnDestroy {
   private dropinInstance: dropin.Dropin | null = null;
 
   ngOnInit() {
+    if (this.auth.plan() === 'PREMIUM') {
+      this.router.navigate(['/dashboard/subscription']);
+      return;
+    }
     this.initDropin();
   }
 

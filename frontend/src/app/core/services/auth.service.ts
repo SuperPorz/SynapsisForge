@@ -15,6 +15,7 @@ interface JwtPayload {
   sub: string;
   email: string;
   role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
+  plan?: 'FREE' | 'PREMIUM';
   exp: number;
 }
 
@@ -193,10 +194,13 @@ export class AuthService {
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp <= now) return null; // token scaduto: non idratare lo stato
 
+    this._plan.set(payload.plan ?? 'FREE');
+
     return {
       id: payload.sub,
       email: payload.email,
       role: payload.role,
+      plan: payload.plan,
     };
   }
 

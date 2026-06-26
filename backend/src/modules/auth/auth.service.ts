@@ -25,6 +25,7 @@ export interface JwtPayload {
   sub: string;
   email: string | null;
   role: string;
+  plan: string;
 }
 
 export interface AuthTokens {
@@ -313,6 +314,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      plan: user.plan,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
