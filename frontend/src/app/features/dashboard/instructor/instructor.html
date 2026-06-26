@@ -90,7 +90,7 @@
                       @if (course.price === 0) {
                         Free
                       } @else {
-                        ${{ course.price.toFixed(2) }}
+                        ${{ (+course.price).toFixed(2) }}
                       }
                     </td>
                     <td class="hidden sm:table-cell whitespace-nowrap px-3 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300">

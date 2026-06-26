@@ -20,7 +20,15 @@ export class Course {
   @Column()
   description!: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (v: number) => v,
+      from: (v: string | null) => (v ? parseFloat(v) : 0),
+    },
+  })
   price!: number;
 
   @Column({ type: 'enum', enum: Status, default: Status.DRAFT })
