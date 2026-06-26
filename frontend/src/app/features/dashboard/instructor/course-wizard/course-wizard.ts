@@ -5,10 +5,11 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment.develop';
 import { CourseService, CreateCoursePayload, CreateLessonContentPayload } from '../../../../core/services/courses.service';
+import { VideoUpload } from '../../../../shared/components/video-upload/video-upload';
 
 @Component({
   selector: 'app-course-wizard',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, VideoUpload],
   templateUrl: './course-wizard.html',
   styleUrl: './course-wizard.css',
 })
@@ -66,7 +67,8 @@ export class CourseWizard {
           this.sections.set(sections);
           this.sectionIds = course.sections.map((s) => s.id);
           const lessonsMap: Record<number, { title: string; order: number; duration_seconds: number }[]> = {};
-          const contentsMap: Record<number, { videoUrl: string; quiz: { question: string; options: { label: string; text: string }[]; correctAnswer: string; explanation: string }[] }> = {};
+          const contentsMap: Record<number, { videoUrl: string; s3Key: string; quiz: { question: string; options: { label: string; text: string }[]; correctAnswer: string; explanation: string }[] }> = {};
+          const ids: string[] = [];
           let globalIdx = 0;
           for (let si = 0; si < course.sections.length; si++) {
             const sec = course.sections[si];
@@ -76,10 +78,13 @@ export class CourseWizard {
               duration_seconds: l.duration_seconds,
             }));
             for (let li = 0; li < (sec.lessons || []).length; li++) {
-              contentsMap[globalIdx] = { videoUrl: '', quiz: [] };
+              const l = sec.lessons![li];
+              ids.push(l.id);
+              contentsMap[globalIdx] = { videoUrl: '', s3Key: '', quiz: [] };
               globalIdx++;
             }
           }
+          this.lessonIds = ids;
           this.lessons.set(lessonsMap);
           this.contents.set(contentsMap);
         }
@@ -153,6 +158,7 @@ export class CourseWizard {
       number,
       {
         videoUrl: string;
+        s3Key: string;
         quiz: {
           question: string;
           options: { label: string; text: string }[];
@@ -272,7 +278,7 @@ export class CourseWizard {
 
   addQuizItem(lessonIndex: number) {
     this.contents.update((c) => {
-      const current = c[lessonIndex] || { videoUrl: '', quiz: [] };
+      const current = c[lessonIndex] || { videoUrl: '', s3Key: '', quiz: [] };
       return {
         ...c,
         [lessonIndex]: {
@@ -306,6 +312,10 @@ export class CourseWizard {
         },
       };
     });
+  }
+
+  getLessonId(globalIdx: number): string {
+    return this.lessonIds[globalIdx] ?? '';
   }
 
   updateQuizOption(
@@ -349,9 +359,18 @@ export class CourseWizard {
 
   setVideoUrl(lessonIndex: number, url: string) {
     this.contents.update((c) => {
-      const current = c[lessonIndex] || { videoUrl: '', quiz: [] };
+      const current = c[lessonIndex] || { videoUrl: '', s3Key: '', quiz: [] };
       return { ...c, [lessonIndex]: { ...current, videoUrl: url } };
     });
+  }
+
+  setVideoData(lessonIndex: number, publicUrl: string) {
+    if (publicUrl) {
+      this.contents.update((c) => {
+        const current = c[lessonIndex] || { videoUrl: '', s3Key: '', quiz: [] };
+        return { ...c, [lessonIndex]: { ...current, videoUrl: publicUrl } };
+      });
+    }
   }
 
   async nextStep() {

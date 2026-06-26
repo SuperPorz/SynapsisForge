@@ -204,8 +204,15 @@
 
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Video URL</label>
-                <input type="url" [value]="contents()[globalIdx]?.videoUrl || ''" (input)="setVideoUrl(globalIdx, $any($event.target).value)" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="https://cdn.example.com/video.mp4" />
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Video</label>
+                @if (courseId() && getLessonId(globalIdx)) {
+                  <app-video-upload
+                    [courseId]="courseId()!"
+                    [lessonId]="getLessonId(globalIdx)"
+                    [currentVideoUrl]="contents()[globalIdx]?.videoUrl || ''"
+                    (uploaded)="setVideoData(globalIdx, $event)"
+                  />
+                }
               </div>
 
               <div>

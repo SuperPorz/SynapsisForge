@@ -67,3 +67,20 @@ export interface QuizAnswer {
   selectedLabel: string;
   correct: boolean;
 }
+
+export interface PresignedUrlResponse {
+  uploadUrl: string;
+  key: string;
+  publicUrl: string;
+}
+
+export interface LessonContentModel {
+  videoUrl: string;
+  s3Key: string;
+  quiz: {
+    question: string;
+    options: { label: string; text: string }[];
+    correctAnswer: string;
+    explanation: string;
+  }[];
+}
