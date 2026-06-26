@@ -1,0 +1,18 @@
+<div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+  <div class="flex flex-col items-start gap-8 md:flex-row md:items-center">
+    <div class="shrink-0">
+      <p class="text-3xl font-bold text-heading">Powered By</p>
+      <p class="mt-1 text-sm text-fg-muted">Technologies that make Synapsis Forge possible</p>
+    </div>
+    <div class="tech-carousel relative min-w-0 flex-1 overflow-hidden">
+      <div class="tech-carousel-track flex items-center gap-10">
+        @for (tech of duplicatedTechs; track $index) {
+          <div class="flex shrink-0 flex-col items-center gap-2">
+            <img [src]="tech.icon" [alt]="tech.name" class="h-10 w-10" loading="lazy" />
+            <span class="whitespace-nowrap text-xs text-fg-muted">{{ tech.name }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

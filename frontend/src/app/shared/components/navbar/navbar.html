@@ -1,18 +1,18 @@
-<header class="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-gray-700 dark:bg-gray-900/95">
+<header class="sticky top-0 z-50 border-b border-gray-200 bg-gray-200/95 backdrop-blur supports-[backdrop-filter]:bg-gray-200/80 dark:border-gray-700 dark:bg-gray-900/95">
     <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
     <div class="flex items-center gap-10">
       <a routerLink="/" class="flex items-center">
         <img src="/brand_identity.png" alt="Synapsis Forge" class="h-14 w-auto" />
       </a>
       <nav class="hidden items-center gap-1 md:flex">
-        <a routerLink="/" routerLinkActive="text-fg-brand font-medium" [routerLinkActiveOptions]="{exact:true}" class="rounded-lg px-4 py-2 text-base text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+        <a routerLink="/" routerLinkActive="text-fg-brand font-medium" [routerLinkActiveOptions]="{exact:true}" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
           Home
         </a>
-        <a routerLink="/courses" routerLinkActive="text-fg-brand font-medium" class="rounded-lg px-4 py-2 text-base text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+        <a routerLink="/courses" routerLinkActive="text-fg-brand font-medium" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
           Courses
         </a>
         @if (auth.isAuthenticated()) {
-          <a routerLink="/dashboard" routerLinkActive="text-fg-brand font-medium" class="rounded-lg px-4 py-2 text-base text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+          <a routerLink="/dashboard" routerLinkActive="text-fg-brand font-medium" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
             Dashboard
           </a>
           <a routerLink="/subscribe" routerLinkActive="ring-2 ring-fg-brand" class="rounded-lg bg-fg-brand px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-fg-brand-strong">
@@ -20,7 +20,7 @@
           </a>
         }
         @if (auth.role() === 'ADMIN') {
-          <a routerLink="/admin" routerLinkActive="text-fg-brand font-medium" class="rounded-lg px-4 py-2 text-base text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+          <a routerLink="/admin" routerLinkActive="text-fg-brand font-medium" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
             Admin
           </a>
         }
@@ -29,12 +29,12 @@
     <div class="flex items-center gap-3">
       <!-- Cart icon -->
       @if (auth.isAuthenticated()) {
-        <a routerLink="/cart" class="relative rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/cart" class="relative rounded-lg bg-orange-500 p-2 text-black transition-colors hover:bg-orange-600">
+          <svg class="h-6 w-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
           </svg>
           @if (cart.count() > 0) {
-            <span class="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-fg-brand px-1 text-[10px] font-bold leading-none text-white">
+            <span class="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-black px-1 text-[10px] font-bold leading-none text-white">
               {{ cart.count() }}
             </span>
           }
@@ -45,13 +45,7 @@
         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
 
-      <button (click)="theme.toggle()" class="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" [attr.aria-label]="theme.isDark() ? 'Enable light mode' : 'Enable dark mode'">
-        @if (theme.isDark()) {
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-        } @else {
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-        }
-      </button>
+
       @if (auth.isAuthenticated()) {
         <span class="hidden text-base text-gray-500 md:inline dark:text-gray-400">{{ auth.currentUser()?.email }}</span>
         <a routerLink="/dashboard/profile" class="hidden rounded-lg border border-fg-brand/30 px-4 py-2 text-base font-medium text-fg-brand transition-colors hover:bg-fg-brand hover:text-white md:inline-block dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-fg-brand dark:hover:text-white">
