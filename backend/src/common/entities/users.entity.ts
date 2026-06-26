@@ -48,7 +48,11 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   subscription_id!: string | null;
 
-  @Column({ type: 'enum', enum: SubscriptionPlan, default: SubscriptionPlan.FREE })
+  @Column({
+    type: 'enum',
+    enum: SubscriptionPlan,
+    default: SubscriptionPlan.FREE,
+  })
   plan!: SubscriptionPlan;
 
   @Column({ type: 'varchar', nullable: true })

@@ -1,4 +1,11 @@
-import { Controller, Get, Patch, Param, ParseUUIDPipe, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  ParseUUIDPipe,
+  Req,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -36,11 +43,11 @@ export class CertificatesController {
   // ─── GET /certificates/my ─────────────────────────────────────────────────
   @ApiBearerAuth()
   @Get('my')
-  @ApiOperation({ summary: "Recupera tutti i certificati dell'utente autenticato" })
+  @ApiOperation({
+    summary: "Recupera tutti i certificati dell'utente autenticato",
+  })
   @ApiResponse({ status: 200, description: 'Lista dei certificati' })
-  findMy(
-    @Req() req: Request & { user: { id: string } },
-  ) {
+  findMy(@Req() req: Request & { user: { id: string } }) {
     const userId = req.user['id'];
     return this.certificatesService.findByUser(userId);
   }

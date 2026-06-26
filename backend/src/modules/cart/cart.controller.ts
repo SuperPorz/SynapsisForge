@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Delete, Body, Param, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Req,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CartService } from './cart.service';
 import { PaymentsService } from '../payments/payments.service';
@@ -46,11 +54,20 @@ export class CartController {
   }
 
   @Post('checkout')
-  @ApiOperation({ summary: 'Checkout all items in cart with single Braintree payment' })
+  @ApiOperation({
+    summary: 'Checkout all items in cart with single Braintree payment',
+  })
   async checkout(@Req() req: any, @Body() dto: CartCheckoutDto) {
     const { items } = await this.cartService.validateForCheckout(req.user.id);
-    const courseItems = items.map((i) => ({ courseId: i.course.id, price: Number(i.course.price) }));
-    const result = await this.paymentsService.cartCheckout(req.user.id, courseItems, dto.nonce);
+    const courseItems = items.map((i) => ({
+      courseId: i.course.id,
+      price: Number(i.course.price),
+    }));
+    const result = await this.paymentsService.cartCheckout(
+      req.user.id,
+      courseItems,
+      dto.nonce,
+    );
     await this.cartService.clearCart(req.user.id);
     return result;
   }

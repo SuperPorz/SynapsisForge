@@ -12,7 +12,13 @@ import { diskStorage } from 'multer';
 import { extname, join, resolve } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { randomUUID } from 'crypto';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/entities/enum/users.enum';
@@ -90,11 +96,16 @@ export class UploadController {
   @Post('presigned-url')
   @Roles(UserRole.INSTRUCTOR, UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Generate a presigned PUT URL for video upload to S3' })
+  @ApiOperation({
+    summary: 'Generate a presigned PUT URL for video upload to S3',
+  })
   async generatePresignedUrl(@Body() dto: PresignedUrlDto) {
     const ext = extname(dto.fileName);
     const key = `videos/${randomUUID()}${ext}`;
-    const uploadUrl = await this.s3Service.generatePresignedPutUrl(key, dto.contentType);
+    const uploadUrl = await this.s3Service.generatePresignedPutUrl(
+      key,
+      dto.contentType,
+    );
     const bucket = process.env.S3_MEDIA_BUCKET ?? 'synapsisforge-media';
     const region = process.env.AWS_REGION ?? 'eu-south-1';
     const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;

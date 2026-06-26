@@ -151,7 +151,9 @@ export class LessonsController {
   }
 
   @Roles(UserRole.INSTRUCTOR)
-  @ApiOperation({ summary: 'Update S3 key for a lesson video (instructor only)' })
+  @ApiOperation({
+    summary: 'Update S3 key for a lesson video (instructor only)',
+  })
   @ApiResponse({ status: 200, description: 'S3 key updated successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson content not found.' })
   @Patch(':id/s3-key')

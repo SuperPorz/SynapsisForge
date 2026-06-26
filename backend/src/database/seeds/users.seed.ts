@@ -186,9 +186,7 @@ export async function seedUsers(ds: DataSource): Promise<SeededUsers> {
     );
     instructorProfiles.push(profile);
     // Create StudentProfile so instructors can purchase courses
-    await studentRepo.save(
-      studentRepo.create({ userId: user.id, user }),
-    );
+    await studentRepo.save(studentRepo.create({ userId: user.id, user }));
     const tag = data.isVerified ? '✅' : '⚠️ (unverified)';
     console.log(`  ${tag} instructor: ${data.email}`);
   }

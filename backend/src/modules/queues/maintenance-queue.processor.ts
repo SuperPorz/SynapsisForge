@@ -23,14 +23,18 @@ export class MaintenanceQueueProcessor extends WorkerHost {
 
   @OnWorkerEvent('failed')
   async onFailed(job: Job | undefined, error: Error) {
-    this.logger.error(`Maintenance job ${job?.id} (${job?.name}) failed: ${error.message}`);
+    this.logger.error(
+      `Maintenance job ${job?.id} (${job?.name}) failed: ${error.message}`,
+    );
   }
 
   private async handleCleanupExpiredTokens() {
     this.logger.log('Starting weekly cleanup of expired tokens…');
 
     try {
-      const client = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
+      const client = createClient({
+        url: process.env.REDIS_URL || 'redis://localhost:6379',
+      });
       await client.connect();
 
       const pattern = 'sf:session:*';
@@ -38,7 +42,10 @@ export class MaintenanceQueueProcessor extends WorkerHost {
       let totalRemoved = 0;
 
       do {
-        const result = await client.scan(cursor, { MATCH: pattern, COUNT: 100 });
+        const result = await client.scan(cursor, {
+          MATCH: pattern,
+          COUNT: 100,
+        });
         cursor = result.cursor;
         for (const key of result.keys) {
           const ttl = await client.ttl(key);

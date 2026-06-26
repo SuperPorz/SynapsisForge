@@ -40,7 +40,7 @@ export class LessonsService {
     private enrollmentsService: EnrollmentsService,
     private configService: ConfigService,
     private s3Service: S3Service,
-  ) { }
+  ) {}
 
   // ---------------------------------------------------------------------------
   // PostgreSQL — CRUD lezioni
@@ -234,7 +234,11 @@ export class LessonsService {
     let videoUrl: string;
 
     if (useS3) {
-      videoUrl = await this.s3Service.generatePresignedGetUrl(content.s3Key, undefined, 3600);
+      videoUrl = await this.s3Service.generatePresignedGetUrl(
+        content.s3Key,
+        undefined,
+        3600,
+      );
     } else {
       videoUrl = content.videoUrl;
     }
@@ -324,6 +328,6 @@ export class LessonsService {
       await this.enrollmentsService.updateProgress(enrollmentId);
     }
 
-    return progress.toObject() as LessonProgressDocument;
+    return progress.toObject();
   }
 }

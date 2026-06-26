@@ -25,9 +25,16 @@ export interface GenerateCertificateInput {
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
 
-  generateReceipt(input: GenerateReceiptInput, outputPath: string): Promise<void> {
+  generateReceipt(
+    input: GenerateReceiptInput,
+    outputPath: string,
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ layout: 'portrait', size: 'A4', margin: 40 });
+      const doc = new PDFDocument({
+        layout: 'portrait',
+        size: 'A4',
+        margin: 40,
+      });
       const stream = fs.createWriteStream(outputPath);
 
       stream.on('finish', () => resolve());
@@ -53,14 +60,32 @@ export class PdfService {
       const valueStyle = { font: 'Helvetica', size: 10, color: '#6b7280' };
 
       const fieldY = (y: number, label: string, value: string) => {
-        doc.font('Helvetica-Bold').fontSize(10).fillColor('#374151').text(label, leftX, y);
-        doc.font('Helvetica').fontSize(10).fillColor('#6b7280').text(value, rightX, y);
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(10)
+          .fillColor('#374151')
+          .text(label, leftX, y);
+        doc
+          .font('Helvetica')
+          .fontSize(10)
+          .fillColor('#6b7280')
+          .text(value, rightX, y);
       };
 
       let y = doc.y + 5;
       fieldY(y, 'Transaction ID:', input.transactionId);
       y += 18;
-      fieldY(y, 'Date:', input.createdAt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
+      fieldY(
+        y,
+        'Date:',
+        input.createdAt.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      );
       y += 18;
       fieldY(y, 'Customer:', input.customerName);
       y += 18;
@@ -92,7 +117,11 @@ export class PdfService {
     outputPath: string,
   ): Promise<void> {
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ layout: 'landscape', size: 'A4', margin: 0 });
+      const doc = new PDFDocument({
+        layout: 'landscape',
+        size: 'A4',
+        margin: 0,
+      });
       const stream = fs.createWriteStream(outputPath);
 
       stream.on('finish', () => resolve());
@@ -104,10 +133,16 @@ export class PdfService {
       const ph = doc.page.height;
 
       // Outer border (indigo)
-      doc.rect(10, 10, pw - 20, ph - 20).lineWidth(2).stroke('#6366f1');
+      doc
+        .rect(10, 10, pw - 20, ph - 20)
+        .lineWidth(2)
+        .stroke('#6366f1');
 
       // Inner border (lighter indigo)
-      doc.rect(13, 13, pw - 26, ph - 26).lineWidth(0.5).stroke('#e0e7ff');
+      doc
+        .rect(13, 13, pw - 26, ph - 26)
+        .lineWidth(0.5)
+        .stroke('#e0e7ff');
 
       // Top bar (indigo)
       doc.rect(10, 10, pw - 20, 6).fill('#6366f1');
@@ -121,7 +156,9 @@ export class PdfService {
 
       // Subtitle
       doc.font('Helvetica').fontSize(14).fillColor('#6b7280');
-      doc.text('This certificate is awarded to', pw / 2, 75, { align: 'center' });
+      doc.text('This certificate is awarded to', pw / 2, 75, {
+        align: 'center',
+      });
 
       // Student name
       doc.font('Helvetica-Bold').fontSize(28).fillColor('#1f2937');
@@ -129,7 +166,9 @@ export class PdfService {
 
       // Description
       doc.font('Helvetica').fontSize(14).fillColor('#6b7280');
-      doc.text('for successfully completing the course', pw / 2, 115, { align: 'center' });
+      doc.text('for successfully completing the course', pw / 2, 115, {
+        align: 'center',
+      });
 
       // Course title
       doc.font('Helvetica-Bold').fontSize(22).fillColor('#6366f1');

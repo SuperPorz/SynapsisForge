@@ -85,12 +85,20 @@ export class CacheService {
 
     const keysByPrefix: Record<string, number> = {};
     let cursor = '0';
-    const prefixes = ['sf:cache:', 'sf:rate:', 'sf:enrollment-count:', 'keyv::'];
+    const prefixes = [
+      'sf:cache:',
+      'sf:rate:',
+      'sf:enrollment-count:',
+      'keyv::',
+    ];
     for (const prefix of prefixes) {
       let count = 0;
       cursor = '0';
       do {
-        const result = await client.scan(cursor, { MATCH: `${prefix}*`, COUNT: 500 });
+        const result = await client.scan(cursor, {
+          MATCH: `${prefix}*`,
+          COUNT: 500,
+        });
         cursor = result.cursor;
         count += (result.keys as string[]).length;
       } while (cursor !== '0');
@@ -98,14 +106,21 @@ export class CacheService {
     }
 
     return {
-      hit_rate: hitRate !== null ? parseFloat((hitRate * 100).toFixed(2)) : null,
+      hit_rate:
+        hitRate !== null ? parseFloat((hitRate * 100).toFixed(2)) : null,
       used_memory_human: parseInfo(infoMemory, 'used_memory_human'),
       used_memory_peak_human: parseInfo(infoMemory, 'used_memory_peak_human'),
       total_keys: dbSize,
       keys_by_prefix: keysByPrefix,
       evicted_keys: parseInt(parseInfo(allInfo, 'evicted_keys'), 10),
-      connected_clients: parseInt(parseInfo(infoClients, 'connected_clients'), 10),
-      uptime_in_seconds: parseInt(parseInfo(infoServer, 'uptime_in_seconds'), 10),
+      connected_clients: parseInt(
+        parseInfo(infoClients, 'connected_clients'),
+        10,
+      ),
+      uptime_in_seconds: parseInt(
+        parseInfo(infoServer, 'uptime_in_seconds'),
+        10,
+      ),
       maxmemory_policy: parseInfo(infoMemory, 'maxmemory_policy'),
       maxmemory_human: parseInfo(infoMemory, 'maxmemory_human') || '0',
     };
@@ -122,7 +137,10 @@ export class CacheService {
     const keysToDelete: string[] = [];
 
     do {
-      const result = await client.scan(cursor, { MATCH: fullPattern, COUNT: 100 });
+      const result = await client.scan(cursor, {
+        MATCH: fullPattern,
+        COUNT: 100,
+      });
       cursor = result.cursor;
       const found = result.keys as string[];
       keysToDelete.push(
@@ -138,7 +156,9 @@ export class CacheService {
   async invalidateCourse(id: string, slug?: string): Promise<void> {
     await Promise.all([
       this.cacheManager.del(`sf:cache:course:${id}`),
-      slug ? this.cacheManager.del(`sf:cache:course:slug:${slug}`) : Promise.resolve(),
+      slug
+        ? this.cacheManager.del(`sf:cache:course:slug:${slug}`)
+        : Promise.resolve(),
       this.invalidateByPattern('sf:cache:courses:list:*'),
     ]);
   }

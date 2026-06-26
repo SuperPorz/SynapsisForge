@@ -50,7 +50,12 @@ export class CertificateQueueProcessor extends WorkerHost {
     // 3. Generate PDF
     const studentName = `${enrollment.student.user.first_name} ${enrollment.student.user.last_name}`;
     const fileName = `certificate-${saved.id}.pdf`;
-    const outputPath = path.join(process.cwd(), 'uploads', 'certificates', fileName);
+    const outputPath = path.join(
+      process.cwd(),
+      'uploads',
+      'certificates',
+      fileName,
+    );
 
     await this.pdfService.generateCertificate(
       {
@@ -72,6 +77,8 @@ export class CertificateQueueProcessor extends WorkerHost {
 
   @OnWorkerEvent('failed')
   async onFailed(job: Job | undefined, error: Error) {
-    this.logger.error(`Certificate job ${job?.id} (enrollment: ${(job?.data as any)?.enrollmentId}) failed after ${job?.attemptsMade} attempts: ${error.message}`);
+    this.logger.error(
+      `Certificate job ${job?.id} (enrollment: ${job?.data?.enrollmentId}) failed after ${job?.attemptsMade} attempts: ${error.message}`,
+    );
   }
 }

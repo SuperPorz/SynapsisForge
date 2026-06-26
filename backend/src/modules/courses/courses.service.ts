@@ -243,7 +243,7 @@ export class CoursesService {
 
   async delete(id: string, userId: string): Promise<{ message: string }> {
     const course = await this.verifyOwnership(id, userId);
-    await this.coursesRepo.softDelete({ id });
+    await this.coursesRepo.delete({ id });
     await this.cacheService.invalidateCourse(id);
     return {
       message: `Course "${course.title}" has been deactivated successfully`,

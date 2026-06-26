@@ -30,8 +30,12 @@ export class CartService {
     private readonly cacheManager: Cache,
   ) {}
 
-  private cartCacheKey(userId: string) { return `sf:cart:${userId}`; }
-  private cartCountKey(userId: string) { return `sf:cart:count:${userId}`; }
+  private cartCacheKey(userId: string) {
+    return `sf:cart:${userId}`;
+  }
+  private cartCountKey(userId: string) {
+    return `sf:cart:count:${userId}`;
+  }
 
   private async invalidateCache(userId: string) {
     await Promise.all([
@@ -51,7 +55,10 @@ export class CartService {
       order: { added_at: 'ASC' },
     });
 
-    const total = items.reduce((sum, item) => sum + Number(item.course.price), 0);
+    const total = items.reduce(
+      (sum, item) => sum + Number(item.course.price),
+      0,
+    );
     const result = {
       items: items.map((item) => ({
         id: item.id,
@@ -82,7 +89,9 @@ export class CartService {
   }
 
   async addItem(userId: string, courseId: string) {
-    const course = await this.courseRepository.findOne({ where: { id: courseId } });
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId },
+    });
     if (!course) throw new NotFoundException(`Course ${courseId} not found`);
     if (course.status !== CourseStatus.PUBLISHED) {
       throw new BadRequestException('Course is not available for purchase');
@@ -94,8 +103,8 @@ export class CartService {
     if (existing) throw new ConflictException('Course already in cart');
 
     const item = this.cartRepository.create({
-      user: { id: userId } as any,
-      course: { id: courseId } as any,
+      user: { id: userId },
+      course: { id: courseId },
     });
     await this.cartRepository.save(item);
     await this.invalidateCache(userId);
@@ -123,7 +132,8 @@ export class CartService {
       where: { userId },
       relations: ['user'],
     });
-    if (!studentProfile) throw new NotFoundException('Student profile not found');
+    if (!studentProfile)
+      throw new NotFoundException('Student profile not found');
 
     const items = await this.cartRepository.find({
       where: { user: { id: userId } },
@@ -133,17 +143,24 @@ export class CartService {
 
     for (const item of items) {
       if (item.course.status !== CourseStatus.PUBLISHED) {
-        throw new BadRequestException(`"${item.course.title}" is no longer available`);
+        throw new BadRequestException(
+          `"${item.course.title}" is no longer available`,
+        );
       }
       const existing = await this.enrollmentRepository.findOne({
         where: { student: { userId }, course: { id: item.course.id } },
       });
       if (existing) {
-        throw new ConflictException(`Already enrolled in "${item.course.title}"`);
+        throw new ConflictException(
+          `Already enrolled in "${item.course.title}"`,
+        );
       }
     }
 
-    const total = items.reduce((sum, item) => sum + Number(item.course.price), 0);
+    const total = items.reduce(
+      (sum, item) => sum + Number(item.course.price),
+      0,
+    );
     return { items, total, studentProfile };
   }
 }

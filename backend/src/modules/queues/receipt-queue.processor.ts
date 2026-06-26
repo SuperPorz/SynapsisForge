@@ -36,7 +36,12 @@ export class ReceiptQueueProcessor extends WorkerHost {
 
     const customerName = `${payment.user.first_name} ${payment.user.last_name}`;
     const fileName = `receipt-${payment.id}.pdf`;
-    const outputPath = path.join(process.cwd(), 'uploads', 'receipts', fileName);
+    const outputPath = path.join(
+      process.cwd(),
+      'uploads',
+      'receipts',
+      fileName,
+    );
 
     await this.pdfService.generateReceipt(
       {
@@ -61,6 +66,8 @@ export class ReceiptQueueProcessor extends WorkerHost {
 
   @OnWorkerEvent('failed')
   async onFailed(job: Job | undefined, error: Error) {
-    this.logger.error(`Receipt job ${job?.id} (payment: ${(job?.data as any)?.paymentId}) failed: ${error.message}`);
+    this.logger.error(
+      `Receipt job ${job?.id} (payment: ${job?.data?.paymentId}) failed: ${error.message}`,
+    );
   }
 }

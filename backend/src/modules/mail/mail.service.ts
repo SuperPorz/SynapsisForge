@@ -71,22 +71,24 @@ export class MailService {
   }
 
   async sendDailyDigest(input: SendDailyDigestInput): Promise<void> {
-    await this.send(
-      'daily-digest',
-      input.to,
-      'Your Daily Learning Digest',
-      {
-        name: input.name,
-        courseTitle: input.courseTitle,
-        progress: input.progress,
-      },
-    );
+    await this.send('daily-digest', input.to, 'Your Daily Learning Digest', {
+      name: input.name,
+      courseTitle: input.courseTitle,
+      progress: input.progress,
+    });
   }
 
-  async sendSubscriptionFailed(input: SendSubscriptionFailedInput): Promise<void> {
-    await this.send('subscription-failed', input.to, 'Payment Failed — Subscription Issue', {
-      name: input.name,
-    });
+  async sendSubscriptionFailed(
+    input: SendSubscriptionFailedInput,
+  ): Promise<void> {
+    await this.send(
+      'subscription-failed',
+      input.to,
+      'Payment Failed — Subscription Issue',
+      {
+        name: input.name,
+      },
+    );
   }
 
   async sendTestEmail(to: string): Promise<void> {

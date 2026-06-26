@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, Param, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -37,8 +44,12 @@ export class QueuesController {
   @Public()
   @Post('certificate/test/:enrollmentId')
   @ApiOperation({ summary: 'Queue a test certificate generation job' })
-  async testCertificate(@Param('enrollmentId', ParseUUIDPipe) enrollmentId: string) {
-    const job = await this.certificateQueue.add('generate-certificate', { enrollmentId });
+  async testCertificate(
+    @Param('enrollmentId', ParseUUIDPipe) enrollmentId: string,
+  ) {
+    const job = await this.certificateQueue.add('generate-certificate', {
+      enrollmentId,
+    });
     return { jobId: job.id, enrollmentId, message: 'Certificate job queued' };
   }
 
@@ -46,7 +57,9 @@ export class QueuesController {
   @Post('receipt/test/:paymentId')
   @ApiOperation({ summary: 'Queue a test receipt PDF generation job' })
   async testReceipt(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
-    const job = await this.receiptQueue.add('generate-receipt-pdf', { paymentId });
+    const job = await this.receiptQueue.add('generate-receipt-pdf', {
+      paymentId,
+    });
     return { jobId: job.id, paymentId, message: 'Receipt job queued' };
   }
 

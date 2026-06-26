@@ -12,12 +12,17 @@ export class RedisPubSubService implements OnModuleInit {
   private redisUrl: string;
 
   constructor(configService: ConfigService) {
-    this.redisUrl = configService.get<string>('REDIS_URL', 'redis://localhost:6379');
+    this.redisUrl = configService.get<string>(
+      'REDIS_URL',
+      'redis://localhost:6379',
+    );
   }
 
   async onModuleInit() {
     this.subscriber = createClient({ url: this.redisUrl });
-    this.subscriber.on('error', (err) => this.logger.error('Subscriber error', err));
+    this.subscriber.on('error', (err) =>
+      this.logger.error('Subscriber error', err),
+    );
     await this.subscriber.connect();
 
     this.subscriber.subscribe(CHANNEL_ENROLLMENTS, (message: string) => {
@@ -27,7 +32,9 @@ export class RedisPubSubService implements OnModuleInit {
     });
 
     this.publisher = createClient({ url: this.redisUrl });
-    this.publisher.on('error', (err) => this.logger.error('Publisher error', err));
+    this.publisher.on('error', (err) =>
+      this.logger.error('Publisher error', err),
+    );
     await this.publisher.connect();
 
     this.logger.log('Redis Pub/Sub initialized');
@@ -56,9 +63,6 @@ export class RedisPubSubService implements OnModuleInit {
   }
 
   async disconnect(): Promise<void> {
-    await Promise.all([
-      this.subscriber?.quit(),
-      this.publisher?.quit(),
-    ]);
+    await Promise.all([this.subscriber?.quit(), this.publisher?.quit()]);
   }
 }

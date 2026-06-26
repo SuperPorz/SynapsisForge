@@ -116,7 +116,9 @@ export class CoursesController {
 
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
-  @ApiOperation({ summary: 'Get all courses owned by the authenticated instructor' })
+  @ApiOperation({
+    summary: 'Get all courses owned by the authenticated instructor',
+  })
   @ApiResponse({ status: 200, description: 'Instructor courses retrieved.' })
   @Get('my')
   findMyCourses(@Req() req: Request & { user: { id: string } }) {
@@ -125,7 +127,9 @@ export class CoursesController {
 
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
-  @ApiOperation({ summary: 'Get stats for a course (enrollments, rating, watch time)' })
+  @ApiOperation({
+    summary: 'Get stats for a course (enrollments, rating, watch time)',
+  })
   @ApiResponse({ status: 200, description: 'Course stats retrieved.' })
   @Get('my/stats/:id')
   getCourseStats(
@@ -137,7 +141,9 @@ export class CoursesController {
 
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
-  @ApiOperation({ summary: 'Get lesson list with watch time stats for a course' })
+  @ApiOperation({
+    summary: 'Get lesson list with watch time stats for a course',
+  })
   @ApiResponse({ status: 200, description: 'Lessons with stats retrieved.' })
   @Get('my/:id/lessons')
   getCourseLessons(
@@ -251,7 +257,12 @@ export class CoursesController {
     @Body() dto: UpdateSectionDto,
     @Req() req: Request & { user: { id: string } },
   ) {
-    return this.CoursesService.updateSection(courseId, sectionId, dto, req.user.id);
+    return this.CoursesService.updateSection(
+      courseId,
+      sectionId,
+      dto,
+      req.user.id,
+    );
   }
 
   @ApiBearerAuth()

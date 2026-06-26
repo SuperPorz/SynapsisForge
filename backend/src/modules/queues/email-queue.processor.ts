@@ -1,6 +1,10 @@
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { MailService, SendDailyDigestInput, SendSubscriptionFailedInput } from '../mail/mail.service';
+import {
+  MailService,
+  SendDailyDigestInput,
+  SendSubscriptionFailedInput,
+} from '../mail/mail.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -46,7 +50,9 @@ export class EmailQueueProcessor extends WorkerHost {
 
   @OnWorkerEvent('failed')
   async onFailed(job: Job | undefined, error: Error) {
-    this.logger.error(`Email job ${job?.id} (${job?.name}) failed after ${job?.attemptsMade} attempts: ${error.message}`);
+    this.logger.error(
+      `Email job ${job?.id} (${job?.name}) failed after ${job?.attemptsMade} attempts: ${error.message}`,
+    );
   }
 
   private async handleDailyDigest() {

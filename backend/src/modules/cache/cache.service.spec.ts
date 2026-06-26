@@ -48,7 +48,11 @@ describe('CacheService', () => {
 
     it('should set without ttl when not provided', async () => {
       await service.set('key', 'value');
-      expect(mockCacheManager.set).toHaveBeenCalledWith('key', 'value', undefined);
+      expect(mockCacheManager.set).toHaveBeenCalledWith(
+        'key',
+        'value',
+        undefined,
+      );
     });
   });
 
@@ -64,15 +68,21 @@ describe('CacheService', () => {
       mockCacheManager.del.mockResolvedValue(undefined as any);
       await service.invalidateCourse('course-uuid', 'my-slug');
 
-      expect(mockCacheManager.del).toHaveBeenCalledWith('sf:cache:course:course-uuid');
-      expect(mockCacheManager.del).toHaveBeenCalledWith('sf:cache:course:slug:my-slug');
+      expect(mockCacheManager.del).toHaveBeenCalledWith(
+        'sf:cache:course:course-uuid',
+      );
+      expect(mockCacheManager.del).toHaveBeenCalledWith(
+        'sf:cache:course:slug:my-slug',
+      );
     });
 
     it('should skip slug deletion when slug is not provided', async () => {
       mockCacheManager.del.mockResolvedValue(undefined as any);
       await service.invalidateCourse('course-uuid');
 
-      expect(mockCacheManager.del).toHaveBeenCalledWith('sf:cache:course:course-uuid');
+      expect(mockCacheManager.del).toHaveBeenCalledWith(
+        'sf:cache:course:course-uuid',
+      );
     });
   });
 });

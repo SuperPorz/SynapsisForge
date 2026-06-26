@@ -66,7 +66,9 @@ export class EnrollmentsService {
       relations: ['user'],
     });
     if (!studentProfile) {
-      studentProfile = this.studentProfileRepository.create({ userId: dto.userId });
+      studentProfile = this.studentProfileRepository.create({
+        userId: dto.userId,
+      });
       studentProfile = await this.studentProfileRepository.save(studentProfile);
     }
 
@@ -206,9 +208,7 @@ export class EnrollmentsService {
     return rows.map((r) => r.c_id);
   }
 
-  async findMyActivity(
-    userId: string,
-  ): Promise<
+  async findMyActivity(userId: string): Promise<
     {
       lessonId: string;
       lessonTitle: string;
@@ -261,13 +261,11 @@ export class EnrollmentsService {
       lessonTitle: lessonMap.get(p.lessonId) ?? 'Lezione sconosciuta',
       courseTitle: courseByEnrollmentId[p.enrollmentId]?.title ?? '',
       courseId: courseByEnrollmentId[p.enrollmentId]?.id ?? '',
-      completedAt: p.completedAt!,
+      completedAt: p.completedAt,
     }));
   }
 
-  async findMyEnrollments(
-    userId: string,
-  ): Promise<DashboardEnrollmentDto[]> {
+  async findMyEnrollments(userId: string): Promise<DashboardEnrollmentDto[]> {
     const rows = await this.enrollmentRepository
       .createQueryBuilder('enrollment')
       .innerJoin('enrollment.student', 'student')

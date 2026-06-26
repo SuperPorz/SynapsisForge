@@ -17,7 +17,15 @@ import {
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Course, Category, Section, Enrollment, Review, Lesson, InstructorProfile]),
+    TypeOrmModule.forFeature([
+      Course,
+      Category,
+      Section,
+      Enrollment,
+      Review,
+      Lesson,
+      InstructorProfile,
+    ]),
     MongooseModule.forFeature(
       [{ name: LessonProgress.name, schema: LessonProgressSchema }],
       'mongo_synapsis',

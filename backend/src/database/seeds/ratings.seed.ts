@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { DataSource } from 'typeorm';
 import { Enrollment } from '../../common/entities/enrollments.entity';
 import { Review } from '../../common/entities/reviews.entity';

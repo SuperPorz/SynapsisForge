@@ -19,7 +19,13 @@ import { Payment } from 'src/common/entities/payments.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Enrollment, StudentProfile, Course, Payment, Lesson]),
+    TypeOrmModule.forFeature([
+      Enrollment,
+      StudentProfile,
+      Course,
+      Payment,
+      Lesson,
+    ]),
     MongooseModule.forFeature(
       [{ name: LessonProgress.name, schema: LessonProgressSchema }],
       'mongo_synapsis', // <--- DEVE ESSERE IDENTICO al connectionName in AppModule
