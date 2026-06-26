@@ -70,13 +70,20 @@ export class CertificateQueueProcessor extends WorkerHost {
         'synapsisforge-private',
       );
 
-      await this.s3Service.putObject(s3Key, pdfBuffer, 'application/pdf', privateBucket);
+      await this.s3Service.putObject(
+        s3Key,
+        pdfBuffer,
+        'application/pdf',
+        privateBucket,
+      );
 
       // 5a. Update certificate record with s3_key
       saved.s3_key = s3Key;
       await this.certificateRepository.save(saved);
 
-      this.logger.log(`Certificate ${saved.id} generated → s3://${privateBucket}/${s3Key}`);
+      this.logger.log(
+        `Certificate ${saved.id} generated → s3://${privateBucket}/${s3Key}`,
+      );
     } else {
       // 4b. Fallback: write to local filesystem
       const fileName = `certificate-${saved.id}.pdf`;

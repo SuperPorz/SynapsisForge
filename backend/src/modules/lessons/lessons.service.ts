@@ -146,7 +146,7 @@ export class LessonsService {
       )
       .exec();
 
-    return updated!;
+    return updated;
   }
 
   async updateContent(
@@ -154,7 +154,11 @@ export class LessonsService {
     dto: UpdateLessonContentDto,
   ): Promise<LessonContentDocument> {
     const updated = await this.lessonContentModel
-      .findOneAndUpdate({ lessonId }, { $set: dto }, { returnDocument: 'after' })
+      .findOneAndUpdate(
+        { lessonId },
+        { $set: dto },
+        { returnDocument: 'after' },
+      )
       .exec();
 
     if (!updated)
@@ -185,7 +189,7 @@ export class LessonsService {
       )
       .exec();
 
-    return updated!;
+    return updated;
   }
 
   // ---------------------------------------------------------------------------
