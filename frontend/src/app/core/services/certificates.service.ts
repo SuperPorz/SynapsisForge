@@ -11,6 +11,11 @@ export interface UserCertificate {
   certificate_code: string;
   courseTitle: string;
   courseId: string;
+  s3_key: string | null;
+}
+
+export interface DownloadUrlResponse {
+  downloadUrl: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -20,5 +25,9 @@ export class CertificatesService {
 
   getMyCertificates(): Observable<UserCertificate[]> {
     return this.http.get<UserCertificate[]>(`${this.baseUrl}/my`);
+  }
+
+  getDownloadUrl(id: string): Observable<DownloadUrlResponse> {
+    return this.http.get<DownloadUrlResponse>(`${this.baseUrl}/${id}/download`);
   }
 }

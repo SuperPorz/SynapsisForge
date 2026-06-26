@@ -19,6 +19,9 @@ export class Certificate {
   @Column({ type: 'text' })
   pdf_url!: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  s3_key?: string;
+
   @Column({ type: 'boolean', default: true })
   is_valid!: boolean;
 

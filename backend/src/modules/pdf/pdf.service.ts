@@ -114,23 +114,21 @@ export class PdfService {
 
   generateCertificate(
     input: GenerateCertificateInput,
-    outputPath: string,
-  ): Promise<void> {
+  ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({
         layout: 'landscape',
         size: 'A4',
         margin: 0,
       });
-      const stream = fs.createWriteStream(outputPath);
-
-      stream.on('finish', () => resolve());
-      stream.on('error', reject);
-
-      doc.pipe(stream);
+      const chunks: Buffer[] = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
 
       const pw = doc.page.width;
       const ph = doc.page.height;
+      const cx = pw / 2;
 
       // Outer border (indigo)
       doc
@@ -150,29 +148,40 @@ export class PdfService {
       // Bottom bar (indigo)
       doc.rect(10, ph - 10, pw - 20, 6).fill('#6366f1');
 
+      let y = 65;
+
       // Title
-      doc.font('Helvetica-Bold').fontSize(36).fillColor('#6366f1');
-      doc.text('CERTIFICATE OF COMPLETION', pw / 2, 55, { align: 'center' });
+      doc.font('Helvetica-Bold').fontSize(34).fillColor('#6366f1');
+      doc.text('CERTIFICATE OF COMPLETION', cx, y, { align: 'center' });
+      y += 50;
 
       // Subtitle
       doc.font('Helvetica').fontSize(14).fillColor('#6b7280');
-      doc.text('This certificate is awarded to', pw / 2, 75, {
-        align: 'center',
-      });
+      doc.text('This certificate is awarded to', cx, y, { align: 'center' });
+      y += 35;
 
       // Student name
-      doc.font('Helvetica-Bold').fontSize(28).fillColor('#1f2937');
-      doc.text(input.studentName, pw / 2, 95, { align: 'center' });
+      doc.font('Helvetica-Bold').fontSize(30).fillColor('#1f2937');
+      doc.text(input.studentName, cx, y, { align: 'center' });
+      y += 45;
 
       // Description
       doc.font('Helvetica').fontSize(14).fillColor('#6b7280');
-      doc.text('for successfully completing the course', pw / 2, 115, {
-        align: 'center',
-      });
+      doc.text('for successfully completing the course', cx, y, { align: 'center' });
+      y += 35;
 
       // Course title
-      doc.font('Helvetica-Bold').fontSize(22).fillColor('#6366f1');
-      doc.text(input.courseTitle, pw / 2, 135, { align: 'center' });
+      doc.font('Helvetica-Bold').fontSize(24).fillColor('#6366f1');
+      doc.text(input.courseTitle, cx, y, { align: 'center' });
+      y += 45;
+
+      // Decorative divider
+      doc
+        .moveTo(cx - 60, y)
+        .lineTo(cx + 60, y)
+        .strokeColor('#e0e7ff')
+        .stroke();
+      y += 20;
 
       // Issue date
       doc.font('Helvetica').fontSize(11).fillColor('#9ca3af');
@@ -181,11 +190,11 @@ export class PdfService {
         month: 'long',
         day: 'numeric',
       });
-      doc.text(`Issued on ${dateStr}`, pw / 2, 160, { align: 'center' });
+      doc.text(`Issued on ${dateStr}`, cx, y, { align: 'center' });
 
-      // Certificate code
+      // Certificate code at bottom
       doc.fontSize(8).fillColor('#d1d5db');
-      doc.text(`Certificate code: ${input.certificateCode}`, pw / 2, ph - 25, {
+      doc.text(`Certificate code: ${input.certificateCode}`, cx, ph - 25, {
         align: 'center',
       });
 

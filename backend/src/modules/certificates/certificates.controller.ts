@@ -52,6 +52,22 @@ export class CertificatesController {
     return this.certificatesService.findByUser(userId);
   }
 
+  // ─── GET /certificates/:id/download ──────────────────────────────────────
+  @ApiBearerAuth()
+  @Get(':id/download')
+  @ApiOperation({ summary: 'Scarica il PDF del certificato (presigned URL)' })
+  @ApiParam({ name: 'id', description: 'UUID del certificato', type: String })
+  @ApiResponse({ status: 200, description: 'Presigned download URL' })
+  @ApiResponse({ status: 404, description: 'Certificato non trovato' })
+  @ApiResponse({ status: 403, description: 'Accesso negato' })
+  download(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    const userId = req.user['id'];
+    return this.certificatesService.download(id, userId);
+  }
+
   // ─── GET /certificates/:id ────────────────────────────────────────────────
   @ApiBearerAuth()
   @Get(':id')

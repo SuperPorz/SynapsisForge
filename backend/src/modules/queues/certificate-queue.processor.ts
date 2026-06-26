@@ -3,10 +3,13 @@ import { Job } from 'bullmq';
 import { Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Certificate } from '../../common/entities/certificate.entity';
 import { Enrollment } from '../../common/entities/enrollments.entity';
 import { PdfService } from '../pdf/pdf.service';
-import * as path from 'path';
+import { S3Service } from '../s3/s3.service';
 
 @Processor('certificate')
 export class CertificateQueueProcessor extends WorkerHost {
@@ -20,6 +23,8 @@ export class CertificateQueueProcessor extends WorkerHost {
     private enrollmentRepository: Repository<Enrollment>,
 
     private readonly pdfService: PdfService,
+    private readonly s3Service: S3Service,
+    private readonly configService: ConfigService,
   ) {
     super();
   }
@@ -28,6 +33,7 @@ export class CertificateQueueProcessor extends WorkerHost {
     this.logger.log(`Processing certificate job: ${job.id}`);
 
     const { enrollmentId } = job.data as { enrollmentId: string };
+    const useS3 = this.configService.get<string>('USE_S3', 'false') === 'true';
 
     // 1. Load enrollment with relations
     const enrollment = await this.enrollmentRepository.findOne({
@@ -47,32 +53,45 @@ export class CertificateQueueProcessor extends WorkerHost {
 
     const saved = await this.certificateRepository.save(certificate);
 
-    // 3. Generate PDF
+    // 3. Generate PDF Buffer
     const studentName = `${enrollment.student.user.first_name} ${enrollment.student.user.last_name}`;
-    const fileName = `certificate-${saved.id}.pdf`;
-    const outputPath = path.join(
-      process.cwd(),
-      'uploads',
-      'certificates',
-      fileName,
-    );
+    const pdfBuffer = await this.pdfService.generateCertificate({
+      studentName,
+      courseTitle: enrollment.course.title,
+      issuedAt: saved.issued_at,
+      certificateCode: saved.certificate_code,
+    });
 
-    await this.pdfService.generateCertificate(
-      {
-        studentName,
-        courseTitle: enrollment.course.title,
-        issuedAt: saved.issued_at,
-        certificateCode: saved.certificate_code,
-      },
-      outputPath,
-    );
+    if (useS3) {
+      // 4a. Upload to S3 synapsisforge-private bucket
+      const s3Key = `certificates/${saved.id}.pdf`;
+      const privateBucket = this.configService.get<string>(
+        'S3_PRIVATE_BUCKET',
+        'synapsisforge-private',
+      );
 
-    // 4. Update certificate record with PDF URL
-    const pdfUrl = `/uploads/certificates/${fileName}`;
-    saved.pdf_url = pdfUrl;
-    await this.certificateRepository.save(saved);
+      await this.s3Service.putObject(s3Key, pdfBuffer, 'application/pdf', privateBucket);
 
-    this.logger.log(`Certificate ${saved.id} generated → ${pdfUrl}`);
+      // 5a. Update certificate record with s3_key
+      saved.s3_key = s3Key;
+      await this.certificateRepository.save(saved);
+
+      this.logger.log(`Certificate ${saved.id} generated → s3://${privateBucket}/${s3Key}`);
+    } else {
+      // 4b. Fallback: write to local filesystem
+      const fileName = `certificate-${saved.id}.pdf`;
+      const outputDir = path.join(process.cwd(), 'uploads', 'certificates');
+      const outputPath = path.join(outputDir, fileName);
+
+      fs.mkdirSync(outputDir, { recursive: true });
+      fs.writeFileSync(outputPath, pdfBuffer);
+
+      // 5b. Update certificate record with local pdf_url
+      saved.pdf_url = `/uploads/certificates/${fileName}`;
+      await this.certificateRepository.save(saved);
+
+      this.logger.log(`Certificate ${saved.id} generated → ${outputPath}`);
+    }
   }
 
   @OnWorkerEvent('failed')

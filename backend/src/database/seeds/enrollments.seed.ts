@@ -1,11 +1,14 @@
 /* eslint-disable */
 import { DataSource } from 'typeorm';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Enrollment } from '../../common/entities/enrollments.entity';
 import { Course } from '../../common/entities/courses.entity';
 import { StudentProfile } from '../../common/entities/student-profile.entity';
 import { Payment } from '../../common/entities/payments.entity';
 import { Status } from '../../common/entities/enum/courses.enum';
 import { Certificate } from '../../common/entities/certificate.entity';
+import { PdfService } from '../../modules/pdf/pdf.service';
 
 // Enums inline — evita dipendenze circolari con le entity
 enum Currency { EUR = 'EUR', USD = 'USD', GBP = 'GBP' }
@@ -42,6 +45,8 @@ export async function seedEnrollments(
 
   const publishedCourses = courses.filter((c) => c.status === Status.PUBLISHED);
   const seededEnrollments: SeededEnrollment[] = [];
+  const pdfService = new PdfService();
+  const useS3 = process.env.USE_S3 === 'true';
 
   // Only verified students get enrollments (first 8 of 10, last 2 are unverified)
   const enrollableStudents = studentProfiles.slice(0, 8);
@@ -95,15 +100,53 @@ export async function seedEnrollments(
         }),
       );
 
-      // ── Certificate (only if 100%) ──────────────────────────────────────
+      // ── Real Certificate (only if 100%) ─────────────────────────────────
       if (progressPercent === 100) {
-        await certificateRepo.save(
-          certificateRepo.create({
-            enrollment,
-            pdf_url: `https://synapsis.dev/certificates/${enrollment.id}.pdf`,
-            is_valid: true,
-          }),
-        );
+        // Reload enrollment with relations for student name
+        const full = await enrollmentRepo.findOne({
+          where: { id: enrollment.id },
+          relations: ['student', 'student.user', 'course'],
+        });
+
+        if (full) {
+          const cert = certificateRepo.create({ enrollment, pdf_url: '' });
+          const saved = await certificateRepo.save(cert);
+
+          const pdfBuffer = await pdfService.generateCertificate({
+            studentName: `${full.student.user.first_name} ${full.student.user.last_name}`,
+            courseTitle: full.course.title,
+            issuedAt: saved.issued_at,
+            certificateCode: saved.certificate_code,
+          });
+
+          if (useS3) {
+            const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+            const s3Client = new S3Client({
+              region: process.env.AWS_REGION || 'eu-south-1',
+              credentials: {
+                accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+              },
+            });
+            const s3Key = `certificates/${saved.id}.pdf`;
+            const privateBucket = process.env.S3_PRIVATE_BUCKET || 'synapsisforge-private';
+            await s3Client.send(new PutObjectCommand({
+              Bucket: privateBucket,
+              Key: s3Key,
+              Body: pdfBuffer,
+              ContentType: 'application/pdf',
+            }));
+            saved.s3_key = s3Key;
+          } else {
+            const fileName = `certificate-${saved.id}.pdf`;
+            const outputDir = path.join(process.cwd(), 'uploads', 'certificates');
+            fs.mkdirSync(outputDir, { recursive: true });
+            fs.writeFileSync(path.join(outputDir, fileName), pdfBuffer);
+            saved.pdf_url = `/uploads/certificates/${fileName}`;
+          }
+
+          await certificateRepo.save(saved);
+        }
       }
 
     }

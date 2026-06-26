@@ -49,6 +49,22 @@ export class S3Service {
     return getSignedUrl(this.s3Client, command, { expiresIn });
   }
 
+  async putObject(
+    key: string,
+    body: Buffer | Uint8Array | string,
+    contentType: string,
+    bucket?: string,
+  ): Promise<void> {
+    await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: bucket ?? this.configService.get<string>('S3_MEDIA_BUCKET', ''),
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+      }),
+    );
+  }
+
   getClient(): S3Client {
     return this.s3Client;
   }

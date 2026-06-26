@@ -16,6 +16,7 @@ import { CronJobSetup } from './cron-job-setup';
 import { QueuesController } from './queues.controller';
 import { MailModule } from '../mail/mail.module';
 import { PdfModule } from '../pdf/pdf.module';
+import { S3Module } from '../s3/s3.module';
 import { Certificate } from '../../common/entities/certificate.entity';
 import { Enrollment } from '../../common/entities/enrollments.entity';
 import { Payment } from '../../common/entities/payments.entity';
@@ -89,6 +90,7 @@ import { adminAuthMiddleware } from './admin-auth.middleware';
     BullBoardModule.forFeature({ name: 'receipt', adapter: BullMQAdapter }),
     MailModule,
     PdfModule,
+    S3Module,
     TypeOrmModule.forFeature([Certificate, Enrollment, Payment]),
   ],
   controllers: [QueuesController],

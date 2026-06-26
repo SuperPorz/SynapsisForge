@@ -1,9 +1,11 @@
 // prettier-ignore
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Certificate } from 'src/common/entities/certificate.entity';
 import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { Repository } from 'typeorm';
+import { S3Service } from '../s3/s3.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CertificatesService {
@@ -13,6 +15,9 @@ export class CertificatesService {
 
     @InjectRepository(Enrollment)
     private enrollmentRepository: Repository<Enrollment>,
+
+    private readonly s3Service: S3Service,
+    private readonly configService: ConfigService,
   ) {}
 
   async findOne(id: string): Promise<Certificate> {
@@ -56,6 +61,7 @@ export class CertificatesService {
       certificate_code: string;
       courseTitle: string;
       courseId: string;
+      s3_key: string | null;
     }[]
   > {
     const certificates = await this.certificateRepository
@@ -70,6 +76,7 @@ export class CertificatesService {
         'cert.pdf_url',
         'cert.is_valid',
         'cert.certificate_code',
+        'cert.s3_key',
         'course.title',
         'course.id',
       ])
@@ -82,9 +89,47 @@ export class CertificatesService {
       pdf_url: c.cert_pdf_url,
       is_valid: c.cert_is_valid,
       certificate_code: c.cert_certificate_code,
+      s3_key: c.cert_s3_key ?? null,
       courseTitle: c.course_title,
       courseId: c.course_id,
     }));
+  }
+
+  async download(id: string, userId: string): Promise<{ downloadUrl: string }> {
+    const certificate = await this.certificateRepository.findOne({
+      where: { id },
+      relations: ['enrollment', 'enrollment.student'],
+    });
+
+    if (!certificate) {
+      throw new NotFoundException('Certificate not found');
+    }
+
+    if (certificate.enrollment.student.userId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    if (!certificate.is_valid) {
+      throw new BadRequestException('Certificate is revoked');
+    }
+
+    const s3Key = certificate.s3_key;
+    if (!s3Key) {
+      throw new NotFoundException('Certificate file not found on storage');
+    }
+
+    const privateBucket = this.configService.get<string>(
+      'S3_PRIVATE_BUCKET',
+      'synapsisforge-private',
+    );
+
+    const downloadUrl = await this.s3Service.generatePresignedGetUrl(
+      s3Key,
+      privateBucket,
+      3600,
+    );
+
+    return { downloadUrl };
   }
 
   async revoke(id: string): Promise<void> {
