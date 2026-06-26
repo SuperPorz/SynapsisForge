@@ -50,7 +50,7 @@ services:
       POSTGRES_PASSWORD: qwerty
       POSTGRES_DB: pg_database
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d pg_database"]
       interval: 10s

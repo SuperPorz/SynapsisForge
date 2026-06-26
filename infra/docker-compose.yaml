@@ -26,7 +26,7 @@ services:
       POSTGRES_PASSWORD: qwerty
       POSTGRES_DB: pg_database
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
   
   mongodb:
     image: mongo:latest
