@@ -14,7 +14,7 @@ export class Payment {
   @ManyToOne(() => User, (user) => user.payments, { nullable: false })
   user!: User;
 
-  @ManyToOne(() => Course, { nullable: true })
+  @ManyToOne(() => Course, { nullable: true, onDelete: 'CASCADE' })
   course?: Course;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })

@@ -11,7 +11,7 @@ export class Enrollment {
   @ManyToOne(() => StudentProfile, { nullable: false })
   student!: StudentProfile;
 
-  @ManyToOne(() => Course, { nullable: false })
+  @ManyToOne(() => Course, { nullable: false, onDelete: 'CASCADE' })
   course!: Course;
 
   @Column({ type: 'int' })

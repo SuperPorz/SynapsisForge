@@ -12,7 +12,7 @@ export class CartItem {
   @ManyToOne(() => User, (user) => user.cartItems, { nullable: false })
   user!: User;
 
-  @ManyToOne(() => Course, { nullable: false })
+  @ManyToOne(() => Course, { nullable: false, onDelete: 'CASCADE' })
   course!: Course;
 
   @CreateDateColumn()

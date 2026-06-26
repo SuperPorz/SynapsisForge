@@ -26,7 +26,7 @@ export class Course {
   @Column({ type: 'enum', enum: Status, default: Status.DRAFT })
   status!: Status;
 
-  @Column()
+  @Column({ nullable: true })
   thumbnail_url?: string;
 
   // colonna importante per la relazione FK con la tabella InstructorProfile, rappresenta l'insegnante del corso

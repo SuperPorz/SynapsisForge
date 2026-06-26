@@ -248,9 +248,31 @@ export class CourseWizard {
         ],
       };
     });
+    let insertIdx = 0;
+    const lessonsMap = this.lessons();
+    for (let si = 0; si < sectionIndex; si++) {
+      insertIdx += (lessonsMap[si] || []).length;
+    }
+    insertIdx += (lessonsMap[sectionIndex] || []).length - 1;
+    this.lessonIds.update((ids) => {
+      const copy = [...ids];
+      copy.splice(insertIdx, 0, '');
+      return copy;
+    });
   }
 
   removeLesson(sectionIndex: number, lessonIndex: number) {
+    let removeIdx = 0;
+    const lessonsMap = this.lessons();
+    for (let si = 0; si < sectionIndex; si++) {
+      removeIdx += (lessonsMap[si] || []).length;
+    }
+    removeIdx += lessonIndex;
+    this.lessonIds.update((ids) => {
+      const copy = [...ids];
+      copy.splice(removeIdx, 1);
+      return copy;
+    });
     this.lessons.update((l) => {
       const current = (l[sectionIndex] || [])
         .filter((_, i) => i !== lessonIndex)

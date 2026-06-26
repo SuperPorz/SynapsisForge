@@ -1,4 +1,4 @@
-import { IsString, IsUUID, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateS3KeyDto {
@@ -6,4 +6,13 @@ export class UpdateS3KeyDto {
   @IsString()
   @IsNotEmpty()
   s3Key!: string;
+
+  @ApiProperty({
+    example:
+      'https://synapsisforge-media.s3.eu-south-1.amazonaws.com/videos/550e8400-e29b-41d4-a716-446655440000.mp4',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  videoUrl?: string;
 }

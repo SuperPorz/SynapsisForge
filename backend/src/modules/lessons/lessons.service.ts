@@ -51,7 +51,7 @@ export class LessonsService {
     const lesson = this.lessonRepository.create({
       ...rest,
       duration_seconds: rest.duration_seconds ?? 0,
-      courseId,
+      course: { id: courseId },
       section: section_id ? { id: section_id } : undefined,
     });
     return await this.lessonRepository.save(lesson);
@@ -87,10 +87,11 @@ export class LessonsService {
   }
 
   async findLesson(courseId: string, id: string): Promise<Lesson> {
-    const lesson = await this.lessonRepository.findOne({
-      where: { id, courseId },
-      relations: ['course'],
-    });
+    const lesson = await this.lessonRepository
+      .createQueryBuilder('lesson')
+      .where('lesson.id = :id', { id })
+      .andWhere('lesson.courseId = :courseId', { courseId })
+      .getOne();
     if (!lesson)
       throw new NotFoundException(
         `Lezione ${id} non trovata nel corso ${courseId}`,
@@ -137,8 +138,15 @@ export class LessonsService {
     lessonId: string,
     dto: CreateLessonContentDto,
   ): Promise<LessonContentDocument> {
-    const doc = new this.lessonContentModel({ ...dto, lessonId });
-    return await doc.save();
+    const updated = await this.lessonContentModel
+      .findOneAndUpdate(
+        { lessonId },
+        { $set: { ...dto, lessonId } },
+        { upsert: true, returnDocument: 'after' },
+      )
+      .exec();
+
+    return updated!;
   }
 
   async updateContent(
@@ -146,7 +154,7 @@ export class LessonsService {
     dto: UpdateLessonContentDto,
   ): Promise<LessonContentDocument> {
     const updated = await this.lessonContentModel
-      .findOneAndUpdate({ lessonId }, { $set: dto }, { new: true })
+      .findOneAndUpdate({ lessonId }, { $set: dto }, { returnDocument: 'after' })
       .exec();
 
     if (!updated)
@@ -164,17 +172,20 @@ export class LessonsService {
   async updateS3Key(
     lessonId: string,
     s3Key: string,
+    videoUrl?: string,
   ): Promise<LessonContentDocument> {
+    const $set: Record<string, unknown> = { s3Key };
+    if (videoUrl) $set.videoUrl = videoUrl;
+
     const updated = await this.lessonContentModel
-      .findOneAndUpdate({ lessonId }, { $set: { s3Key } }, { new: true })
+      .findOneAndUpdate(
+        { lessonId },
+        { $set },
+        { upsert: true, returnDocument: 'after' },
+      )
       .exec();
 
-    if (!updated)
-      throw new NotFoundException(
-        `Contenuto per lezione ${lessonId} non trovato`,
-      );
-
-    return updated;
+    return updated!;
   }
 
   // ---------------------------------------------------------------------------

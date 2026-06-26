@@ -33,10 +33,10 @@ export class LessonsService {
     });
   }
 
-  updateS3Key(courseId: string, lessonId: string, s3Key: string): Observable<void> {
+  updateS3Key(courseId: string, lessonId: string, s3Key: string, videoUrl?: string): Observable<void> {
     return this.http.patch<void>(
       `${this.base}/courses/${courseId}/lessons/${lessonId}/s3-key`,
-      { s3Key },
+      { s3Key, videoUrl },
     );
   }
 }

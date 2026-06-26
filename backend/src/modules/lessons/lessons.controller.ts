@@ -163,6 +163,6 @@ export class LessonsController {
     @Body() dto: UpdateS3KeyDto,
   ) {
     await this.lessonsService.findLesson(courseId, id);
-    return this.lessonsService.updateS3Key(id, dto.s3Key);
+    return this.lessonsService.updateS3Key(id, dto.s3Key, dto.videoUrl);
   }
 }

@@ -195,6 +195,7 @@ export class CoursesService {
     const course = await this.coursesRepo.findOne({
       where: { id: courseId },
       relations: ['instructor'],
+      withDeleted: true,
     });
     if (!course) throw new NotFoundException(`Course ${courseId} not found`);
     if (course.instructor.userId !== userId) {
@@ -246,7 +247,7 @@ export class CoursesService {
     await this.coursesRepo.delete({ id });
     await this.cacheService.invalidateCourse(id);
     return {
-      message: `Course "${course.title}" has been deactivated successfully`,
+      message: `Course "${course.title}" has been deleted successfully`,
     };
   }
 
@@ -292,6 +293,7 @@ export class CoursesService {
   async findMyCourses(userId: string) {
     const courses = await this.coursesRepo
       .createQueryBuilder('course')
+      .withDeleted()
       .leftJoinAndSelect('course.category', 'category')
       .leftJoinAndSelect('course.instructor', 'instructor')
       .where('instructor.userId = :userId', { userId })

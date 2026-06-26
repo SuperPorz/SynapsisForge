@@ -48,7 +48,7 @@ export class VideoUpload {
       });
 
       await firstValueFrom(
-        this.lessonsService.updateS3Key(this.courseId(), this.lessonId(), key),
+        this.lessonsService.updateS3Key(this.courseId(), this.lessonId(), key, publicUrl),
       );
 
       this.uploadedKey.set(key);
