@@ -205,14 +205,12 @@
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Video</label>
-                @if (courseId() && getLessonId(globalIdx)) {
-                  <app-video-upload
-                    [courseId]="courseId()!"
-                    [lessonId]="getLessonId(globalIdx)"
-                    [currentVideoUrl]="contents()[globalIdx]?.videoUrl || ''"
-                    (uploaded)="setVideoData(globalIdx, $event)"
-                  />
-                }
+                <app-video-upload
+                  [courseId]="courseId() || ''"
+                  [lessonId]="getLessonId(globalIdx)"
+                  [currentVideoUrl]="contents()[globalIdx]?.videoUrl || ''"
+                  (uploaded)="setVideoData(globalIdx, $event)"
+                />
               </div>
 
               <div>

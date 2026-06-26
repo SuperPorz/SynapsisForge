@@ -102,6 +102,18 @@ export class Instructor implements OnInit {
     });
   }
 
+  deleteCourse(course: InstructorCourse) {
+    if (course.status === 'PUBLISHED') return;
+    const confirmed = confirm(`Delete "${course.title}"? This action cannot be undone.`);
+    if (!confirmed) return;
+    this.courseService.deleteCourse(course.id).subscribe({
+      next: () => {
+        this.courses.update((list) => list.filter((c) => c.id !== course.id));
+      },
+      error: () => alert('Failed to delete course. Please try again.'),
+    });
+  }
+
   enrollmentsChartData = computed<ChartData<'line'>>(() => {
     const stats = this.courseStats();
     const base = Array.from({ length: 30 }, (_, i) => ({

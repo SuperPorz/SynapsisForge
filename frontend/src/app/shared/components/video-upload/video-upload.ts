@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { LessonsService } from '../../../core/services/lessons.service';
 import { UploadService, UploadProgress } from '../../../core/services/upload.service';
@@ -13,11 +13,13 @@ export class VideoUpload {
   private lessonsService = inject(LessonsService);
   private uploadService = inject(UploadService);
 
-  courseId = input.required<string>();
-  lessonId = input.required<string>();
+  courseId = input<string>('');
+  lessonId = input<string>('');
   currentVideoUrl = input<string>('');
 
   uploaded = output<string>();
+
+  canUpload = computed(() => !!this.courseId() && !!this.lessonId());
 
   uploading = signal(false);
   progress = signal<UploadProgress | null>(null);
@@ -26,7 +28,7 @@ export class VideoUpload {
   dragOver = signal(false);
 
   async onFileSelected(file: File | undefined) {
-    if (!file) return;
+    if (!file || !this.canUpload()) return;
     if (!file.type.startsWith('video/')) {
       this.error.set('Only video files are accepted.');
       return;

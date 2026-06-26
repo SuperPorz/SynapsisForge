@@ -161,6 +161,10 @@ export class CourseService {
   updateLessonContent(courseId: string, lessonId: string, payload: Partial<CreateLessonContentPayload>): Observable<unknown> {
     return this.http.patch(`${this.API}/courses/${courseId}/lessons/${lessonId}/content`, payload);
   }
+
+  deleteCourse(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.API}/courses/${id}`);
+  }
 }
 
 export interface InstructorCourse {
