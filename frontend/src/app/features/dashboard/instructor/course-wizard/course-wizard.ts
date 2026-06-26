@@ -84,7 +84,7 @@ export class CourseWizard {
               globalIdx++;
             }
           }
-          this.lessonIds = ids;
+          this.lessonIds.set(ids);
           this.lessons.set(lessonsMap);
           this.contents.set(contentsMap);
         }
@@ -170,7 +170,7 @@ export class CourseWizard {
   >({});
 
   sectionIds: string[] = [];
-  lessonIds: string[] = [];
+  lessonIds = signal<string[]>([]);
 
   get step1Valid() {
     const m = this.step1Model;
@@ -315,7 +315,7 @@ export class CourseWizard {
   }
 
   getLessonId(globalIdx: number): string {
-    return this.lessonIds[globalIdx] ?? '';
+    return this.lessonIds()[globalIdx] ?? '';
   }
 
   updateQuizOption(
@@ -443,7 +443,7 @@ export class CourseWizard {
           }
         }
         const lessonResults = await Promise.all(promises);
-        this.lessonIds = lessonResults.map((r) => r.id);
+        this.lessonIds.set(lessonResults.map((r) => r.id));
         this.submitting.set(false);
         this.step.set(4);
       } catch {
@@ -505,7 +505,7 @@ export class CourseWizard {
                 firstValueFrom(
                   this.courseService.createLessonContent(
                     cid,
-                    this.lessonIds[globalIdx],
+                    this.lessonIds()[globalIdx],
                     payload,
                   ),
                 ),
