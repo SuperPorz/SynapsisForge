@@ -168,11 +168,11 @@ seed-ec2:
       docker pull michelangelostega/synapsisforge-backend:latest
 
       echo '→ Syncing database schema (fresh postgres volume needs tables)...'
-      docker compose -f infra/docker-compose.prod.yml --env-file .env.production run --rm seeder node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
+      docker compose -f infra/docker-compose.prod.yml --env-file .env.production run -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis --rm seeder node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
 
-        echo '→ Running database seeds...'
-        docker compose -f infra/docker-compose.prod.yml --env-file .env.production run --rm seeder
-        echo '✅ Seed complete!'
+      echo '→ Running database seeds...'
+      docker compose -f infra/docker-compose.prod.yml --env-file .env.production run -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis --rm seeder
+      echo '✅ Seed complete!'
       "
   only:
     - main

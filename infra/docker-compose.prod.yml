@@ -3,10 +3,7 @@ services:
     image: michelangelostega/synapsisforge-backend:latest
     environment:
       NODE_ENV: production
-      MONGO_URI: ${MONGO_URI}
-      MONGO_USER: ${MONGO_USER}
-      MONGO_PASS: ${MONGO_PASS}
-      MONGO_AUTH_SOURCE: ${MONGO_AUTH_SOURCE:-admin}
+      MONGO_URI: mongodb://mongodb:27017/mongo_synapsis
     env_file: ../.env.production
     depends_on:
       postgres:
