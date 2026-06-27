@@ -1,6 +1,7 @@
 stages:
   - build
   - test
+  - seed
   - deploy
 
 variables:
@@ -90,6 +91,70 @@ frontend-build-check:
     key: $CI_COMMIT_REF_SLUG-frontend
     paths:
       - frontend/node_modules/
+
+# ── SEED ────────────────────────────────────────────────────────────────
+
+seed-ec2:
+  image: alpine:latest
+  stage: seed
+  before_script:
+    - apk add --no-cache openssh-client docker-cli docker-cli-compose
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/deploy_key
+    - chmod 600 ~/.ssh/deploy_key
+    - ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    - |
+      ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
+        set -e
+        echo '→ Creating .env.production from CI variables...'
+        echo \"NODE_ENV=production\" > ~/SynapsisForge/.env.production
+        echo \"DB_HOST=$DB_HOST\" >> ~/SynapsisForge/.env.production
+        echo \"DB_PORT=$DB_PORT\" >> ~/SynapsisForge/.env.production
+        echo \"DB_USERNAME=$DB_USERNAME\" >> ~/SynapsisForge/.env.production
+        echo \"DB_PASSWORD=$DB_PASSWORD\" >> ~/SynapsisForge/.env.production
+        echo \"DB_DATABASE=$DB_DATABASE\" >> ~/SynapsisForge/.env.production
+        echo \"MONGO_URI=$MONGO_URI\" >> ~/SynapsisForge/.env.production
+        echo \"MONGO_USER=$MONGO_USER\" >> ~/SynapsisForge/.env.production
+        echo \"MONGO_PASS=$MONGO_PASS\" >> ~/SynapsisForge/.env.production
+        echo \"MONGO_AUTH_SOURCE=$MONGO_AUTH_SOURCE\" >> ~/SynapsisForge/.env.production
+        echo \"REDIS_URL=$REDIS_URL\" >> ~/SynapsisForge/.env.production
+        echo \"JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET\" >> ~/SynapsisForge/.env.production
+        echo \"JWT_ACCESS_EXPIRES_IN=$JWT_ACCESS_EXPIRES_IN\" >> ~/SynapsisForge/.env.production
+        echo \"JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET\" >> ~/SynapsisForge/.env.production
+        echo \"JWT_REFRESH_EXPIRES_IN=$JWT_REFRESH_EXPIRES_IN\" >> ~/SynapsisForge/.env.production
+        echo \"AWS_REGION=$AWS_REGION\" >> ~/SynapsisForge/.env.production
+        echo \"AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID\" >> ~/SynapsisForge/.env.production
+        echo \"AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY\" >> ~/SynapsisForge/.env.production
+        echo \"S3_MEDIA_BUCKET=$S3_MEDIA_BUCKET\" >> ~/SynapsisForge/.env.production
+        echo \"S3_PRIVATE_BUCKET=$S3_PRIVATE_BUCKET\" >> ~/SynapsisForge/.env.production
+        echo \"USE_S3=$USE_S3\" >> ~/SynapsisForge/.env.production
+        echo \"BRAINTREE_MERCHANT_ID=$BRAINTREE_MERCHANT_ID\" >> ~/SynapsisForge/.env.production
+        echo \"BRAINTREE_PUBLIC_KEY=$BRAINTREE_PUBLIC_KEY\" >> ~/SynapsisForge/.env.production
+        echo \"BRAINTREE_PRIVATE_KEY=$BRAINTREE_PRIVATE_KEY\" >> ~/SynapsisForge/.env.production
+        echo \"GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID\" >> ~/SynapsisForge/.env.production
+        echo \"GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET\" >> ~/SynapsisForge/.env.production
+        echo \"GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL\" >> ~/SynapsisForge/.env.production
+        echo \"GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID\" >> ~/SynapsisForge/.env.production
+        echo \"GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET\" >> ~/SynapsisForge/.env.production
+        echo \"GITHUB_CALLBACK_URL=$GITHUB_CALLBACK_URL\" >> ~/SynapsisForge/.env.production
+        echo \"SMTP_HOST=$SMTP_HOST\" >> ~/SynapsisForge/.env.production
+        echo \"SMTP_PORT=$SMTP_PORT\" >> ~/SynapsisForge/.env.production
+        echo \"SMTP_USER=$SMTP_USER\" >> ~/SynapsisForge/.env.production
+        echo \"SMTP_PASS=$SMTP_PASS\" >> ~/SynapsisForge/.env.production
+        echo \"SMTP_FROM=$SMTP_FROM\" >> ~/SynapsisForge/.env.production
+        echo \"FRONTEND_URL=$FRONTEND_URL\" >> ~/SynapsisForge/.env.production
+        echo \"CORS_ORIGIN=$CORS_ORIGIN\" >> ~/SynapsisForge/.env.production
+
+        echo '→ Running database seeds...'
+        cd ~/SynapsisForge
+        docker compose -f infra/docker-compose.prod.yml --env-file .env.production run --rm seeder
+        echo '✅ Seed complete!'
+      "
+  only:
+    - main
+  environment:
+    name: production
 
 # ── DEPLOY ──────────────────────────────────────────────────────────────
 
