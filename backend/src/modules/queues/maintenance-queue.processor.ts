@@ -22,7 +22,7 @@ export class MaintenanceQueueProcessor extends WorkerHost {
   }
 
   @OnWorkerEvent('failed')
-  async onFailed(job: Job | undefined, error: Error) {
+  onFailed(job: Job | undefined, error: Error): void {
     this.logger.error(
       `Maintenance job ${job?.id} (${job?.name}) failed: ${error.message}`,
     );

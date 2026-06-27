@@ -1,6 +1,9 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { createClient } from '@redis/client';
+
+type RedisClient = ReturnType<typeof createClient>;
 
 const KEYV_PREFIX = 'keyv::keyv:';
 
@@ -38,15 +41,20 @@ export class CacheService {
     await this.cacheManager.del(key);
   }
 
-  private async getRedisClient() {
-    const keyvStore = (this.cacheManager as any).stores?.[0];
-    if (!keyvStore) return null;
-    const redisClient = keyvStore.opts?.store?.client;
-    return redisClient ?? null;
+  private getRedisClient(): RedisClient | null {
+    const keyvStore = (this.cacheManager as Record<string, unknown>).stores as
+      | Array<Record<string, unknown>>
+      | undefined;
+    if (!keyvStore?.[0]) return null;
+    const store = keyvStore[0].opts as Record<string, unknown> | undefined;
+    return (
+      ((store?.store as Record<string, unknown> | undefined)
+        ?.client as RedisClient | null) ?? null
+    );
   }
 
   async getCacheStats(): Promise<CacheStats> {
-    const client = await this.getRedisClient();
+    const client = this.getRedisClient();
     if (!client) {
       return {
         hit_rate: null,
@@ -95,12 +103,12 @@ export class CacheService {
       let count = 0;
       cursor = '0';
       do {
-        const result = await client.scan(cursor, {
+        const result = await (client.scan(cursor, {
           MATCH: `${prefix}*`,
           COUNT: 500,
-        });
+        }) as Promise<{ cursor: string; keys: string[] }>);
         cursor = result.cursor;
-        count += (result.keys as string[]).length;
+        count += result.keys.length;
       } while (cursor !== '0');
       keysByPrefix[prefix] = count;
     }
@@ -127,7 +135,7 @@ export class CacheService {
   }
 
   async invalidateByPattern(pattern: string): Promise<void> {
-    const client = await this.getRedisClient();
+    const client = this.getRedisClient();
     if (!client?.scan) return;
 
     if (!client.isOpen) await client.connect();
@@ -137,12 +145,12 @@ export class CacheService {
     const keysToDelete: string[] = [];
 
     do {
-      const result = await client.scan(cursor, {
+      const result = await (client.scan(cursor, {
         MATCH: fullPattern,
         COUNT: 100,
-      });
+      }) as Promise<{ cursor: string; keys: string[] }>);
       cursor = result.cursor;
-      const found = result.keys as string[];
+      const found = result.keys;
       keysToDelete.push(
         ...found.map((k: string) => k.slice(KEYV_PREFIX.length)),
       );

@@ -203,7 +203,7 @@ export class EnrollmentsService {
       .innerJoin('e.student', 's')
       .innerJoin('e.course', 'c')
       .where('s.userId = :userId', { userId })
-      .select('c.id')
+      .select('c.id', 'c_id')
       .getRawMany();
     return rows.map((r) => r.c_id);
   }
@@ -218,7 +218,7 @@ export class EnrollmentsService {
     }[]
   > {
     // 1. Get all enrollment IDs for this user
-    const enrollments = await this.enrollmentRepository
+    const rows = await this.enrollmentRepository
       .createQueryBuilder('enrollment')
       .innerJoin('enrollment.student', 'student')
       .innerJoinAndSelect('enrollment.course', 'course')
@@ -226,9 +226,9 @@ export class EnrollmentsService {
       .select(['enrollment.id', 'course.id', 'course.title'])
       .getRawMany();
 
-    if (!enrollments.length) return [];
+    if (!rows.length) return [];
 
-    const enrollmentIds = enrollments.map((e) => e.enrollment_id);
+    const enrollmentIds = rows.map((e) => e.enrollment_id);
 
     // 2. Query last 10 completed lessons from MongoDB
     const progresses = await this.lessonProgressModel
@@ -242,7 +242,7 @@ export class EnrollmentsService {
     // 3. Map enrollmentId → course info
     const courseByEnrollmentId: Record<string, { title: string; id: string }> =
       {};
-    for (const e of enrollments) {
+    for (const e of rows) {
       courseByEnrollmentId[e.enrollment_id] = {
         title: e.course_title,
         id: e.course_id,

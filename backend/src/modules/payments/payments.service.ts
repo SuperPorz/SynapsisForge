@@ -2,7 +2,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import { BraintreeGateway } from 'braintree';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
@@ -22,6 +22,18 @@ import { Enrollment } from 'src/common/entities/enrollments.entity';
 import { CartItem } from 'src/common/entities/cart-item.entity';
 import { User } from 'src/common/entities/users.entity';
 import { SubscriptionPlan } from 'src/common/entities/enum/users.enum';
+
+interface WebhookSubscription {
+  id: string;
+  transactions?: { id: string; amount: string }[];
+}
+
+interface WebhookNotification {
+  kind: string;
+  subject: {
+    subscription?: WebhookSubscription;
+  };
+}
 
 @Injectable()
 export class PaymentsService {
@@ -70,8 +82,8 @@ export class PaymentsService {
 
     try {
       await this.gateway.subscription.cancel(user.subscription_id);
-    } catch (err: any) {
-      this.logger.error(`Braintree cancel error: ${err.message}`);
+    } catch (err: unknown) {
+      this.logger.error(`Braintree cancel error: ${(err as Error).message}`);
     }
 
     user.plan = SubscriptionPlan.FREE;
@@ -91,12 +103,15 @@ export class PaymentsService {
     signature: string,
     payload: string,
   ): Promise<{ received: boolean }> {
-    let notification: any;
+    let notification: WebhookNotification;
     try {
-      notification = this.gateway.webhookNotification.parse(signature, payload);
-    } catch (err: any) {
+      notification = await this.gateway.webhookNotification.parse(
+        signature,
+        payload,
+      );
+    } catch (err: unknown) {
       this.logger.error(
-        `Webhook signature verification failed: ${err.message}`,
+        `Webhook signature verification failed: ${(err as Error).message}`,
       );
       throw new BadRequestException('Invalid webhook signature');
     }
@@ -117,7 +132,7 @@ export class PaymentsService {
       3600,
     );
 
-    const kind: string = notification.kind;
+    const kind = notification.kind;
     const subscription = notification.subject?.subscription;
 
     this.logger.log(
@@ -144,7 +159,9 @@ export class PaymentsService {
     return { received: true };
   }
 
-  private async handleSubscriptionChargedSuccessfully(subscription: any) {
+  private async handleSubscriptionChargedSuccessfully(
+    subscription: WebhookSubscription,
+  ) {
     const subId = subscription.id;
     const user = await this.userRepository.findOne({
       where: { subscription_id: subId },
@@ -175,7 +192,9 @@ export class PaymentsService {
     );
   }
 
-  private async handleSubscriptionChargedUnsuccessfully(subscription: any) {
+  private async handleSubscriptionChargedUnsuccessfully(
+    subscription: WebhookSubscription,
+  ) {
     const subId = subscription.id;
     const user = await this.userRepository.findOne({
       where: { subscription_id: subId },
@@ -207,7 +226,9 @@ export class PaymentsService {
     });
   }
 
-  private async handleSubscriptionWentPastDue(subscription: any) {
+  private async handleSubscriptionWentPastDue(
+    subscription: WebhookSubscription,
+  ) {
     const subId = subscription.id;
     const user = await this.userRepository.findOne({
       where: { subscription_id: subId },
@@ -223,7 +244,7 @@ export class PaymentsService {
     );
   }
 
-  private async handleSubscriptionCanceled(subscription: any) {
+  private async handleSubscriptionCanceled(subscription: WebhookSubscription) {
     const subId = subscription.id;
     const user = await this.userRepository.findOne({
       where: { subscription_id: subId },
@@ -266,9 +287,13 @@ export class PaymentsService {
         lastName: user.last_name,
         email: user.email ?? undefined,
       });
-    } catch (err: any) {
-      this.logger.error(`Braintree customer creation error: ${err.message}`);
-      throw new BadRequestException(`Customer creation error: ${err.message}`);
+    } catch (err: unknown) {
+      this.logger.error(
+        `Braintree customer creation error: ${(err as Error).message}`,
+      );
+      throw new BadRequestException(
+        `Customer creation error: ${(err as Error).message}`,
+      );
     }
 
     if (!customerResult.success) {
@@ -289,10 +314,12 @@ export class PaymentsService {
         customerId,
         paymentMethodNonce: nonce,
       });
-    } catch (err: any) {
-      this.logger.error(`Braintree payment method error: ${err.message}`);
+    } catch (err: unknown) {
+      this.logger.error(
+        `Braintree payment method error: ${(err as Error).message}`,
+      );
       throw new BadRequestException(
-        `Payment method creation error: ${err.message}`,
+        `Payment method creation error: ${(err as Error).message}`,
       );
     }
 
@@ -314,10 +341,12 @@ export class PaymentsService {
         paymentMethodToken: paymentToken,
         planId,
       });
-    } catch (err: any) {
-      this.logger.error(`Braintree subscription SDK error: ${err.message}`);
+    } catch (err: unknown) {
+      this.logger.error(
+        `Braintree subscription SDK error: ${(err as Error).message}`,
+      );
       throw new BadRequestException(
-        `Subscription creation error: ${err.message}`,
+        `Subscription creation error: ${(err as Error).message}`,
       );
     }
 
@@ -398,8 +427,8 @@ export class PaymentsService {
         paymentMethodNonce: nonce,
         options: { submitForSettlement: true },
       });
-    } catch (err: any) {
-      this.logger.error(`Braintree SDK error: ${err.message}`);
+    } catch (err: unknown) {
+      this.logger.error(`Braintree SDK error: ${(err as Error).message}`);
       await this.savePayment(
         userId,
         courseId,
@@ -408,7 +437,9 @@ export class PaymentsService {
         Status.FAILED,
         null,
       );
-      throw new BadRequestException(`Payment processing error: ${err.message}`);
+      throw new BadRequestException(
+        `Payment processing error: ${(err as Error).message}`,
+      );
     }
 
     if (!transactionResult.success) {
@@ -437,7 +468,7 @@ export class PaymentsService {
     // 5. Success — create payment + enrollment
     const transaction = transactionResult.transaction!;
     const transactionId = transaction.id;
-    const paymentMethod = (transaction as any).paymentInstrumentType ?? null;
+    const paymentMethod = transaction.paymentInstrumentType ?? null;
     await this.savePayment(
       userId,
       courseId,
@@ -489,8 +520,8 @@ export class PaymentsService {
         paymentMethodNonce: nonce,
         options: { submitForSettlement: true },
       });
-    } catch (err: any) {
-      this.logger.error(`Braintree SDK error: ${err.message}`);
+    } catch (err: unknown) {
+      this.logger.error(`Braintree SDK error: ${(err as Error).message}`);
       for (const item of items) {
         await this.savePayment(
           userId,
@@ -501,7 +532,9 @@ export class PaymentsService {
           null,
         );
       }
-      throw new BadRequestException(`Payment processing error: ${err.message}`);
+      throw new BadRequestException(
+        `Payment processing error: ${(err as Error).message}`,
+      );
     }
 
     if (!transactionResult.success) {
@@ -531,7 +564,7 @@ export class PaymentsService {
 
     const transaction = transactionResult.transaction!;
     const transactionId = transaction.id;
-    const paymentMethod = (transaction as any).paymentInstrumentType ?? null;
+    const paymentMethod = transaction.paymentInstrumentType ?? null;
     for (const item of items) {
       await this.savePayment(
         userId,
@@ -595,17 +628,17 @@ export class PaymentsService {
     transactionId: string | null,
     paymentMethod?: string | null,
   ) {
-    const paymentData: any = {
+    const paymentData: DeepPartial<Payment> = {
       user: { id: userId },
       amount,
       currency,
       gateway_id: transactionId ?? '',
       status,
       payment_method: paymentMethod ?? undefined,
+      ...(courseId
+        ? { course: { id: courseId } as DeepPartial<Payment['course']> }
+        : {}),
     };
-    if (courseId) {
-      paymentData.course = { id: courseId };
-    }
     const payment = this.paymentRepository.create(paymentData);
     return this.paymentRepository.save(payment);
   }

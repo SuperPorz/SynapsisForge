@@ -25,7 +25,7 @@ export class RedisPubSubService implements OnModuleInit {
     );
     await this.subscriber.connect();
 
-    this.subscriber.subscribe(CHANNEL_ENROLLMENTS, (message: string) => {
+    await this.subscriber.subscribe(CHANNEL_ENROLLMENTS, (message: string) => {
       this.handleEnrollmentMessage(message).catch((err) =>
         this.logger.error('Failed to handle enrollment message', err),
       );

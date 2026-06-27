@@ -13,6 +13,19 @@ import { StudentProfile } from 'src/common/entities/student-profile.entity';
 
 const CART_CACHE_TTL = 3600;
 
+interface CartCache {
+  items: {
+    id: string;
+    courseId: string;
+    title: string;
+    thumbnail_url: string | null;
+    price: number;
+    added_at: Date;
+  }[];
+  total: number;
+  count: number;
+}
+
 @Injectable()
 export class CartService {
   private readonly logger = new Logger(CartService.name);
@@ -44,9 +57,9 @@ export class CartService {
     ]);
   }
 
-  async getCart(userId: string) {
+  async getCart(userId: string): Promise<CartCache> {
     const cacheKey = this.cartCacheKey(userId);
-    const cached = await this.cacheManager.get<any>(cacheKey);
+    const cached = await this.cacheManager.get<CartCache | undefined>(cacheKey);
     if (cached) return cached;
 
     const items = await this.cartRepository.find({
@@ -59,7 +72,7 @@ export class CartService {
       (sum, item) => sum + Number(item.course.price),
       0,
     );
-    const result = {
+    const result: CartCache = {
       items: items.map((item) => ({
         id: item.id,
         courseId: item.course.id,
@@ -88,7 +101,7 @@ export class CartService {
     return count;
   }
 
-  async addItem(userId: string, courseId: string) {
+  async addItem(userId: string, courseId: string): Promise<CartCache> {
     const course = await this.courseRepository.findOne({
       where: { id: courseId },
     });
@@ -112,7 +125,7 @@ export class CartService {
     return this.getCart(userId);
   }
 
-  async removeItem(userId: string, courseId: string) {
+  async removeItem(userId: string, courseId: string): Promise<CartCache> {
     const item = await this.cartRepository.findOne({
       where: { user: { id: userId }, course: { id: courseId } },
     });
@@ -127,7 +140,11 @@ export class CartService {
     await this.invalidateCache(userId);
   }
 
-  async validateForCheckout(userId: string) {
+  async validateForCheckout(userId: string): Promise<{
+    items: CartItem[];
+    total: number;
+    studentProfile: StudentProfile;
+  }> {
     const studentProfile = await this.studentProfileRepository.findOne({
       where: { userId },
       relations: ['user'],

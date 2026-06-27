@@ -420,7 +420,9 @@ export class CoursesService {
       courseTitle: course.title,
       enrollmentCount,
       averageRating,
-      totalWatchTimeSeconds: watchTimeAgg.length ? watchTimeAgg[0].total : 0,
+      totalWatchTimeSeconds: watchTimeAgg.length
+        ? (watchTimeAgg[0] as { total: number }).total
+        : 0,
     };
   }
 
@@ -460,7 +462,11 @@ export class CoursesService {
       string,
       { totalWatchTime: number; completions: number }
     > = {};
-    for (const row of watchTimeAgg) {
+    for (const row of watchTimeAgg as {
+      _id: string;
+      totalWatchTime: number;
+      completions: number;
+    }[]) {
       statsMap[row._id] = {
         totalWatchTime: row.totalWatchTime,
         completions: row.completions,

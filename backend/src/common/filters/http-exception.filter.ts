@@ -52,9 +52,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
   private toHttpException(exception: unknown): HttpException {
     // CASO 1: errore TypeORM — unique constraint violation
     if (exception instanceof QueryFailedError) {
+      const driverError = exception.driverError as
+        | { code?: string; errno?: number }
+        | undefined;
       const isUniqueViolation =
-        exception.driverError?.code === '23505' ||
-        exception.driverError?.errno === 1062;
+        driverError?.code === '23505' || driverError?.errno === 1062;
 
       // Non esponiamo mai il messaggio raw del db
       return isUniqueViolation

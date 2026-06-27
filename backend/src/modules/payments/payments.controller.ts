@@ -27,25 +27,31 @@ export class PaymentsController {
 
   @Post('checkout')
   @ApiOperation({ summary: 'Process a single course purchase via Braintree' })
-  async checkout(@Req() req: any, @Body() dto: CheckoutDto) {
+  async checkout(
+    @Req() req: { user: { id: string } },
+    @Body() dto: CheckoutDto,
+  ) {
     return this.paymentsService.checkout(req.user.id, dto);
   }
 
   @Post('subscribe')
   @ApiOperation({ summary: 'Create a recurring subscription via Braintree' })
-  async subscribe(@Req() req: any, @Body() dto: SubscribeDto) {
+  async subscribe(
+    @Req() req: { user: { id: string } },
+    @Body() dto: SubscribeDto,
+  ) {
     return this.paymentsService.subscribe(req.user.id, dto);
   }
 
   @Get('subscription/status')
   @ApiOperation({ summary: 'Get current user subscription status' })
-  async getStatus(@Req() req: any) {
+  async getStatus(@Req() req: { user: { id: string } }) {
     return this.paymentsService.getSubscriptionStatus(req.user.id);
   }
 
   @Post('subscription/cancel')
   @ApiOperation({ summary: 'Cancel the current subscription' })
-  async cancel(@Req() req: any) {
+  async cancel(@Req() req: { user: { id: string } }) {
     return this.paymentsService.cancelSubscription(req.user.id);
   }
 
@@ -54,7 +60,7 @@ export class PaymentsController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 20 })
   async getHistory(
-    @Req() req: any,
+    @Req() req: { user: { id: string } },
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -69,7 +75,9 @@ export class PaymentsController {
   @Post('webhook')
   @HttpCode(200)
   @ApiOperation({ summary: 'Handle Braintree webhook notifications' })
-  async handleWebhook(@Body() body: Record<string, any>) {
+  async handleWebhook(
+    @Body() body: { bt_signature: string; bt_payload: string },
+  ) {
     return this.paymentsService.handleWebhook(
       body.bt_signature,
       body.bt_payload,

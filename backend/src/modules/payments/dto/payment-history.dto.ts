@@ -1,4 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
+import type { Payment } from 'src/common/entities/payments.entity';
 
 export class PaymentHistoryItem {
   @Expose()
@@ -26,10 +27,10 @@ export class PaymentHistoryItem {
   created_at!: Date;
 
   @Expose()
-  @Transform(({ obj }) => obj.course?.id ?? null)
+  @Transform(({ obj }) => (obj as Payment).course?.id ?? null)
   courseId?: string;
 
   @Expose()
-  @Transform(({ obj }) => obj.course?.title ?? null)
+  @Transform(({ obj }) => (obj as Payment).course?.title ?? null)
   courseTitle?: string;
 }

@@ -9,6 +9,7 @@ variables:
   BACKEND_IMAGE: michelangelostega/synapsisforge-backend
   FRONTEND_IMAGE: michelangelostega/synapsisforge-frontend
   IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  NPM_CONFIG_LEGACY_PEER_DEPS: "true"
 
 # ── BUILD ──────────────────────────────────────────────────────────────
 

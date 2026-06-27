@@ -3,6 +3,10 @@ import { Job } from 'bullmq';
 import {
   MailService,
   SendDailyDigestInput,
+  SendWelcomeEmailInput,
+  SendVerificationEmailInput,
+  SendEnrollmentConfirmationInput,
+  SendSubscriptionFailedInput,
 } from '../mail/mail.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,19 +30,27 @@ export class EmailQueueProcessor extends WorkerHost {
 
     switch (job.name) {
       case 'send-welcome-email':
-        await this.mailService.sendWelcomeEmail(job.data);
+        await this.mailService.sendWelcomeEmail(
+          job.data as SendWelcomeEmailInput,
+        );
         break;
       case 'send-verification-email':
-        await this.mailService.sendVerificationEmail(job.data);
+        await this.mailService.sendVerificationEmail(
+          job.data as SendVerificationEmailInput,
+        );
         break;
       case 'send-enrollment-confirmation':
-        await this.mailService.sendEnrollmentConfirmation(job.data);
+        await this.mailService.sendEnrollmentConfirmation(
+          job.data as SendEnrollmentConfirmationInput,
+        );
         break;
       case 'test-email':
-        await this.mailService.sendTestEmail(job.data.to);
+        await this.mailService.sendTestEmail((job.data as { to: string }).to);
         break;
       case 'send-subscription-failed':
-        await this.mailService.sendSubscriptionFailed(job.data);
+        await this.mailService.sendSubscriptionFailed(
+          job.data as SendSubscriptionFailedInput,
+        );
         break;
       case 'daily-student-digest':
         await this.handleDailyDigest();

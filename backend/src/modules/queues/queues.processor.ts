@@ -6,12 +6,12 @@ import { Logger } from '@nestjs/common';
 export class QueuesProcessor extends WorkerHost {
   private readonly logger = new Logger(QueuesProcessor.name);
 
-  async process(job: Job): Promise<void> {
+  process(job: Job): void {
     this.logger.log(`Test job processed — ID: ${job.id}`, job.data);
   }
 
   @OnWorkerEvent('failed')
-  async onFailed(job: Job | undefined, error: Error) {
+  onFailed(job: Job | undefined, error: Error): void {
     this.logger.error(`Test job ${job?.id} failed: ${error.message}`);
   }
 }

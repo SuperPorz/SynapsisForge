@@ -55,11 +55,11 @@ describe('Health (e2e)', () => {
 
     it('dovrebbe restituire status OK e un timestamp ISO valido', async () => {
       const res = await request(app.getHttpServer()).get('/health').expect(200);
+      const body = res.body as { data: { status: string; timestamp: string } };
 
-      // TransformInterceptor wrappa sempre la risposta in { data, statusCode, timestamp }
-      expect(res.body.data.status).toBe('OK');
-      expect(new Date(res.body.data.timestamp).toISOString()).toBe(
-        res.body.data.timestamp,
+      expect(body.data.status).toBe('OK');
+      expect(new Date(body.data.timestamp).toISOString()).toBe(
+        body.data.timestamp,
       );
     });
   });

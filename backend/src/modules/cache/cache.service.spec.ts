@@ -14,7 +14,7 @@ describe('CacheService', () => {
       del: jest.fn(),
       wrap: jest.fn(),
       reset: jest.fn(),
-      store: {} as any,
+      store: {} as Record<string, unknown>,
     } as jest.Mocked<Cache>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -65,7 +65,7 @@ describe('CacheService', () => {
 
   describe('invalidateCourse', () => {
     it('should delete course detail, slug, and list caches', async () => {
-      mockCacheManager.del.mockResolvedValue(undefined as any);
+      mockCacheManager.del.mockResolvedValue(undefined);
       await service.invalidateCourse('course-uuid', 'my-slug');
 
       expect(mockCacheManager.del).toHaveBeenCalledWith(
@@ -77,7 +77,7 @@ describe('CacheService', () => {
     });
 
     it('should skip slug deletion when slug is not provided', async () => {
-      mockCacheManager.del.mockResolvedValue(undefined as any);
+      mockCacheManager.del.mockResolvedValue(undefined);
       await service.invalidateCourse('course-uuid');
 
       expect(mockCacheManager.del).toHaveBeenCalledWith(

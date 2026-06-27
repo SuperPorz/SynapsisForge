@@ -65,9 +65,10 @@ export class ReceiptQueueProcessor extends WorkerHost {
   }
 
   @OnWorkerEvent('failed')
-  async onFailed(job: Job | undefined, error: Error) {
+  onFailed(job: Job | undefined, error: Error): void {
+    const data = job?.data as { paymentId?: string } | undefined;
     this.logger.error(
-      `Receipt job ${job?.id} (payment: ${job?.data?.paymentId}) failed: ${error.message}`,
+      `Receipt job ${job?.id} (payment: ${data?.paymentId}) failed: ${error.message}`,
     );
   }
 }

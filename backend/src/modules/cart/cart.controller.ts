@@ -23,32 +23,38 @@ export class CartController {
 
   @Get()
   @ApiOperation({ summary: 'Get cart items with total' })
-  async getCart(@Req() req: any) {
+  async getCart(@Req() req: { user: { id: string } }) {
     return this.cartService.getCart(req.user.id);
   }
 
   @Get('count')
   @ApiOperation({ summary: 'Get cart item count for badge' })
-  async getCartCount(@Req() req: any) {
+  async getCartCount(@Req() req: { user: { id: string } }) {
     const count = await this.cartService.getCartCount(req.user.id);
     return { count };
   }
 
   @Post()
   @ApiOperation({ summary: 'Add course to cart' })
-  async addItem(@Req() req: any, @Body() dto: AddToCartDto) {
+  async addItem(
+    @Req() req: { user: { id: string } },
+    @Body() dto: AddToCartDto,
+  ) {
     return this.cartService.addItem(req.user.id, dto.courseId);
   }
 
   @Delete(':courseId')
   @ApiOperation({ summary: 'Remove course from cart' })
-  async removeItem(@Req() req: any, @Param('courseId') courseId: string) {
+  async removeItem(
+    @Req() req: { user: { id: string } },
+    @Param('courseId') courseId: string,
+  ) {
     return this.cartService.removeItem(req.user.id, courseId);
   }
 
   @Delete()
   @ApiOperation({ summary: 'Clear entire cart' })
-  async clearCart(@Req() req: any) {
+  async clearCart(@Req() req: { user: { id: string } }) {
     await this.cartService.clearCart(req.user.id);
     return { success: true };
   }
@@ -57,7 +63,10 @@ export class CartController {
   @ApiOperation({
     summary: 'Checkout all items in cart with single Braintree payment',
   })
-  async checkout(@Req() req: any, @Body() dto: CartCheckoutDto) {
+  async checkout(
+    @Req() req: { user: { id: string } },
+    @Body() dto: CartCheckoutDto,
+  ) {
     const { items } = await this.cartService.validateForCheckout(req.user.id);
     const courseItems = items.map((i) => ({
       courseId: i.course.id,

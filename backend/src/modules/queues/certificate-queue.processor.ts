@@ -102,9 +102,10 @@ export class CertificateQueueProcessor extends WorkerHost {
   }
 
   @OnWorkerEvent('failed')
-  async onFailed(job: Job | undefined, error: Error) {
+  onFailed(job: Job | undefined, error: Error): void {
+    const data = job?.data as { enrollmentId?: string } | undefined;
     this.logger.error(
-      `Certificate job ${job?.id} (enrollment: ${job?.data?.enrollmentId}) failed after ${job?.attemptsMade} attempts: ${error.message}`,
+      `Certificate job ${job?.id} (enrollment: ${data?.enrollmentId}) failed after ${job?.attemptsMade} attempts: ${error.message}`,
     );
   }
 }
