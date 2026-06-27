@@ -163,6 +163,20 @@ deploy-ec2:
         docker compose -f infra/docker-compose.prod.yml --env-file .env.production pull
         docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
 
+        echo '→ Waiting for backend health...'
+        for i in $(seq 1 12); do
+          if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+            echo '✅ Backend is healthy'
+            break
+          fi
+          echo "   attempt $i/12..."
+          sleep 5
+        done
+        curl -sf http://localhost:3000/health > /dev/null 2>&1 || {
+          echo '❌ Backend failed to start within 60s'
+          exit 1
+        }
+
         echo '→ Cleaning up old images...'
         docker image prune -f
 
