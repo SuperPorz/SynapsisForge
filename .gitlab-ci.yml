@@ -113,7 +113,8 @@ deploy-ec2:
         mkdir -p ~/SynapsisForge/infra
 
         echo '→ Creating .env.production from CI variables...'
-        cat > ~/SynapsisForge/.env.production << ENVEOF
+        env_file=~/SynapsisForge/.env.production
+        cat > $env_file <<'EOF'
 NODE_ENV=production
 DB_HOST=${DB_HOST}
 DB_PORT=${DB_PORT}
@@ -150,7 +151,12 @@ SMTP_PASS=${SMTP_PASS}
 SMTP_FROM=${SMTP_FROM}
 FRONTEND_URL=${FRONTEND_URL}
 CORS_ORIGIN=${CORS_ORIGIN}
-ENVEOF
+EOF
+        echo "→ Substituting CI variables..."
+        for var in DB_HOST DB_PORT DB_USERNAME DB_PASSWORD DB_DATABASE MONGO_URI MONGO_USER MONGO_PASS REDIS_URL JWT_ACCESS_SECRET JWT_ACCESS_EXPIRES_IN JWT_REFRESH_SECRET JWT_REFRESH_EXPIRES_IN AWS_REGION AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY S3_MEDIA_BUCKET S3_PRIVATE_BUCKET USE_S3 BRAINTREE_MERCHANT_ID BRAINTREE_PUBLIC_KEY BRAINTREE_PRIVATE_KEY GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GOOGLE_CALLBACK_URL GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET GITHUB_CALLBACK_URL SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS SMTP_FROM FRONTEND_URL CORS_ORIGIN; do
+          eval "val=\${$var}"
+          sed -i "s|\${$var}|$val|g" $env_file
+        done
 
         echo '→ Pulling latest code from GitLab...'
         cd ~/SynapsisForge
