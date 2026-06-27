@@ -8,7 +8,7 @@ services:
       DB_NAME: pg_database
       DB_HOST: postgres
       DB_PORT: 5432
-      MONGO_URI: mongodb://admin:qwerty@mongodb:27017/mongo_synapsis?authSource=admin
+      MONGO_URI: mongodb://admin:qwerty@mongodb:27017/mongo_synapsis
       REDIS_URL: redis://redis:6379
     depends_on:
       postgres:
@@ -34,15 +34,15 @@ services:
       DB_USERNAME: admin
       DB_PASSWORD: qwerty
       DB_DATABASE: pg_database
-      MONGO_URI: mongodb://admin:qwerty@mongodb:27017/mongo_synapsis?authSource=admin
+      MONGO_URI: mongodb://admin:qwerty@mongodb:27017/mongo_synapsis
       REDIS_URL: redis://redis:6379
       CORS_ORIGIN: http://localhost
     env_file: ../backend/.env
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
       mongodb:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
