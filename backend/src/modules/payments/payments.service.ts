@@ -141,16 +141,16 @@ export class PaymentsService {
 
     switch (kind) {
       case 'subscription_charged_successfully':
-        await this.handleSubscriptionChargedSuccessfully(subscription);
+        if (subscription) await this.handleSubscriptionChargedSuccessfully(subscription);
         break;
       case 'subscription_charged_unsuccessfully':
-        await this.handleSubscriptionChargedUnsuccessfully(subscription);
+        if (subscription) await this.handleSubscriptionChargedUnsuccessfully(subscription);
         break;
       case 'subscription_went_past_due':
-        await this.handleSubscriptionWentPastDue(subscription);
+        if (subscription) await this.handleSubscriptionWentPastDue(subscription);
         break;
       case 'subscription_canceled':
-        await this.handleSubscriptionCanceled(subscription);
+        if (subscription) await this.handleSubscriptionCanceled(subscription);
         break;
       default:
         this.logger.log(`Unhandled webhook kind: ${kind}`);
@@ -468,7 +468,7 @@ export class PaymentsService {
     // 5. Success — create payment + enrollment
     const transaction = transactionResult.transaction!;
     const transactionId = transaction.id;
-    const paymentMethod = transaction.paymentInstrumentType ?? null;
+    const paymentMethod = (transaction as { paymentInstrumentType?: string }).paymentInstrumentType ?? null;
     await this.savePayment(
       userId,
       courseId,
@@ -564,7 +564,7 @@ export class PaymentsService {
 
     const transaction = transactionResult.transaction!;
     const transactionId = transaction.id;
-    const paymentMethod = transaction.paymentInstrumentType ?? null;
+    const paymentMethod = (transaction as { paymentInstrumentType?: string }).paymentInstrumentType ?? null;
     for (const item of items) {
       await this.savePayment(
         userId,

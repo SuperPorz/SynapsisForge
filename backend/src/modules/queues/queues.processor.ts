@@ -6,7 +6,7 @@ import { Logger } from '@nestjs/common';
 export class QueuesProcessor extends WorkerHost {
   private readonly logger = new Logger(QueuesProcessor.name);
 
-  process(job: Job): void {
+  async process(job: Job): Promise<void> {
     this.logger.log(`Test job processed — ID: ${job.id}`, job.data);
   }
 

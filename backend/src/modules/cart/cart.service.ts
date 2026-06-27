@@ -13,7 +13,7 @@ import { StudentProfile } from 'src/common/entities/student-profile.entity';
 
 const CART_CACHE_TTL = 3600;
 
-interface CartCache {
+export interface CartCache {
   items: {
     id: string;
     courseId: string;
@@ -77,7 +77,7 @@ export class CartService {
         id: item.id,
         courseId: item.course.id,
         title: item.course.title,
-        thumbnail_url: item.course.thumbnail_url,
+        thumbnail_url: item.course.thumbnail_url ?? null,
         price: Number(item.course.price),
         added_at: item.added_at,
       })),

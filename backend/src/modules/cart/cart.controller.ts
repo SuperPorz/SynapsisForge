@@ -8,7 +8,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { CartService } from './cart.service';
+import { CartService, CartCache } from './cart.service';
 import { PaymentsService } from '../payments/payments.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { CartCheckoutDto } from './dto/cart-checkout.dto';
@@ -23,13 +23,13 @@ export class CartController {
 
   @Get()
   @ApiOperation({ summary: 'Get cart items with total' })
-  async getCart(@Req() req: { user: { id: string } }) {
+  async getCart(@Req() req: { user: { id: string } }): Promise<CartCache> {
     return this.cartService.getCart(req.user.id);
   }
 
   @Get('count')
   @ApiOperation({ summary: 'Get cart item count for badge' })
-  async getCartCount(@Req() req: { user: { id: string } }) {
+  async getCartCount(@Req() req: { user: { id: string } }): Promise<{ count: number }> {
     const count = await this.cartService.getCartCount(req.user.id);
     return { count };
   }
@@ -39,7 +39,7 @@ export class CartController {
   async addItem(
     @Req() req: { user: { id: string } },
     @Body() dto: AddToCartDto,
-  ) {
+  ): Promise<CartCache> {
     return this.cartService.addItem(req.user.id, dto.courseId);
   }
 
@@ -48,7 +48,7 @@ export class CartController {
   async removeItem(
     @Req() req: { user: { id: string } },
     @Param('courseId') courseId: string,
-  ) {
+  ): Promise<CartCache> {
     return this.cartService.removeItem(req.user.id, courseId);
   }
 
