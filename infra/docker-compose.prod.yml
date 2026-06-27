@@ -3,13 +3,13 @@ services:
     image: michelangelostega/synapsisforge-backend:latest
     environment:
       NODE_ENV: production
-      DB_USER: admin
-      DB_PASS: qwerty
-      DB_NAME: pg_database
-      DB_HOST: postgres
-      DB_PORT: 5432
-      MONGO_URI: mongodb://admin:qwerty@mongodb:27017/mongo_synapsis
-      REDIS_URL: redis://redis:6379
+      DB_USER: ${DB_USERNAME}
+      DB_PASS: ${DB_PASSWORD}
+      DB_NAME: ${DB_DATABASE}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      MONGO_URI: ${MONGO_URI}
+      REDIS_URL: ${REDIS_URL}
     depends_on:
       postgres:
         condition: service_healthy
@@ -29,17 +29,17 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: admin
-      DB_PASSWORD: qwerty
-      DB_DATABASE: pg_database
-      MONGO_URI: mongodb://admin:qwerty@mongodb:27017/mongo_synapsis
-      REDIS_URL: redis://redis:6379
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      MONGO_URI: ${MONGO_URI}
+      REDIS_URL: ${REDIS_URL}
       CORS_ORIGIN: http://localhost
-      FRONTEND_URL: https://synapsisforge.shop
-      GOOGLE_CALLBACK_URL: https://synapsisforge.shop/api/auth/google/callback
-      GITHUB_CALLBACK_URL: https://synapsisforge.shop/api/auth/github/callback
+      FRONTEND_URL: ${FRONTEND_URL}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      GITHUB_CALLBACK_URL: ${GITHUB_CALLBACK_URL}
     env_file: ../backend/.env.production
     depends_on:
       postgres:
@@ -70,13 +70,13 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: qwerty
-      POSTGRES_DB: pg_database
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d pg_database"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -87,8 +87,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: qwerty
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
     volumes:
       - mongo_data:/data/db
     healthcheck:
