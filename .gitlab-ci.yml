@@ -146,40 +146,48 @@ seed-ec2:
       CORS_ORIGIN=${CORS_ORIGIN}
       EOF
 
-      # Copy to EC2
+      # ── Create seed.sh locally ──
+      cat > seed.sh << 'SCRIPT'
+#!/bin/bash
+set -e
+
+echo '→ Resetting PostgreSQL volume to match CI credentials...'
+cd ~/SynapsisForge
+docker compose -f infra/docker-compose.prod.yml --env-file .env.production stop postgres 2>/dev/null || true
+docker compose -f infra/docker-compose.prod.yml --env-file .env.production rm -f postgres 2>/dev/null || true
+for vol in $(docker volume ls -q | grep -i pgdata); do
+  docker volume rm "$vol" 2>/dev/null || true
+done
+
+echo '→ Starting PostgreSQL with fresh data...'
+docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres --wait
+
+echo '→ Pulling latest backend image...'
+docker pull michelangelostega/synapsisforge-backend:latest
+
+echo '→ Syncing database schema (fresh postgres volume needs tables)...'
+docker run --rm --network infra_default \
+  --env-file ~/SynapsisForge/.env.production \
+  michelangelostega/synapsisforge-backend:latest \
+  node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
+
+echo '→ Running database seeds...'
+docker run --rm --network infra_default \
+  --env-file ~/SynapsisForge/.env.production \
+  michelangelostega/synapsisforge-backend:latest \
+  node dist/database/seeds/seed.js
+echo '✅ Seed complete!'
+SCRIPT
+
+      # ── Copy both files to EC2 ──
       scp -i ~/.ssh/deploy_key .env.production $SSH_USER@$SSH_HOST:~/SynapsisForge/.env.production
+      scp -i ~/.ssh/deploy_key seed.sh $SSH_USER@$SSH_HOST:~/SynapsisForge/seed.sh
 
-      # SSH: reset postgres volume (seed data — safe to recreate) and run seeder
-      ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST bash << 'REMOTE'
+      # ── Execute seed script on EC2 ──
+      ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
         set -e
-
-        echo '→ Resetting PostgreSQL volume to match CI credentials...'
-        cd ~/SynapsisForge
-        docker compose -f infra/docker-compose.prod.yml --env-file .env.production stop postgres 2>/dev/null || true
-        docker compose -f infra/docker-compose.prod.yml --env-file .env.production rm -f postgres 2>/dev/null || true
-        for vol in $(docker volume ls -q | grep -i pgdata); do
-          docker volume rm "$vol" 2>/dev/null || true
-        done
-
-      echo '→ Starting PostgreSQL with fresh data...'
-      docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres --wait
-
-      echo '→ Pulling latest backend image...'
-      docker pull michelangelostega/synapsisforge-backend:latest
-
-      echo '→ Syncing database schema (fresh postgres volume needs tables)...'
-      docker run --rm --network infra_default \
-        --env-file ~/SynapsisForge/.env.production \
-        michelangelostega/synapsisforge-backend:latest \
-        node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
-
-      echo '→ Running database seeds...'
-      docker run --rm --network infra_default \
-        --env-file ~/SynapsisForge/.env.production \
-        michelangelostega/synapsisforge-backend:latest \
-        node dist/database/seeds/seed.js
-      echo '✅ Seed complete!'
-REMOTE
+        bash ~/SynapsisForge/seed.sh
+      "
   only:
     - main
   environment:
