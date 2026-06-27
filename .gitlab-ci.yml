@@ -154,7 +154,8 @@ deploy-ec2:
 
         echo '→ Pulling latest code from GitLab...'
         cd ~/SynapsisForge
-        git pull origin main
+        git fetch origin
+        git reset --hard origin/main
 
         echo '→ Deploying with docker compose...'
         cd ~/SynapsisForge
