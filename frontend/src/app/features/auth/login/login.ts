@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -9,10 +10,14 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
 })
-export class Login {
+export class Login implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
+  registered = false;
+  verified = false;
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -21,6 +26,11 @@ export class Login {
 
   get f() {
     return this.form.controls;
+  }
+
+  ngOnInit(): void {
+    this.registered = this.activatedRoute.snapshot.queryParamMap.get('registered') === 'true';
+    this.verified = this.activatedRoute.snapshot.queryParamMap.get('verified') === 'true';
   }
 
   onSubmit(): void {
@@ -38,10 +48,10 @@ export class Login {
   }
 
   navigateToGoogle(): void {
-    window.location.href = '/api/auth/google';
+    window.location.href = `${environment.apiUrl}/auth/google`;
   }
 
   navigateToGithub(): void {
-    window.location.href = '/api/auth/github';
+    window.location.href = `${environment.apiUrl}/auth/github`;
   }
 }

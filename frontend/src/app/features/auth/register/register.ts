@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { passwordMatchValidator } from './password-match.validator';
+import { AuthService, RegisterDto } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -11,6 +13,8 @@ import { passwordMatchValidator } from './password-match.validator';
 })
 export class Register {
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   // Valori dell'enum Country — DA SISTEMARE IN FUTURO
   countries = [
@@ -39,18 +43,27 @@ export class Register {
     return this.form.hasError('passwordMismatch') && !!this.f.confirmPassword.touched; //!! converte in booleano
   }
 
+  errorMessage = '';
+
   onSubmit(): void {
     if (this.form.invalid) return;
+    this.errorMessage = '';
     const { confirmPassword, ...payload } = this.form.value;
-    // payload corrisponde esattamente al CreateUserDto
-    console.log(payload);
+    this.authService.register(payload as RegisterDto).subscribe({
+      next: () => this.router.navigate(['/login'], {
+        queryParams: { registered: 'true' },
+      }),
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Registration failed. Try again.';
+      },
+    });
   }
 
   navigateToGoogle(): void {
-    window.location.href = '/api/auth/google';
+    window.location.href = `${environment.apiUrl}/auth/google`;
   }
 
   navigateToGithub(): void {
-    window.location.href = '/api/auth/github';
+    window.location.href = `${environment.apiUrl}/auth/github`;
   }
 }

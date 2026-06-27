@@ -71,6 +71,10 @@
         }
       </div>
 
+      @if (errorMessage) {
+        <p class="text-sm text-red-500 text-center">{{ errorMessage }}</p>
+      }
+
       <button type="submit" [disabled]="form.invalid" class="w-full rounded-lg bg-fg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-fg-brand-strong disabled:opacity-50">
         Register
       </button>

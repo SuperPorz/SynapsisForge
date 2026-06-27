@@ -72,6 +72,7 @@ export class AuthService {
       userId: user.id,
       email: user.email,
       name: `${user.first_name} ${user.last_name}`,
+      verificationToken: token,
     });
 
     return { message: 'Registrazione completata. Controlla la tua email.' };

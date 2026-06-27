@@ -23,7 +23,9 @@ pdfMake.fonts = {
 };
 
 pdfMake.setUrlAccessPolicy(() => false);
-pdfMake.setLocalAccessPolicy((filePath: string) => filePath.startsWith(robotoDir));
+pdfMake.setLocalAccessPolicy((filePath: string) =>
+  filePath.startsWith(robotoDir),
+);
 
 export type { CertificateData, ReceiptData };
 

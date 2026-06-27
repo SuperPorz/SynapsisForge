@@ -12,10 +12,12 @@ export class EmailListener {
     userId: string;
     email: string;
     name: string;
+    verificationToken: string;
   }): Promise<void> {
-    await this.emailQueue.add('send-welcome-email', {
+    await this.emailQueue.add('send-verification-email', {
       to: payload.email,
       name: payload.name,
+      token: payload.verificationToken,
     });
   }
 

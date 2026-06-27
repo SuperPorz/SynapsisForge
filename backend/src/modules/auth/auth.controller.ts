@@ -2,6 +2,7 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response, Request } from 'express';
 import { LoginDto } from './dto/login.dto';
@@ -31,6 +32,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Public()
@@ -129,8 +131,13 @@ export class AuthController {
     @Res() res: Response,
   ): void {
     const { accessToken, refreshToken } = req.user;
+    const frontendUrl = this.configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:4200',
+    );
+    res.cookie('refresh_token', refreshToken, REFRESH_COOKIE_OPTIONS);
     res.redirect(
-      `http://localhost:4200/oauth-test.html?provider=google&accessToken=${accessToken}&refreshToken=${refreshToken}`,
+      `${frontendUrl}/oauth-callback?provider=google&accessToken=${accessToken}`,
     );
   }
 
@@ -149,8 +156,13 @@ export class AuthController {
     @Res() res: Response,
   ): void {
     const { accessToken, refreshToken } = req.user;
+    const frontendUrl = this.configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:4200',
+    );
+    res.cookie('refresh_token', refreshToken, REFRESH_COOKIE_OPTIONS);
     res.redirect(
-      `http://localhost:4200/oauth-test.html?provider=github&accessToken=${accessToken}&refreshToken=${refreshToken}`,
+      `${frontendUrl}/oauth-callback?provider=github&accessToken=${accessToken}`,
     );
   }
 }

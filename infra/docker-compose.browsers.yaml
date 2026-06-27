@@ -1,0 +1,76 @@
+name: synapsis-browsers
+
+# Cross-browser testing with Selenium Grid + VNC
+# Browsers: Opera, Firefox, Edge
+# Access via VNC to visually interact with each browser.
+#
+# Prerequisites: A VNC client (e.g. TigerVNC, RealVNC, or built-in in macOS)
+#
+# Usage:
+#   1. docker compose -f docker-compose.browsers.yaml up -d
+#   2. Connect VNC client to:
+#      - Opera:   localhost:5901  (password: secret)
+#      - Firefox: localhost:5902  (password: secret)
+#      - Edge:    localhost:5903  (password: secret)
+#   3. Selenium Dashboard: http://localhost:4444
+#   4. When done: docker compose -f docker-compose.browsers.yaml down
+#
+# Notes:
+#   - On Windows, install TigerVNC from https://tigervnc.org
+#   - Opera is Chromium-based but uses its own user agent + engine flags
+#   - Edge node requires Windows AMD64 host (may not work on ARM)
+
+services:
+  selenium-hub:
+    image: selenium/hub:latest
+    ports:
+      - "4444:4444"
+    environment:
+      SE_SESSION_REQUEST_TIMEOUT: 300
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/status"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  opera:
+    image: selenium/node-opera:latest
+    shm_size: 2gb
+    ports:
+      - "5901:5900"
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_VNC_PASSWORD: secret
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+
+  firefox:
+    image: selenium/node-firefox:latest
+    shm_size: 2gb
+    ports:
+      - "5902:5900"
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_VNC_PASSWORD: secret
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+
+  edge:
+    image: selenium/node-edge:latest
+    shm_size: 2gb
+    ports:
+      - "5903:5900"
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_VNC_PASSWORD: secret
+    depends_on:
+      selenium-hub:
+        condition: service_healthy

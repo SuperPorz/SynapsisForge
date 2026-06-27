@@ -3,7 +3,6 @@ import { Job } from 'bullmq';
 import {
   MailService,
   SendDailyDigestInput,
-  SendSubscriptionFailedInput,
 } from '../mail/mail.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,6 +28,9 @@ export class EmailQueueProcessor extends WorkerHost {
       case 'send-welcome-email':
         await this.mailService.sendWelcomeEmail(job.data);
         break;
+      case 'send-verification-email':
+        await this.mailService.sendVerificationEmail(job.data);
+        break;
       case 'send-enrollment-confirmation':
         await this.mailService.sendEnrollmentConfirmation(job.data);
         break;
@@ -49,7 +51,7 @@ export class EmailQueueProcessor extends WorkerHost {
   }
 
   @OnWorkerEvent('failed')
-  async onFailed(job: Job | undefined, error: Error) {
+  onFailed(job: Job | undefined, error: Error) {
     this.logger.error(
       `Email job ${job?.id} (${job?.name}) failed after ${job?.attemptsMade} attempts: ${error.message}`,
     );

@@ -64,7 +64,8 @@ export class CoursesController {
   @Get()
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParsePositiveIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParsePositiveIntPipe) limit: number,
+    @Query('limit', new DefaultValuePipe(10), ParsePositiveIntPipe)
+    limit: number,
     @Query('category') category?: string,
     @Query('featured', new ParseBoolPipe({ optional: true }))
     featured?: boolean,

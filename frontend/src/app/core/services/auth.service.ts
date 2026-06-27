@@ -31,6 +31,15 @@ interface LoginDto {
   password: string;
 }
 
+export interface RegisterDto {
+  first_name: string;
+  last_name: string;
+  email: string;
+  birth_date: string;
+  country: string;
+  password: string;
+}
+
 interface AuthResponse {
   accessToken: string;
 }
@@ -95,6 +104,17 @@ export class AuthService {
       // scaduto restituisce null e il signal rimane null (utente non loggato).
       this._currentUser.set(user);
     }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // REGISTER — chiama POST /auth/register, crea l'utente
+  // Non riceve token — solo messaggio di conferma. L'utente deve verificare l'email.
+  // ─────────────────────────────────────────────────────────────────────────────
+  register(dto: RegisterDto): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.API}/auth/register`,
+      dto,
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -173,7 +193,7 @@ export class AuthService {
 
   // applyToken: unico punto in cui token + signal vengono aggiornati insieme.
   // Chiamato da login() e refresh() per garantire consistenza tra storage e signal.
-  private applyToken(token: string): void {
+  applyToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
     const user = this.buildUserFromToken(token);
     this._currentUser.set(user); // aggiorna il signal → tutti i computed reagiscono

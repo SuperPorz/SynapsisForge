@@ -7,6 +7,12 @@ export interface SendWelcomeEmailInput {
   name: string;
 }
 
+export interface SendVerificationEmailInput {
+  to: string;
+  name: string;
+  token: string;
+}
+
 export interface SendEnrollmentConfirmationInput {
   to: string;
   userName: string;
@@ -53,6 +59,20 @@ export class MailService {
     await this.send('welcome', input.to, 'Welcome to SynapsisForge!', {
       name: input.name,
     });
+  }
+
+  async sendVerificationEmail(
+    input: SendVerificationEmailInput,
+  ): Promise<void> {
+    await this.send(
+      'email-verification',
+      input.to,
+      'Verify your email — SynapsisForge',
+      {
+        name: input.name,
+        token: input.token,
+      },
+    );
   }
 
   async sendEnrollmentConfirmation(

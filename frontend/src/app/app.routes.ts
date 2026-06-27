@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
+import { OAuthCallback } from './features/auth/oauth-callback/oauth-callback';
+import { VerifyEmail } from './features/auth/verify-email/verify-email';
 import { roleGuard } from './core/guards/role-guard';
 import { authGuard } from './core/guards/auth-guard';
 import { Home } from './features/home/home';
@@ -17,6 +19,14 @@ export const routes: Routes = [
   {
     path: 'register',
     component: Register,
+  },
+  {
+    path: 'oauth-callback',
+    component: OAuthCallback,
+  },
+  {
+    path: 'verify-email/:token',
+    component: VerifyEmail,
   },
 
   {
