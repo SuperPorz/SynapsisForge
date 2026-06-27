@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthService } from './modules/health/health.service';
@@ -35,6 +36,14 @@ import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [
+        path.resolve(
+          __dirname,
+          '..',
+          `.env.${process.env.NODE_ENV || 'development'}`,
+        ),
+        path.resolve(__dirname, '..', '.env'),
+      ],
     }),
     ThrottlerModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({

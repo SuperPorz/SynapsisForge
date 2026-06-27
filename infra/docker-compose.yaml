@@ -36,7 +36,7 @@ services:
       MONGO_PASS: qwerty
       MONGO_AUTH_SOURCE: admin
       REDIS_URL: redis://redis:6379
-    env_file: ../backend/.env
+    env_file: ../backend/.env.development
     depends_on:
       postgres:
         condition: service_healthy

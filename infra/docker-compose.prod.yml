@@ -37,7 +37,10 @@ services:
       MONGO_URI: mongodb://admin:qwerty@mongodb:27017/mongo_synapsis
       REDIS_URL: redis://redis:6379
       CORS_ORIGIN: http://localhost
-    env_file: ../backend/.env
+      FRONTEND_URL: https://synapsisforge.shop
+      GOOGLE_CALLBACK_URL: https://synapsisforge.shop/api/auth/google/callback
+      GITHUB_CALLBACK_URL: https://synapsisforge.shop/api/auth/github/callback
+    env_file: ../backend/.env.production
     depends_on:
       postgres:
         condition: service_healthy
