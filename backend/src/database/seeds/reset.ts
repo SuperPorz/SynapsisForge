@@ -9,7 +9,8 @@
  *   npm run db:reset
  */
 
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: '.env.development' });
 import { Client } from 'pg';
 import mongoose from 'mongoose';
 import { createClient } from '@redis/client';

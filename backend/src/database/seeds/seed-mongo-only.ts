@@ -1,5 +1,6 @@
 /* eslint-disable */
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: '.env.development' });
 import { AppDataSource } from '../../data-source';
 import { seedMongo } from './mongo.seed';
 import { Lesson } from '../../common/entities/lessons.entity';

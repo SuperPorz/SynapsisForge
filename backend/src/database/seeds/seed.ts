@@ -15,7 +15,8 @@
  *   npm run db:reset && npm run db:seed
  */
 
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: '.env.development' });
 import { AppDataSource } from '../../data-source';
 import { seedCategories } from './categories.seed';
 import { seedUsers } from './users.seed';

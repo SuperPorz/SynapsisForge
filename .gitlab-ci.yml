@@ -108,16 +108,16 @@ seed-ec2:
       # Create .env.production locally (safe heredoc — no quoting issues)
       cat > .env.production << EOF
       NODE_ENV=production
-      DB_HOST=${DB_HOST}
+      DB_HOST=postgres
       DB_PORT=${DB_PORT}
       DB_USERNAME=${DB_USERNAME}
       DB_PASSWORD=${DB_PASSWORD}
       DB_DATABASE=${DB_DATABASE}
-      MONGO_URI=${MONGO_URI}
+      MONGO_URI=mongodb://mongodb:27017/mongo_synapsis
       MONGO_USER=${MONGO_USER}
       MONGO_PASS=${MONGO_PASS}
       MONGO_AUTH_SOURCE=${MONGO_AUTH_SOURCE:-admin}
-      REDIS_URL=${REDIS_URL}
+      REDIS_URL=redis://redis:6379
       JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
       JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
@@ -193,16 +193,16 @@ deploy-ec2:
       # ── Create .env.production locally ──
       cat > .env.production << EOF
       NODE_ENV=production
-      DB_HOST=${DB_HOST}
+      DB_HOST=postgres
       DB_PORT=${DB_PORT}
       DB_USERNAME=${DB_USERNAME}
       DB_PASSWORD=${DB_PASSWORD}
       DB_DATABASE=${DB_DATABASE}
-      MONGO_URI=${MONGO_URI}
+      MONGO_URI=mongodb://mongodb:27017/mongo_synapsis
       MONGO_USER=${MONGO_USER}
       MONGO_PASS=${MONGO_PASS}
       MONGO_AUTH_SOURCE=${MONGO_AUTH_SOURCE:-admin}
-      REDIS_URL=${REDIS_URL}
+      REDIS_URL=redis://redis:6379
       JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
       JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
