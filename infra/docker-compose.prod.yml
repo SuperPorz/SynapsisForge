@@ -1,4 +1,25 @@
 services:
+  seeder:
+    image: michelangelostega/synapsisforge-backend:latest
+    environment:
+      NODE_ENV: production
+      DB_USER: admin
+      DB_PASS: qwerty
+      DB_NAME: pg_database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      MONGO_URI: mongodb://admin:qwerty@mongodb:27017/mongo_synapsis?authSource=admin
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["node", "dist/database/seeds/seed.js"]
+    restart: "no"
+
   backend:
     image: michelangelostega/synapsisforge-backend:latest
     # build:

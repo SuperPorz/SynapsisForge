@@ -21,6 +21,7 @@
     "sync-ids": "ts-node src/database/scripts/sync-ids.ts",
     "db:seed": "ts-node src/database/seeds/seed.ts",
     "db:reset": "ts-node src/database/seeds/reset.ts",
+    "db:seed:prod": "node dist/database/seeds/seed.js",
     "db:seed:mongo": "ts-node src/database/seeds/seed-mongo-only.ts",
     "db:upload-videos": "ts-node src/database/scripts/upload-videos-to-s3.ts"
   },
