@@ -2,7 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-verify-email',
@@ -16,7 +15,6 @@ import { AuthService } from '../../../core/services/auth.service';
 export class VerifyEmail implements OnInit {
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
-  private authService = inject(AuthService);
   private router = inject(Router);
 
   status = 'Verifying your email…';
@@ -35,8 +33,7 @@ export class VerifyEmail implements OnInit {
       )
       .subscribe({
         next: (res) => {
-          this.authService.applyToken(res.accessToken);
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/login'], { queryParams: { verified: true } });
         },
         error: () => {
           this.status = 'Verification failed. The link may have expired.';
