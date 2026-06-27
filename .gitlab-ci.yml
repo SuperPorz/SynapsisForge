@@ -168,16 +168,28 @@ seed-ec2:
       docker pull michelangelostega/synapsisforge-backend:latest
 
       echo '→ Syncing database schema (fresh postgres volume needs tables)...'
-      docker compose -f infra/docker-compose.prod.yml --env-file .env.production run -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis --rm seeder node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
+      docker run --rm --network infra_default \
+        --env-file ~/SynapsisForge/.env.production \
+        -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis \
+        michelangelostega/synapsisforge-backend:latest \
+        node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
 
       echo '→ Debug: checking .env.production on EC2...'
       grep '^MONGO_URI=' ~/SynapsisForge/.env.production
 
-      echo '→ Debug: MONGO_URI from container (raw + getMongoUri)...'
-      docker compose -f infra/docker-compose.prod.yml --env-file .env.production run -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis --rm seeder node -e "console.log('RAW MONGO_URI:', process.env.MONGO_URI); const u = require('./dist/database/shared/mongo-uri.util').getMongoUri; try { console.log('getMongoUri():', u()); } catch(e) { console.log('getMongoUri() ERROR:', e.message); }"
+      echo '→ Debug: verifying MONGO_URI inside container...'
+      docker run --rm --network infra_default \
+        --env-file ~/SynapsisForge/.env.production \
+        -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis \
+        michelangelostega/synapsisforge-backend:latest \
+        node -e 'console.log("MONGO_URI=" + process.env.MONGO_URI)'
 
       echo '→ Running database seeds...'
-      docker compose -f infra/docker-compose.prod.yml --env-file .env.production run -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis --rm seeder
+      docker run --rm --network infra_default \
+        --env-file ~/SynapsisForge/.env.production \
+        -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis \
+        michelangelostega/synapsisforge-backend:latest \
+        node dist/database/seeds/seed.js
       echo '✅ Seed complete!'
       "
   only:
