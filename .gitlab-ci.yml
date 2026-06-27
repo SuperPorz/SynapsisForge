@@ -105,49 +105,66 @@ seed-ec2:
     - ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null
   script:
     - |
+      # Create .env.production locally (safe heredoc — no quoting issues)
+      cat > .env.production << EOF
+      NODE_ENV=production
+      DB_HOST=${DB_HOST}
+      DB_PORT=${DB_PORT}
+      DB_USERNAME=${DB_USERNAME}
+      DB_PASSWORD=${DB_PASSWORD}
+      DB_DATABASE=${DB_DATABASE}
+      MONGO_URI=${MONGO_URI}
+      MONGO_USER=${MONGO_USER}
+      MONGO_PASS=${MONGO_PASS}
+      MONGO_AUTH_SOURCE=${MONGO_AUTH_SOURCE}
+      REDIS_URL=${REDIS_URL}
+      JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
+      JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
+      AWS_REGION=${AWS_REGION}
+      AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      S3_MEDIA_BUCKET=${S3_MEDIA_BUCKET}
+      S3_PRIVATE_BUCKET=${S3_PRIVATE_BUCKET}
+      USE_S3=${USE_S3}
+      BRAINTREE_MERCHANT_ID=${BRAINTREE_MERCHANT_ID}
+      BRAINTREE_PUBLIC_KEY=${BRAINTREE_PUBLIC_KEY}
+      BRAINTREE_PRIVATE_KEY=${BRAINTREE_PRIVATE_KEY}
+      GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL}
+      SMTP_HOST=${SMTP_HOST}
+      SMTP_PORT=${SMTP_PORT}
+      SMTP_USER=${SMTP_USER}
+      SMTP_PASS=${SMTP_PASS}
+      SMTP_FROM=${SMTP_FROM}
+      FRONTEND_URL=${FRONTEND_URL}
+      CORS_ORIGIN=${CORS_ORIGIN}
+      EOF
+
+      # Copy to EC2
+      scp -i ~/.ssh/deploy_key .env.production $SSH_USER@$SSH_HOST:~/SynapsisForge/.env.production
+
+      # SSH: reset postgres volume (seed data — safe to recreate) and run seeder
       ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
         set -e
-        echo '→ Creating .env.production from CI variables...'
-        echo \"NODE_ENV=production\" > ~/SynapsisForge/.env.production
-        echo \"DB_HOST=$DB_HOST\" >> ~/SynapsisForge/.env.production
-        echo \"DB_PORT=$DB_PORT\" >> ~/SynapsisForge/.env.production
-        echo \"DB_USERNAME=$DB_USERNAME\" >> ~/SynapsisForge/.env.production
-        echo \"DB_PASSWORD=$DB_PASSWORD\" >> ~/SynapsisForge/.env.production
-        echo \"DB_DATABASE=$DB_DATABASE\" >> ~/SynapsisForge/.env.production
-        echo \"MONGO_URI=$MONGO_URI\" >> ~/SynapsisForge/.env.production
-        echo \"MONGO_USER=$MONGO_USER\" >> ~/SynapsisForge/.env.production
-        echo \"MONGO_PASS=$MONGO_PASS\" >> ~/SynapsisForge/.env.production
-        echo \"MONGO_AUTH_SOURCE=$MONGO_AUTH_SOURCE\" >> ~/SynapsisForge/.env.production
-        echo \"REDIS_URL=$REDIS_URL\" >> ~/SynapsisForge/.env.production
-        echo \"JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET\" >> ~/SynapsisForge/.env.production
-        echo \"JWT_ACCESS_EXPIRES_IN=$JWT_ACCESS_EXPIRES_IN\" >> ~/SynapsisForge/.env.production
-        echo \"JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET\" >> ~/SynapsisForge/.env.production
-        echo \"JWT_REFRESH_EXPIRES_IN=$JWT_REFRESH_EXPIRES_IN\" >> ~/SynapsisForge/.env.production
-        echo \"AWS_REGION=$AWS_REGION\" >> ~/SynapsisForge/.env.production
-        echo \"AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID\" >> ~/SynapsisForge/.env.production
-        echo \"AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY\" >> ~/SynapsisForge/.env.production
-        echo \"S3_MEDIA_BUCKET=$S3_MEDIA_BUCKET\" >> ~/SynapsisForge/.env.production
-        echo \"S3_PRIVATE_BUCKET=$S3_PRIVATE_BUCKET\" >> ~/SynapsisForge/.env.production
-        echo \"USE_S3=$USE_S3\" >> ~/SynapsisForge/.env.production
-        echo \"BRAINTREE_MERCHANT_ID=$BRAINTREE_MERCHANT_ID\" >> ~/SynapsisForge/.env.production
-        echo \"BRAINTREE_PUBLIC_KEY=$BRAINTREE_PUBLIC_KEY\" >> ~/SynapsisForge/.env.production
-        echo \"BRAINTREE_PRIVATE_KEY=$BRAINTREE_PRIVATE_KEY\" >> ~/SynapsisForge/.env.production
-        echo \"GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID\" >> ~/SynapsisForge/.env.production
-        echo \"GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET\" >> ~/SynapsisForge/.env.production
-        echo \"GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL\" >> ~/SynapsisForge/.env.production
-        echo \"GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID\" >> ~/SynapsisForge/.env.production
-        echo \"GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET\" >> ~/SynapsisForge/.env.production
-        echo \"GITHUB_CALLBACK_URL=$GITHUB_CALLBACK_URL\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_HOST=$SMTP_HOST\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_PORT=$SMTP_PORT\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_USER=$SMTP_USER\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_PASS=$SMTP_PASS\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_FROM=$SMTP_FROM\" >> ~/SynapsisForge/.env.production
-        echo \"FRONTEND_URL=$FRONTEND_URL\" >> ~/SynapsisForge/.env.production
-        echo \"CORS_ORIGIN=$CORS_ORIGIN\" >> ~/SynapsisForge/.env.production
+
+        echo '→ Resetting PostgreSQL volume to match CI credentials...'
+        cd ~/SynapsisForge
+        docker compose -f infra/docker-compose.prod.yml --env-file .env.production stop postgres 2>/dev/null || true
+        docker compose -f infra/docker-compose.prod.yml --env-file .env.production rm -f postgres 2>/dev/null || true
+        for vol in \$(docker volume ls -q | grep -i pgdata); do
+          docker volume rm \"\$vol\" 2>/dev/null || true
+        done
+
+        echo '→ Starting PostgreSQL with fresh data...'
+        docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres --wait
 
         echo '→ Running database seeds...'
-        cd ~/SynapsisForge
         docker compose -f infra/docker-compose.prod.yml --env-file .env.production run --rm seeder
         echo '✅ Seed complete!'
       "
@@ -170,86 +187,106 @@ deploy-ec2:
     - ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null
   script:
     - |
+      # ── Create .env.production locally ──
+      cat > .env.production << EOF
+      NODE_ENV=production
+      DB_HOST=${DB_HOST}
+      DB_PORT=${DB_PORT}
+      DB_USERNAME=${DB_USERNAME}
+      DB_PASSWORD=${DB_PASSWORD}
+      DB_DATABASE=${DB_DATABASE}
+      MONGO_URI=${MONGO_URI}
+      MONGO_USER=${MONGO_USER}
+      MONGO_PASS=${MONGO_PASS}
+      MONGO_AUTH_SOURCE=${MONGO_AUTH_SOURCE}
+      REDIS_URL=${REDIS_URL}
+      JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
+      JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
+      AWS_REGION=${AWS_REGION}
+      AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      S3_MEDIA_BUCKET=${S3_MEDIA_BUCKET}
+      S3_PRIVATE_BUCKET=${S3_PRIVATE_BUCKET}
+      USE_S3=${USE_S3}
+      BRAINTREE_MERCHANT_ID=${BRAINTREE_MERCHANT_ID}
+      BRAINTREE_PUBLIC_KEY=${BRAINTREE_PUBLIC_KEY}
+      BRAINTREE_PRIVATE_KEY=${BRAINTREE_PRIVATE_KEY}
+      GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL}
+      SMTP_HOST=${SMTP_HOST}
+      SMTP_PORT=${SMTP_PORT}
+      SMTP_USER=${SMTP_USER}
+      SMTP_PASS=${SMTP_PASS}
+      SMTP_FROM=${SMTP_FROM}
+      FRONTEND_URL=${FRONTEND_URL}
+      CORS_ORIGIN=${CORS_ORIGIN}
+      EOF
+
+      # ── Create deploy.sh locally (unescaped $ = CI var on runner; escaped \$ = var on EC2) ──
+      cat > deploy.sh << EOF
+      #!/bin/bash
+      set -e
+
+      # CI variable values embedded at script-build time
+      BACKEND_IMAGE=$BACKEND_IMAGE
+      FRONTEND_IMAGE=$FRONTEND_IMAGE
+      CI_JOB_TOKEN=$CI_JOB_TOKEN
+
+      echo '→ Pulling latest images...'
+      docker pull \${BACKEND_IMAGE}:latest
+      docker pull \${FRONTEND_IMAGE}:latest
+
+      echo '→ Ensuring infra directory exists...'
+      mkdir -p ~/SynapsisForge/infra
+
+      echo '→ Pulling latest code from GitLab...'
+      cd ~/SynapsisForge
+      git remote add gitlab https://gitlab-ci-token:\${CI_JOB_TOKEN}@gitlab.com/superporz1/SynapsisForge.git 2>/dev/null || git remote set-url gitlab https://gitlab-ci-token:\${CI_JOB_TOKEN}@gitlab.com/superporz1/SynapsisForge.git
+      git fetch gitlab
+      git reset --hard gitlab/main
+
+      echo '→ Deploying with docker compose...'
+      cd ~/SynapsisForge
+      docker compose -f infra/docker-compose.prod.yml --env-file .env.production pull
+      docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
+
+      echo '→ Waiting for backend health...'
+      for i in \$(seq 1 12); do
+        if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+          echo '✅ Backend is healthy'
+          break
+        fi
+        echo "   attempt \${i}/12..."
+        sleep 5
+      done
+      curl -sf http://localhost:3000/health > /dev/null 2>&1 || {
+        echo '❌ Backend failed to start within 60s'
+        exit 1
+      }
+
+      echo '→ Cleaning up old images...'
+      docker image prune -f
+
+      echo '✅ Deploy complete!'
+      EOF
+
+      # ── Copy both files to EC2 ──
+      scp -i ~/.ssh/deploy_key .env.production $SSH_USER@$SSH_HOST:~/SynapsisForge/.env.production
+      scp -i ~/.ssh/deploy_key deploy.sh $SSH_USER@$SSH_HOST:~/SynapsisForge/deploy.sh
+
+      # ── Execute deploy script on EC2 ──
       ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
         set -e
-        echo '→ Pulling latest images...'
-        docker pull $BACKEND_IMAGE:latest
-        docker pull $FRONTEND_IMAGE:latest
-
-        echo '→ Ensuring infra directory exists...'
-        mkdir -p ~/SynapsisForge/infra
-
-        echo '→ Creating .env.production from CI variables...'
-        echo \"NODE_ENV=production\" > ~/SynapsisForge/.env.production
-        echo \"DB_HOST=$DB_HOST\" >> ~/SynapsisForge/.env.production
-        echo \"DB_PORT=$DB_PORT\" >> ~/SynapsisForge/.env.production
-        echo \"DB_USERNAME=$DB_USERNAME\" >> ~/SynapsisForge/.env.production
-        echo \"DB_PASSWORD=$DB_PASSWORD\" >> ~/SynapsisForge/.env.production
-        echo \"DB_DATABASE=$DB_DATABASE\" >> ~/SynapsisForge/.env.production
-        echo \"MONGO_URI=$MONGO_URI\" >> ~/SynapsisForge/.env.production
-        echo \"MONGO_USER=$MONGO_USER\" >> ~/SynapsisForge/.env.production
-        echo \"MONGO_PASS=$MONGO_PASS\" >> ~/SynapsisForge/.env.production
-        echo \"REDIS_URL=$REDIS_URL\" >> ~/SynapsisForge/.env.production
-        echo \"JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET\" >> ~/SynapsisForge/.env.production
-        echo \"JWT_ACCESS_EXPIRES_IN=$JWT_ACCESS_EXPIRES_IN\" >> ~/SynapsisForge/.env.production
-        echo \"JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET\" >> ~/SynapsisForge/.env.production
-        echo \"JWT_REFRESH_EXPIRES_IN=$JWT_REFRESH_EXPIRES_IN\" >> ~/SynapsisForge/.env.production
-        echo \"AWS_REGION=$AWS_REGION\" >> ~/SynapsisForge/.env.production
-        echo \"AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID\" >> ~/SynapsisForge/.env.production
-        echo \"AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY\" >> ~/SynapsisForge/.env.production
-        echo \"S3_MEDIA_BUCKET=$S3_MEDIA_BUCKET\" >> ~/SynapsisForge/.env.production
-        echo \"S3_PRIVATE_BUCKET=$S3_PRIVATE_BUCKET\" >> ~/SynapsisForge/.env.production
-        echo \"USE_S3=$USE_S3\" >> ~/SynapsisForge/.env.production
-        echo \"BRAINTREE_MERCHANT_ID=$BRAINTREE_MERCHANT_ID\" >> ~/SynapsisForge/.env.production
-        echo \"BRAINTREE_PUBLIC_KEY=$BRAINTREE_PUBLIC_KEY\" >> ~/SynapsisForge/.env.production
-        echo \"BRAINTREE_PRIVATE_KEY=$BRAINTREE_PRIVATE_KEY\" >> ~/SynapsisForge/.env.production
-        echo \"GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID\" >> ~/SynapsisForge/.env.production
-        echo \"GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET\" >> ~/SynapsisForge/.env.production
-        echo \"GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL\" >> ~/SynapsisForge/.env.production
-        echo \"GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID\" >> ~/SynapsisForge/.env.production
-        echo \"GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET\" >> ~/SynapsisForge/.env.production
-        echo \"GITHUB_CALLBACK_URL=$GITHUB_CALLBACK_URL\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_HOST=$SMTP_HOST\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_PORT=$SMTP_PORT\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_USER=$SMTP_USER\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_PASS=$SMTP_PASS\" >> ~/SynapsisForge/.env.production
-        echo \"SMTP_FROM=$SMTP_FROM\" >> ~/SynapsisForge/.env.production
-        echo \"FRONTEND_URL=$FRONTEND_URL\" >> ~/SynapsisForge/.env.production
-        echo \"CORS_ORIGIN=$CORS_ORIGIN\" >> ~/SynapsisForge/.env.production
-
-        echo '→ Pulling latest code from GitLab...'
-        cd ~/SynapsisForge
-        git remote add gitlab https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/superporz1/SynapsisForge.git 2>/dev/null || git remote set-url gitlab https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/superporz1/SynapsisForge.git
-        git fetch gitlab
-        git reset --hard gitlab/main
-
-        echo '→ Deploying with docker compose...'
-        cd ~/SynapsisForge
-        docker compose -f infra/docker-compose.prod.yml --env-file .env.production pull
-        docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
-
-        echo '→ Waiting for backend health...'
-        for i in $(seq 1 12); do
-          if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
-            echo '✅ Backend is healthy'
-            break
-          fi
-          echo "   attempt $i/12..."
-          sleep 5
-        done
-        curl -sf http://localhost:3000/health > /dev/null 2>&1 || {
-          echo '❌ Backend failed to start within 60s'
-          exit 1
-        }
-
-        echo '→ Cleaning up old images...'
-        docker image prune -f
-
-        echo '✅ Deploy complete!'
+        bash ~/SynapsisForge/deploy.sh
       "
   only:
     - main
-  when: always
   environment:
     name: production
     url: https://synapsisforge.shop
