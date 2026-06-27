@@ -64,7 +64,7 @@ import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: true,
     }),
     // Database secondario (MongoDB)
     MongooseModule.forRootAsync({

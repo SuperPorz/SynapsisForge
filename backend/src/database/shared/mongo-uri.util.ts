@@ -27,9 +27,13 @@ export function getMongoUri(): string {
   const authSource = process.env.MONGO_AUTH_SOURCE || 'admin';
 
   // Inietta user:pass@ subito dopo "mongodb://", solo se entrambi presenti
+  // I caratteri speciali (@, :, /, etc.) vengono URL-encodati con encodeURIComponent
+  // per evitare che rompano il parsing dell'URI (es. MONGO_USER=pippo@example.com)
   let uriWithAuth = baseUri;
   if (user && pass) {
-    uriWithAuth = baseUri.replace('mongodb://', `mongodb://${user}:${pass}@`);
+    const encodedUser = encodeURIComponent(user);
+    const encodedPass = encodeURIComponent(pass);
+    uriWithAuth = baseUri.replace('mongodb://', `mongodb://${encodedUser}:${encodedPass}@`);
   }
 
   // Aggiunge authSource come query param, gestendo sia il caso "nessun ?"

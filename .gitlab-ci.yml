@@ -150,15 +150,15 @@ seed-ec2:
       scp -i ~/.ssh/deploy_key .env.production $SSH_USER@$SSH_HOST:~/SynapsisForge/.env.production
 
       # SSH: reset postgres volume (seed data — safe to recreate) and run seeder
-      ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
+      ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST bash << 'REMOTE'
         set -e
 
         echo '→ Resetting PostgreSQL volume to match CI credentials...'
         cd ~/SynapsisForge
         docker compose -f infra/docker-compose.prod.yml --env-file .env.production stop postgres 2>/dev/null || true
         docker compose -f infra/docker-compose.prod.yml --env-file .env.production rm -f postgres 2>/dev/null || true
-        for vol in \$(docker volume ls -q | grep -i pgdata); do
-          docker volume rm \"\$vol\" 2>/dev/null || true
+        for vol in $(docker volume ls -q | grep -i pgdata); do
+          docker volume rm "$vol" 2>/dev/null || true
         done
 
       echo '→ Starting PostgreSQL with fresh data...'
@@ -170,28 +170,16 @@ seed-ec2:
       echo '→ Syncing database schema (fresh postgres volume needs tables)...'
       docker run --rm --network infra_default \
         --env-file ~/SynapsisForge/.env.production \
-        -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis \
         michelangelostega/synapsisforge-backend:latest \
         node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
-
-      echo '→ Debug: checking .env.production on EC2...'
-      grep '^MONGO_URI=' ~/SynapsisForge/.env.production
-
-      echo '→ Debug: verifying MONGO_URI inside container...'
-      docker run --rm --network infra_default \
-        --env-file ~/SynapsisForge/.env.production \
-        -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis \
-        michelangelostega/synapsisforge-backend:latest \
-        node -e 'console.log("MONGO_URI=" + process.env.MONGO_URI)'
 
       echo '→ Running database seeds...'
       docker run --rm --network infra_default \
         --env-file ~/SynapsisForge/.env.production \
-        -e MONGO_URI=mongodb://mongodb:27017/mongo_synapsis \
         michelangelostega/synapsisforge-backend:latest \
         node dist/database/seeds/seed.js
       echo '✅ Seed complete!'
-      "
+REMOTE
   only:
     - main
   environment:
