@@ -54,9 +54,9 @@ services:
 
   frontend:
     image: michelangelostega/synapsisforge-frontend:latest
-    # build:
-    #   context: ../frontend
-    #   dockerfile: Dockerfile
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
     ports:
       - "80:80"
     volumes:
