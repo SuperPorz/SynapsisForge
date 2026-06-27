@@ -154,8 +154,9 @@ deploy-ec2:
 
         echo '→ Pulling latest code from GitLab...'
         cd ~/SynapsisForge
-        git fetch origin
-        git reset --hard origin/main
+        git remote add gitlab https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/superporz1/SynapsisForge.git 2>/dev/null || git remote set-url gitlab https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/superporz1/SynapsisForge.git
+        git fetch gitlab
+        git reset --hard gitlab/main
 
         echo '→ Deploying with docker compose...'
         cd ~/SynapsisForge
