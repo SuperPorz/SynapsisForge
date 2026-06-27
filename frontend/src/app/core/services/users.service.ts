@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.develop';
+import { environment } from '../../../environments/environment';
 
 export interface UserProfile {
   id: string;

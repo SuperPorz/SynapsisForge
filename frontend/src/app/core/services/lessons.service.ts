@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { PresignedUrlResponse, LessonVideoResponse, UpdateProgressPayload } from '../models/course-model';
-import { environment } from '../../../environments/environment.develop';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class LessonsService {

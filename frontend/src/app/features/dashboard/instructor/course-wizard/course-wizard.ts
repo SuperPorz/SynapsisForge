@@ -3,7 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../../../environments/environment.develop';
+import { environment } from '../../../../../environments/environment';
 import { CourseService, CreateCoursePayload, CreateLessonContentPayload } from '../../../../core/services/courses.service';
 import { VideoUpload } from '../../../../shared/components/video-upload/video-upload';
 
