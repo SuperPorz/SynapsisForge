@@ -48,6 +48,7 @@ async function bootstrap() {
   );
 
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
+  app.use('/uploads/seed-thumbnails', express.static(join(__dirname, '..', 'seed-assets', 'thumbnails')));
 
   app.useGlobalPipes(
     new ValidationPipe({

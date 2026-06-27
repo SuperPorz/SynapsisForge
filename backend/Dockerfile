@@ -11,5 +11,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /app/dist ./dist
+COPY uploads/seed-thumbnails ./seed-assets/thumbnails
 EXPOSE 3000
 CMD ["node", "dist/main"]
