@@ -3,7 +3,7 @@ WORKDIR /app
 ENV NPM_CONFIG_LEGACY_PEER_DEPS=true
 COPY package*.json ./
 RUN npm ci
-COPY angular.json tsconfig*.json ./
+COPY angular.json tsconfig*.json .postcssrc.json ./
 COPY src ./src
 COPY public ./public
 COPY ngsw-config.json ./
