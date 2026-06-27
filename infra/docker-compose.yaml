@@ -27,16 +27,16 @@ services:
     environment:
       DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: ${DB_PORT:-5432}
-      DB_USER: ${DB_USERNAME:-admin}
-      DB_PASS: ${DB_PASSWORD:-qwerty}
-      DB_NAME: ${DB_DATABASE:-pg_database}
+      DB_USERNAME: ${DB_USERNAME:-admin}
+      DB_PASSWORD: ${DB_PASSWORD:-qwerty}
+      DB_DATABASE: ${DB_DATABASE:-pg_database}
       FRONTEND_URL: http://localhost:8080
       MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/mongo_synapsis}
       MONGO_USER: ${MONGO_USER:-admin}
       MONGO_PASS: ${MONGO_PASS:-qwerty}
       MONGO_AUTH_SOURCE: admin
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
-    env_file: ../backend/.env.development
+    env_file: ../.env.development
     depends_on:
       postgres:
         condition: service_healthy

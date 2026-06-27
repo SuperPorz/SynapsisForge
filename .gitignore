@@ -1,0 +1,41 @@
+# Env files (root)
+.env
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.test.local
+.env.local
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime
+dist/
+build/
+.tmp
+.temp
+
+# Coverage
+coverage/
+.nyc_output
+
+# Uploads
+uploads/*
+!uploads/seed-thumbnails/
+!uploads/seed-thumbnails/**
+!uploads/certificates/.gitkeep

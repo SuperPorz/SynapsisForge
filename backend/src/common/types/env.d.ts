@@ -6,9 +6,9 @@ export interface EnvironmentVariables {
 
   DB_HOST: string;
   DB_PORT: number;
-  DB_USER: string;
-  DB_PASS: string;
-  DB_NAME: string;
+  DB_USERNAME: string;
+  DB_PASSWORD: string;
+  DB_DATABASE: string;
 
   MONGO_URI: string;
   MONGO_USER: string;

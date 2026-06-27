@@ -3,9 +3,9 @@ services:
     image: michelangelostega/synapsisforge-backend:latest
     environment:
       NODE_ENV: production
-      DB_USER: ${DB_USERNAME}
-      DB_PASS: ${DB_PASSWORD}
-      DB_NAME: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       MONGO_URI: ${MONGO_URI}
@@ -36,11 +36,11 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       MONGO_URI: ${MONGO_URI}
       REDIS_URL: ${REDIS_URL}
-      CORS_ORIGIN: http://localhost
+      CORS_ORIGIN: ${CORS_ORIGIN}
       FRONTEND_URL: ${FRONTEND_URL}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
       GITHUB_CALLBACK_URL: ${GITHUB_CALLBACK_URL}
-    env_file: ../backend/.env.production
+    env_file: ../.env.production
     depends_on:
       postgres:
         condition: service_healthy

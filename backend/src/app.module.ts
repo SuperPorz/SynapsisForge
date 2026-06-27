@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthService } from './modules/health/health.service';
@@ -37,12 +36,8 @@ import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
-        path.resolve(
-          __dirname,
-          '..',
-          `.env.${process.env.NODE_ENV || 'development'}`,
-        ),
-        path.resolve(__dirname, '..', '.env'),
+        `../.env.${process.env.NODE_ENV || 'development'}`,
+        '../.env',
       ],
     }),
     ThrottlerModule.forRootAsync({
@@ -65,9 +60,9 @@ import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
       type: 'postgres',
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT ?? '5432', 10),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: process.env.NODE_ENV !== 'production',
     }),

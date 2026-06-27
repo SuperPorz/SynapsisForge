@@ -31,9 +31,9 @@ function requireEnv(key: string): string {
 const DB_CONFIG = {
   host: requireEnv('DB_HOST'),
   port: parseInt(requireEnv('DB_PORT'), 10),
-  user: requireEnv('DB_USER'),
-  password: requireEnv('DB_PASS'),
-  database: requireEnv('DB_NAME'),
+  user: requireEnv('DB_USERNAME'),
+  password: requireEnv('DB_PASSWORD'),
+  database: requireEnv('DB_DATABASE'),
 };
 
 const REST_DIR = path.resolve(process.cwd(), 'test', 'rest');

@@ -1,26 +1,174 @@
-# Stage priorities
 stages:
   - build
   - test
+  - deploy
 
-# Job 1: config test, file creation
-create_file:
-  image: ubuntu:latest
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  BACKEND_IMAGE: michelangelostega/synapsisforge-backend
+  FRONTEND_IMAGE: michelangelostega/synapsisforge-frontend
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+
+default:
+  before_script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+# ── BUILD ──────────────────────────────────────────────────────────────
+
+backend-build:
+  image: docker:27-cli
+  services:
+    - docker:27-dind
   stage: build
   script:
-    - echo "This is a test file created by GitLab CI/CD pipeline."
-    - mkdir build
-    - touch build/test_file.txt
-    - echo "File created successfully."
-  artifacts:
-    paths:
-      - build/
+    - docker build -t $BACKEND_IMAGE:$IMAGE_TAG -t $BACKEND_IMAGE:latest ./backend
+    - docker push $BACKEND_IMAGE:$IMAGE_TAG
+    - docker push $BACKEND_IMAGE:latest
+  only:
+    - main
 
-# Job 2: test if the file has got created or not
-test_file:
-  image: ubuntu:latest
+frontend-build:
+  image: docker:27-cli
+  services:
+    - docker:27-dind
+  stage: build
+  script:
+    - docker build -t $FRONTEND_IMAGE:$IMAGE_TAG -t $FRONTEND_IMAGE:latest ./frontend
+    - docker push $FRONTEND_IMAGE:$IMAGE_TAG
+    - docker push $FRONTEND_IMAGE:latest
+  only:
+    - main
+
+# ── TEST ────────────────────────────────────────────────────────────────
+
+backend-lint:
+  image: node:22-alpine
   stage: test
   script:
-    - echo "test started"
-    - test -f build/test_file.txt
-    - echo "test completed, file existence checked."
+    - cd backend
+    - npm ci
+    - npm run lint
+  cache:
+    key: $CI_COMMIT_REF_SLUG-backend
+    paths:
+      - backend/node_modules/
+
+backend-unit-tests:
+  image: node:22-alpine
+  stage: test
+  script:
+    - cd backend
+    - npm ci
+    - npm test
+  cache:
+    key: $CI_COMMIT_REF_SLUG-backend
+    paths:
+      - backend/node_modules/
+
+frontend-test:
+  image: node:22-alpine
+  stage: test
+  script:
+    - cd frontend
+    - npm ci
+    - npm test
+  cache:
+    key: $CI_COMMIT_REF_SLUG-frontend
+    paths:
+      - frontend/node_modules/
+
+frontend-build-check:
+  image: node:22-alpine
+  stage: test
+  script:
+    - cd frontend
+    - npm ci
+    - npx ng build
+  cache:
+    key: $CI_COMMIT_REF_SLUG-frontend
+    paths:
+      - frontend/node_modules/
+
+# ── DEPLOY ──────────────────────────────────────────────────────────────
+
+deploy-ec2:
+  image: alpine:latest
+  stage: deploy
+  before_script:
+    - apk add --no-cache openssh-client docker-cli docker-cli-compose
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/deploy_key
+    - chmod 600 ~/.ssh/deploy_key
+    - ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    - |
+      ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
+        set -e
+        echo '→ Pulling latest images...'
+        docker pull $BACKEND_IMAGE:latest
+        docker pull $FRONTEND_IMAGE:latest
+
+        echo '→ Ensuring infra directory exists...'
+        mkdir -p ~/SynapsisForge/infra
+
+        echo '→ Creating .env.production from CI variables...'
+        cat > ~/SynapsisForge/.env.production << ENVEOF
+NODE_ENV=production
+DB_HOST=${DB_HOST}
+DB_PORT=${DB_PORT}
+DB_USERNAME=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
+DB_DATABASE=${DB_DATABASE}
+MONGO_URI=${MONGO_URI}
+MONGO_USER=${MONGO_USER}
+MONGO_PASS=${MONGO_PASS}
+REDIS_URL=${REDIS_URL}
+JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
+JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
+AWS_REGION=${AWS_REGION}
+AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+S3_MEDIA_BUCKET=${S3_MEDIA_BUCKET}
+S3_PRIVATE_BUCKET=${S3_PRIVATE_BUCKET}
+USE_S3=${USE_S3}
+BRAINTREE_MERCHANT_ID=${BRAINTREE_MERCHANT_ID}
+BRAINTREE_PUBLIC_KEY=${BRAINTREE_PUBLIC_KEY}
+BRAINTREE_PRIVATE_KEY=${BRAINTREE_PRIVATE_KEY}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL}
+SMTP_HOST=${SMTP_HOST}
+SMTP_PORT=${SMTP_PORT}
+SMTP_USER=${SMTP_USER}
+SMTP_PASS=${SMTP_PASS}
+SMTP_FROM=${SMTP_FROM}
+FRONTEND_URL=${FRONTEND_URL}
+CORS_ORIGIN=${CORS_ORIGIN}
+ENVEOF
+
+        echo '→ Pulling latest code from GitLab...'
+        cd ~/SynapsisForge
+        git pull origin main
+
+        echo '→ Deploying with docker compose...'
+        cd ~/SynapsisForge
+        docker compose -f infra/docker-compose.prod.yml --env-file .env.production pull
+        docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
+
+        echo '→ Cleaning up old images...'
+        docker image prune -f
+
+        echo '✅ Deploy complete!'
+      "
+  only:
+    - main
+  when: manual
+  environment:
+    name: production
+    url: https://synapsisforge.shop
