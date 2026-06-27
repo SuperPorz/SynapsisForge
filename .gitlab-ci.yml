@@ -164,6 +164,9 @@ seed-ec2:
         echo '→ Starting PostgreSQL with fresh data...'
         docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres --wait
 
+        echo '→ Syncing database schema (fresh postgres volume needs tables)...'
+        docker compose -f infra/docker-compose.prod.yml --env-file .env.production run --rm seeder node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
+
         echo '→ Running database seeds...'
         docker compose -f infra/docker-compose.prod.yml --env-file .env.production run --rm seeder
         echo '✅ Seed complete!'
