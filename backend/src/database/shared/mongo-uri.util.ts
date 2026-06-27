@@ -24,7 +24,7 @@ export function getMongoUri(): string {
 
   const user = process.env.MONGO_USER;
   const pass = process.env.MONGO_PASS;
-  const authSource = process.env.MONGO_AUTH_SOURCE ?? 'admin';
+  const authSource = process.env.MONGO_AUTH_SOURCE || 'admin';
 
   // Inietta user:pass@ subito dopo "mongodb://", solo se entrambi presenti
   let uriWithAuth = baseUri;
