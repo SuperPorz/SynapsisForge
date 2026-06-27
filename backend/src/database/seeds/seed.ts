@@ -16,7 +16,9 @@
  */
 
 import { config } from 'dotenv';
-config({ path: '.env.development' });
+if (process.env.NODE_ENV !== 'production') {
+  config({ path: '.env.development' });
+}
 import { AppDataSource } from '../../data-source';
 import { seedCategories } from './categories.seed';
 import { seedUsers } from './users.seed';

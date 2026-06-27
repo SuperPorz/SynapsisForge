@@ -141,13 +141,16 @@ export class PaymentsService {
 
     switch (kind) {
       case 'subscription_charged_successfully':
-        if (subscription) await this.handleSubscriptionChargedSuccessfully(subscription);
+        if (subscription)
+          await this.handleSubscriptionChargedSuccessfully(subscription);
         break;
       case 'subscription_charged_unsuccessfully':
-        if (subscription) await this.handleSubscriptionChargedUnsuccessfully(subscription);
+        if (subscription)
+          await this.handleSubscriptionChargedUnsuccessfully(subscription);
         break;
       case 'subscription_went_past_due':
-        if (subscription) await this.handleSubscriptionWentPastDue(subscription);
+        if (subscription)
+          await this.handleSubscriptionWentPastDue(subscription);
         break;
       case 'subscription_canceled':
         if (subscription) await this.handleSubscriptionCanceled(subscription);
@@ -468,7 +471,9 @@ export class PaymentsService {
     // 5. Success — create payment + enrollment
     const transaction = transactionResult.transaction!;
     const transactionId = transaction.id;
-    const paymentMethod = (transaction as { paymentInstrumentType?: string }).paymentInstrumentType ?? null;
+    const paymentMethod =
+      (transaction as { paymentInstrumentType?: string })
+        .paymentInstrumentType ?? null;
     await this.savePayment(
       userId,
       courseId,
@@ -564,7 +569,9 @@ export class PaymentsService {
 
     const transaction = transactionResult.transaction!;
     const transactionId = transaction.id;
-    const paymentMethod = (transaction as { paymentInstrumentType?: string }).paymentInstrumentType ?? null;
+    const paymentMethod =
+      (transaction as { paymentInstrumentType?: string })
+        .paymentInstrumentType ?? null;
     for (const item of items) {
       await this.savePayment(
         userId,

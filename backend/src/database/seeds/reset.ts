@@ -10,7 +10,9 @@
  */
 
 import { config } from 'dotenv';
-config({ path: '.env.development' });
+if (process.env.NODE_ENV !== 'production') {
+  config({ path: '.env.development' });
+}
 import { Client } from 'pg';
 import mongoose from 'mongoose';
 import { createClient } from '@redis/client';

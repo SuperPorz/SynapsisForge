@@ -29,7 +29,9 @@ export class CartController {
 
   @Get('count')
   @ApiOperation({ summary: 'Get cart item count for badge' })
-  async getCartCount(@Req() req: { user: { id: string } }): Promise<{ count: number }> {
+  async getCartCount(
+    @Req() req: { user: { id: string } },
+  ): Promise<{ count: number }> {
     const count = await this.cartService.getCartCount(req.user.id);
     return { count };
   }
