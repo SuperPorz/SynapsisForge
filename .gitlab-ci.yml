@@ -342,12 +342,18 @@ slack-notify:
         echo "Slack webhook not configured — skipping notify"
         exit 1
       fi
-      curl -s -X POST -H "Content-Type: application/json" \
-        -d "$(jq -n --arg color "$([ "$CI_JOB_STATUS" = success ] && echo good || echo danger)" \
-          --arg title "SynapsisForge Pipeline" \
-          --arg text "Pipeline *$CI_PIPELINE_ID* — $([ "$CI_JOB_STATUS" = success ] && echo '✅ Success' || echo '❌ Failed')\nBranch: $CI_COMMIT_REF_NAME\nCommit: $CI_COMMIT_SHORT_SHA ($CI_COMMIT_TITLE)\nURL: $CI_PIPELINE_URL" \
-          '{attachments: [{color: $color, title: $title, text: $text, footer: "GitLab CI/CD", ts: now | floor}]}')" \
-        "$SLACK_WEBHOOK_URL"
+      STATUS_ICON="❌ Failed"
+      COLOR="danger"
+      if [ "$CI_JOB_STATUS" = "success" ]; then
+        STATUS_ICON="✅ Success"
+        COLOR="good"
+      fi
+      PAYLOAD=$(jq -n \
+        --arg color "$COLOR" \
+        --arg title "SynapsisForge Pipeline" \
+        --arg text "Pipeline *${CI_PIPELINE_ID}* — ${STATUS_ICON}\nBranch: ${CI_COMMIT_REF_NAME}\nCommit: ${CI_COMMIT_SHORT_SHA} (${CI_COMMIT_TITLE})\nURL: ${CI_PIPELINE_URL}" \
+        '{attachments: [{color: $color, title: $title, text: $text, footer: "GitLab CI/CD", ts: now | floor}]}')
+      curl -s -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$SLACK_WEBHOOK_URL"
         "$SLACK_WEBHOOK_URL"
   when: always
   only:
