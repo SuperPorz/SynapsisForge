@@ -351,8 +351,21 @@ slack-notify:
       PAYLOAD=$(jq -n \
         --arg color "$COLOR" \
         --arg title "SynapsisForge Pipeline" \
-        --arg text "Pipeline *${CI_PIPELINE_ID}* — ${STATUS_ICON}\nBranch: ${CI_COMMIT_REF_NAME}\nCommit: ${CI_COMMIT_SHORT_SHA} (${CI_COMMIT_TITLE})\nURL: ${CI_PIPELINE_URL}" \
-        '{attachments: [{color: $color, title: $title, text: $text, footer: "GitLab CI/CD", ts: now | floor}]}')
+        --arg branch "$CI_COMMIT_REF_NAME" \
+        --arg sha "$CI_COMMIT_SHORT_SHA" \
+        --arg commit_title "$CI_COMMIT_TITLE" \
+        --arg url "$CI_PIPELINE_URL" \
+        --arg status "${STATUS_ICON}" \
+        --arg id "$CI_PIPELINE_ID" \
+        '{
+          attachments: [{
+            color: $color,
+            title: $title,
+            text: ("Pipeline *" + $id + "* — " + $status + "\nBranch: " + $branch + "\nCommit: " + $sha + " (" + $commit_title + ")\nURL: " + $url),
+            footer: "GitLab CI/CD",
+            ts: now | floor
+          }]
+        }')
       curl -s -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$SLACK_WEBHOOK_URL"
   when: always
   only:
