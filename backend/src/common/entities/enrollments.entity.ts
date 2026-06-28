@@ -1,9 +1,11 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Index } from 'typeorm';
 import { Course } from './courses.entity';
 import { StudentProfile } from './student-profile.entity';
 
 @Entity('enrollments')
+@Index(['student', 'course'])
+@Index(['course'])
 export class Enrollment {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

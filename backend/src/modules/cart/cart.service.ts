@@ -2,7 +2,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { CartItem } from 'src/common/entities/cart-item.entity';
@@ -164,14 +164,19 @@ export class CartService {
           `"${item.course.title}" is no longer available`,
         );
       }
-      const existing = await this.enrollmentRepository.findOne({
-        where: { student: { userId }, course: { id: item.course.id } },
-      });
-      if (existing) {
-        throw new ConflictException(
-          `Already enrolled in "${item.course.title}"`,
-        );
-      }
+    }
+
+    const courseIds = items.map((i) => i.course.id);
+    const existingEnrollments = courseIds.length
+      ? await this.enrollmentRepository.find({
+          where: { student: { userId }, course: { id: In(courseIds) } },
+          relations: ['course'],
+        })
+      : [];
+    if (existingEnrollments.length > 0) {
+      throw new ConflictException(
+        `Already enrolled in "${existingEnrollments[0].course.title}"`,
+      );
     }
 
     const total = items.reduce(

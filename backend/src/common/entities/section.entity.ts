@@ -1,5 +1,5 @@
 //prettier-ignore
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Index } from 'typeorm';
 import { Course } from './courses.entity';
 import { Lesson } from './lessons.entity';
 
@@ -14,6 +14,7 @@ export class Section {
   @Column({ type: 'int' }) //per typeORM usare int invece di number
   order!: number;
 
+  @Index(['course'])
   @ManyToOne(() => Course, (course) => course.sections, {
     nullable: false,
     onDelete: 'CASCADE',

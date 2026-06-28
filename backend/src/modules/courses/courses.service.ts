@@ -178,7 +178,13 @@ export class CoursesService {
       async () => {
         const course = await this.coursesRepo.findOne({
           where: { slug },
-          relations: ['instructor', 'category'],
+          relations: [
+            'instructor',
+            'instructor.user',
+            'category',
+            'sections',
+            'sections.lessons',
+          ],
         });
         if (!course)
           throw new NotFoundException(`Course with slug ${slug} not found`);
@@ -255,6 +261,7 @@ export class CoursesService {
     const courses = await this.coursesRepo
       .createQueryBuilder('course')
       .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'user')
       .leftJoinAndSelect('course.category', 'category')
       .where('course.title ILIKE :q', { q: `%${query}%` })
       .orWhere('course.description ILIKE :q', { q: `%${query}%` })
@@ -490,6 +497,7 @@ export class CoursesService {
   }): Promise<Course[]> {
     const qb = this.coursesRepo
       .createQueryBuilder('course')
+      .leftJoinAndSelect('course.instructor', 'instructor')
       .leftJoinAndSelect('course.category', 'category');
 
     if (filters.q) {

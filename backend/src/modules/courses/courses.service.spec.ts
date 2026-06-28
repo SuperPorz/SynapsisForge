@@ -245,7 +245,13 @@ describe('CoursesService', () => {
       expect(result).toEqual(mockCourse);
       expect(mockCourseRepo.findOne).toHaveBeenCalledWith({
         where: { slug: 'test-course' },
-        relations: ['instructor', 'category'],
+        relations: [
+          'instructor',
+          'instructor.user',
+          'category',
+          'sections',
+          'sections.lessons',
+        ],
       });
     });
 

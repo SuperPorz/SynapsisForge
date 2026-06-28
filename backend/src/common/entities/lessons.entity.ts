@@ -1,5 +1,5 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, RelationId, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, RelationId, DeleteDateColumn, Index } from 'typeorm';
 import { Course } from './courses.entity';
 import { Section } from './section.entity';
 
@@ -20,6 +20,7 @@ export class Lesson {
   @Column({ nullable: true })
   content_id?: string;
 
+  @Index(['course'])
   @ManyToOne(() => Course, (course) => course.lessons, {
     nullable: false,
     onDelete: 'CASCADE',

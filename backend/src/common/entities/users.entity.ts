@@ -1,5 +1,5 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne, Index } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Country, UserRole, SubscriptionPlan } from './enum/users.enum';
 import { Payment } from './payments.entity';
@@ -48,6 +48,7 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   refresh_token_hash!: string | null;
 
+  @Index()
   @Column({ type: 'varchar', nullable: true })
   subscription_id!: string | null;
 

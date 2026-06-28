@@ -1,5 +1,5 @@
 // prettier-ignore
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, DeleteDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, DeleteDateColumn, OneToMany, Index } from 'typeorm';
 import { Status } from './enum/courses.enum';
 import { Category } from './categories.entity';
 import { Lesson } from './lessons.entity';
@@ -31,6 +31,7 @@ export class Course {
   })
   price!: number;
 
+  @Index()
   @Column({ type: 'enum', enum: Status, default: Status.DRAFT })
   status!: Status;
 
