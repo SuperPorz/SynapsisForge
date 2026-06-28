@@ -34,6 +34,7 @@ async function bootstrap() {
                 imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
                 connectSrc: ["'self'"],
                 fontSrc: ["'self'"],
+                frameAncestors: ["'none'"],
               },
             }
           : false,

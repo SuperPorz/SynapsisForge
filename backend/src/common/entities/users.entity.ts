@@ -1,5 +1,6 @@
 // prettier-ignore
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Country, UserRole, SubscriptionPlan } from './enum/users.enum';
 import { Payment } from './payments.entity';
 import { CartItem } from './cart-item.entity';
@@ -15,6 +16,7 @@ export class User {
   @Column({ type: 'varchar', unique: true, nullable: true })
   email!: string | null;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'varchar', nullable: true })
   password!: string | null;
 
@@ -42,6 +44,7 @@ export class User {
   @Column({ type: 'boolean', default: false })
   isVerified!: boolean;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'varchar', nullable: true })
   refresh_token_hash!: string | null;
 
@@ -58,12 +61,15 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   subscription_status!: string | null;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'uuid', nullable: true })
   email_verification_token!: string | null;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'uuid', nullable: true })
   password_reset_token!: string | null;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'timestamptz', nullable: true })
   password_reset_expires_at!: Date | null;
 

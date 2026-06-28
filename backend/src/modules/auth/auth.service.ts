@@ -111,10 +111,24 @@ export class AuthService {
   // LOGIN
   // ─────────────────────────────────────────────────────────────────────────────
   async login(dto: LoginDto): Promise<AuthTokens> {
+    const locked = await this.cacheService.get(`sf:login:locked:${dto.email}`);
+    if (locked) {
+      throw new UnauthorizedException(
+        'Account temporaneamente bloccato per troppi tentativi. Riprova tra 15 minuti.',
+      );
+    }
+
     const user = await this.usersService.findByEmail(dto.email);
-    if (!user) throw new UnauthorizedException('Credenziali non valide');
+
+    const DELAY_MS = 200;
+
+    if (!user) {
+      await new Promise((r) => setTimeout(r, DELAY_MS));
+      throw new UnauthorizedException('Credenziali non valide');
+    }
 
     if (!user.password) {
+      await new Promise((r) => setTimeout(r, DELAY_MS));
       throw new UnauthorizedException(
         'Account registrato tramite provider esterno. Usa Google o GitHub per accedere.',
       );
@@ -122,16 +136,38 @@ export class AuthService {
 
     const passwordMatch = await bcrypt.compare(dto.password, user.password);
     if (!passwordMatch) {
+      const attempts =
+        (await this.cacheService.get<number>(
+          `sf:login:attempts:${dto.email}`,
+        )) ?? 0;
+      const newAttempts = attempts + 1;
+      await this.cacheService.set(
+        `sf:login:attempts:${dto.email}`,
+        newAttempts,
+        15 * 60 * 1000,
+      );
+
+      if (newAttempts >= 5) {
+        await this.cacheService.set(
+          `sf:login:locked:${dto.email}`,
+          true,
+          15 * 60 * 1000,
+        );
+      }
+
+      await new Promise((r) => setTimeout(r, DELAY_MS));
       throw new UnauthorizedException('Credenziali non valide');
     }
 
-    // Utente non verificato — messaggio specifico (403 semanticamente corretto,
-    // ma UnauthorizedException è sufficiente per ora)
     if (!user.isVerified) {
+      await new Promise((r) => setTimeout(r, DELAY_MS));
       throw new UnauthorizedException(
         'Email non verificata. Controlla la tua casella di posta.',
       );
     }
+
+    await this.cacheService.del(`sf:login:attempts:${dto.email}`);
+    await this.cacheService.del(`sf:login:locked:${dto.email}`);
 
     const tokens = await this.generateTokens(user);
     await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
