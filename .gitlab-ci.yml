@@ -334,13 +334,14 @@ deploy-ec2:
 slack-notify:
   image: alpine:latest
   stage: notify
-  before_script:
-    - apk add --no-cache curl jq
   script:
+    - echo "notify"
+  after_script:
+    - apk add --no-cache curl jq
     - |
       if [ -z "$SLACK_WEBHOOK_URL" ]; then
         echo "Slack webhook not configured — skipping notify"
-        exit 1
+        exit 0
       fi
       STATUS_ICON="❌ Failed"
       COLOR="danger"
