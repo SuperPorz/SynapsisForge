@@ -1,9 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
+import { provideRouter, ActivatedRoute } from '@angular/router';
+import { Component } from '@angular/core';
 import { of, EMPTY } from 'rxjs';
 import { Login } from './login';
 import { AuthService } from '../../../core/services/auth.service';
+
+@Component({ template: '', standalone: true })
+class MockRouteComponent {}
 
 describe('Login', () => {
   let component: Login;
@@ -20,7 +23,7 @@ describe('Login', () => {
     TestBed.configureTestingModule({
       imports: [Login],
       providers: [
-        provideRouter([]),
+        provideRouter([{ path: 'courses', component: MockRouteComponent }]),
         { provide: AuthService, useValue: mockAuth },
         {
           provide: ActivatedRoute,
