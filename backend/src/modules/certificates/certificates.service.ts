@@ -113,21 +113,36 @@ export class CertificatesService {
       throw new BadRequestException('Certificate is revoked');
     }
 
-    const s3Key = certificate.s3_key;
-    if (!s3Key) {
-      throw new NotFoundException('Certificate file not found on storage');
+    const useS3 = this.configService.get<string>('USE_S3', 'false') === 'true';
+
+    if (useS3) {
+      const s3Key = certificate.s3_key;
+      if (!s3Key) {
+        throw new NotFoundException('Certificate file not found on storage');
+      }
+
+      const privateBucket = this.configService.get<string>(
+        'S3_PRIVATE_BUCKET',
+        'synapsisforge-private',
+      );
+
+      const downloadUrl = await this.s3Service.generatePresignedGetUrl(
+        s3Key,
+        privateBucket,
+        3600,
+      );
+
+      return { downloadUrl };
     }
 
-    const privateBucket = this.configService.get<string>(
-      'S3_PRIVATE_BUCKET',
-      'synapsisforge-private',
-    );
+    if (!certificate.pdf_url) {
+      throw new NotFoundException('Certificate file not found');
+    }
 
-    const downloadUrl = await this.s3Service.generatePresignedGetUrl(
-      s3Key,
-      privateBucket,
-      3600,
-    );
+    const protocol = this.configService.get<string>('PROTOCOL', 'http');
+    const host = this.configService.get<string>('HOST', 'localhost');
+    const port = this.configService.get<string>('PORT', '3000');
+    const downloadUrl = `${protocol}://${host}:${port}${certificate.pdf_url}`;
 
     return { downloadUrl };
   }

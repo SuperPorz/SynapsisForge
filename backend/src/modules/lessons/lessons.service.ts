@@ -245,7 +245,7 @@ export class LessonsService {
       );
 
     // 4. genera signed URL S3 oppure usa videoUrl diretto (USE_S3=false in dev)
-    const useS3 = this.configService.get<string>('USE_S3') === 'true';
+    const useS3 = this.configService.get<string>('USE_S3', 'false') === 'true';
     let videoUrl: string;
 
     if (useS3) {

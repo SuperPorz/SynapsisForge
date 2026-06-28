@@ -2,413 +2,515 @@
 
 > Enterprise-oriented full-stack e-learning platform designed to showcase advanced software engineering, backend architecture, frontend engineering, authentication systems, cloud integrations, and DevOps workflows.
 
-## Overview
-
-**SynapsisForge** is a modern Learning Management System (LMS) built using a scalable, production-inspired architecture based on:
-
-* **Frontend:** Angular 18 + TailwindCSS + PWA
-* **Backend:** NestJS + TypeScript
-* **Databases:** PostgreSQL + MongoDB + Redis
-* **Authentication:** JWT + OAuth2 + RBAC
-* **Infrastructure:** Docker + AWS + CI/CD
-* **Payments:** Braintree / PayPal
-
-The project was conceived as a large-scale portfolio application focused on:
-
-* scalable backend architecture
-* modular monolith patterns
-* secure authentication systems
-* distributed services
-* cloud-native integrations
-* production-grade engineering practices
-* advanced frontend architecture
+**Live**: [https://synapsisforge.shop](https://synapsisforge.shop)  
+**API**: `https://synapsisforge.shop/api`  
+**Swagger**: `https://synapsisforge.shop/api/docs`  
+**Bull Board**: `https://synapsisforge.shop/admin/queues` (admin only)
 
 ---
 
-# Tech Stack
+## Architecture
 
-## Frontend
-
-* Angular 18
-* TypeScript
-* TailwindCSS
-* Angular Signals
-* RxJS
-* Angular PWA
-* Angular Material
-* ng-charts
-
-## Backend
-
-* NestJS
-* Node.js 20
-* TypeScript
-* TypeORM
-* Mongoose
-* Passport.js
-* JWT Authentication
-* Swagger / OpenAPI
-
-## Databases
-
-* PostgreSQL
-* MongoDB
-* Redis
-* BullMQ
-
-## Infrastructure & DevOps
-
-* Docker & Docker Compose
-* AWS S3
-* GitLab CI/CD
-* Nginx (planned)
-* HTTPS & Security Headers
-
-## Authentication & Payments
-
-* JWT Access / Refresh Tokens
-* Google OAuth2
-* GitHub OAuth2
-* RBAC Authorization
-* Braintree
-* PayPal
-
----
-
-# Core Features
-
-## Authentication System
-
-* JWT authentication with refresh token rotation
-* OAuth2 login via Google and GitHub
-* Role-Based Access Control (Student / Instructor / Admin)
-* Email verification workflow
-* Password reset flow
-* Secure HttpOnly cookie handling
-
-## Learning Platform
-
-* Course catalog with advanced filtering
-* Course creation dashboard
-* Video lesson management
-* Interactive quizzes
-* Progress tracking
-* Certificate generation
-* Reviews & ratings system
-
-## Student Dashboard
-
-* Enrolled courses overview
-* Learning progress monitoring
-* Activity history
-* Certificate management
-
-## Instructor Dashboard
-
-* Course management system
-* Analytics dashboard
-* Lesson editor
-* Quiz builder
-* Media upload workflows
-
-## Admin Panel
-
-* User management
-* Course moderation
-* Revenue analytics
-* Platform-wide statistics
-
-## Progressive Web App
-
-* Offline support
-* Service Worker caching
-* Installable app experience
-* Mobile-first responsive design
-
----
-
-# Architecture
+SynapsisForge follows a **modular monolith** pattern with a clear separation of concerns across four main layers:
 
 ```txt
-Angular SPA / PWA
-        │
-        ▼
-NestJS REST API
-        │
- ┌───────────────┬───────────────┬───────────────┐
- ▼               ▼               ▼
-PostgreSQL     MongoDB         Redis
-(Relational)   (Lesson Data)   (Cache / Jobs)
-        │
-        ▼
-AWS S3 Storage
-        │
-        ▼
-Braintree / PayPal
+┌─────────────────────────────────────────────────────────────┐
+│                     Angular SPA / PWA                        │
+│  Standalone components · Signals · Tailwind CSS 4            │
+│  @angular/service-worker · ng2-charts                        │
+│  Braintree Drop-in UI · jspdf (legacy)                       │
+└─────────┬───────────────────────────────────────────────────┘
+          │ HTTP (REST) · JWT Bearer · TransformInterceptor
+          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                NestJS REST API (modular monolith)             │
+│  AuthModule · UsersModule · CoursesModule · LessonsModule     │
+│  EnrollmentsModule · PaymentsModule · CertificatesModule      │
+│  AdminModule · S3Module · CacheModule · QueuesModule          │
+│  MailModule · PdfModule                                       │
+│  Guards (JwtAuth · Roles · Throttler) · Interceptors · Pipes  │
+└──────┬──────────┬──────────────┬─────────────────────────────┘
+       │          │              │
+       ▼          ▼              ▼
+┌──────────┐ ┌──────────┐ ┌────────────┐
+│PostgreSQL│ │ MongoDB  │ │   Redis     │
+│ TypeORM  │ │ Mongoose │ │ Cache · Jobs│
+│ Relational│ │ Lesson   │ │ Rate Limit  │
+│ data     │ │ Content  │ │ Refresh Tkn │
+│          │ │ Quizzes  │ │ Pub/Sub     │
+└──────────┘ └──────────┘ └────────────┘
+       │                              
+       ▼                              
+┌─────────────────────────────────────┐
+│        AWS S3 (two buckets)          │
+│  synapsisforge-media · synapsisforge-│
+│  private (certificates, protected)   │
+└─────────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────┐
+│   Braintree / PayPal (payments)      │
+│  Transactions · Subscriptions ·      │
+│  Webhooks · Receipts                 │
+└─────────────────────────────────────┘
 ```
 
----
+### Key design decisions
 
-# Database Strategy
-
-## PostgreSQL
-
-Used for:
-
-* users
-* courses
-* enrollments
-* payments
-* certificates
-* reviews
-* categories
-
-## MongoDB
-
-Used for:
-
-* lesson content
-* quizzes
-* transcripts
-* flexible learning structures
-
-## Redis
-
-Used for:
-
-* caching
-* queues
-* background jobs
-* throttling
-* session-related workflows
+| Decision | Rationale |
+|----------|-----------|
+| PostgreSQL for relational data | Users, courses, enrollments, payments, certificates — strongly relational with ACID guarantees |
+| MongoDB for lesson content | Flexible schema for quizzes, video metadata, progress documents — no joins needed |
+| Redis for caching & jobs | In-memory performance for course list/detail caching, rate limiting, refresh tokens, BullMQ queues |
+| AWS S3 for media storage | Scalable, cost-effective object storage with presigned URL security |
+| Braintree for payments | Single SDK for credit card + PayPal + subscription management |
+| BullMQ for async jobs | Redis-backed reliable queueing with retry, scheduling, and monitoring via Bull Board |
 
 ---
 
-# Security
+## Tech Stack
 
-* JWT authentication
-* Refresh token rotation
-* Password hashing with bcrypt
-* DTO validation
-* Global validation pipes
-* Exception filters
-* Helmet security headers
-* CORS restrictions
-* Rate limiting
-* RBAC Guards
+### Frontend
 
----
+- **Angular 21** — standalone components, Signals, zoneless change detection
+- **Tailwind CSS 4** — `@theme` block, no config file
+- **@angular/service-worker** — PWA with `ngsw-config.json`
+- **ng2-charts + chart.js** — analytics dashboards
+- **Braintree Drop-in** — payment UI
+- **RxJS** — reactive HTTP and state management
 
-# Project Structure
+### Backend
 
-```bash
-SynapsisForge/
-│
-├── backend/
-│   ├── src/
-│   ├── modules/
-│   ├── auth/
-│   ├── users/
-│   ├── courses/
-│   └── ...
-│
-├── frontend/
-│   ├── src/
-│   ├── app/
-│   ├── pages/
-│   ├── shared/
-│   └── ...
-│
-├── infra/
-│   ├── docker-compose.yml
-│   └── ...
-│
-└── docs/
-    ├── API_SPEC.md
-    └── architecture/
-```
+- **NestJS** — modular monolith with Guards, Interceptors, Pipes, Filters
+- **TypeORM** — PostgreSQL entities and migrations
+- **Mongoose** — MongoDB schemas for lesson content and progress
+- **Passport.js** — JWT + OAuth2 (Google, GitHub) strategies
+- **@nestjs/bullmq** — background job processing
+- **@nestjs/throttler** — Redis-backed rate limiting
+- **@nestjs/cache-manager + Keyv + Redis** — response caching
+- **@aws-sdk/client-s3 + s3-request-presigner** — S3 integration
+- **braintree** — payment gateway SDK
+- **Nodemailer + Handlebars** — email notifications
+
+### Databases
+
+- **PostgreSQL 18** — Docker container (port 5432)
+- **MongoDB 8** — Docker container (port 27017)
+- **Redis 7** — Docker container (port 6379)
+
+### Infrastructure & DevOps
+
+- **Docker & Docker Compose** — multi-container orchestration
+- **AWS S3** — media and certificate storage
+- **Nginx** — reverse proxy with SSL termination
+- **Let's Encrypt / Certbot** — HTTPS certificates
+- **GitLab CI/CD** — build → test → seed → deploy pipeline
+- **EC2 t2.medium** — Ubuntu production server
 
 ---
 
-# Planned Features
+## Core Features
 
-* Signed AWS S3 URLs
-* Background processing with BullMQ
-* Video transcoding pipeline
-* Real-time notifications
-* Advanced analytics
-* Dockerized production deployment
-* CI/CD automation
-* End-to-end testing
-* Monitoring & logging stack
+### Authentication System
+
+- JWT authentication with access token (header) and refresh token (HttpOnly cookie)
+- OAuth2 login via Google and GitHub
+- Role-Based Access Control: `STUDENT` / `INSTRUCTOR` / `ADMIN`
+- Email verification workflow
+- Password reset flow
+
+### Learning Platform
+
+- Course catalog with advanced filtering (category, price range, search)
+- Course creation wizard (sections, lessons, quizzes)
+- Video lesson player with progress tracking (auto-save every 10s)
+- Interactive quizzes with immediate feedback and persistence
+- Certificate generation (server-side PDF, stored on S3)
+- Reviews and ratings system (1-5 stars)
+
+### Student Dashboard
+
+- Enrolled courses with progress tracking
+- Activity history (last 10 completed lessons)
+- Certificate management and download
+- Payment history with receipt PDFs
+- Profile editing (avatar, bio)
+- Subscription management (Premium plan)
+
+### Instructor Dashboard
+
+- Course management (create, edit, publish)
+- Analytics: enrollments over time, watch time per lesson
+- Lesson editor with video upload (presigned S3 URL)
+- Quiz builder
+- Revenue overview
+
+### Admin Panel
+
+- Platform KPIs (users, courses, revenue charts)
+- User management (role change, suspend/activate)
+- Course moderation (approve / reject pending courses)
+- Bull Board for job queue monitoring
+
+### Payments (Braintree)
+
+- Single course purchase (credit card + PayPal)
+- Shopping cart with multi-item checkout
+- Monthly subscription (Premium plan)
+- Webhook handling (charge success, failure, past due, cancel)
+- Receipt PDF generation via BullMQ
+- Payment history with pagination
+
+### Redis Integration
+
+- Course list/detail caching (5-10 min TTL)
+- Rate limiting (differentiated per endpoint)
+- Refresh token storage
+- BullMQ job queues (email, certificates, receipts, maintenance)
+- Pub/Sub enrollment counters
+- Cache invalidation via `CacheService`
 
 ---
-
-# Development Roadmap
-
-| Phase | Description                    |
-| ----- | ------------------------------ |
-| 01    | Setup, TypeScript & Databases  |
-| 02    | NestJS Core Architecture       |
-| 03    | Authentication & RBAC          |
-| 04    | Angular Frontend & PWA         |
-| 05    | Payments Integration           |
-| 06    | Redis & Background Jobs        |
-| 07    | AWS S3 & Upload System         |
-| 08    | Security & Optimization        |
-| 09    | Docker & CI/CD                 |
-| 10    | Testing & Production Readiness |
-
----
-
-# Getting Started
 
 ## Prerequisites
 
-* Node.js 20+
-* Docker
-* PostgreSQL
-* MongoDB
-* Redis
+### Development
+
+| Tool | Version | Notes |
+|------|---------|-------|
+| Node.js | 22+ | Required for both frontend and backend |
+| npm | 10+ | Comes with Node.js |
+| Docker | 24+ | For PostgreSQL, MongoDB, Redis containers |
+| Git | 2.40+ | Version control |
+| AWS CLI | 2.x | Only if managing S3 buckets |
+
+### Environment variables (backend)
+
+Copy `backend/.env.example` to `backend/.env` and fill in:
+
+```
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=admin
+DB_PASSWORD=qwerty
+DB_DATABASE=pg_database
+
+MONGODB_URI=mongodb://admin:qwerty@localhost:27017/mongo_synapsis
+REDIS_URL=redis://localhost:6379
+
+# JWT
+JWT_ACCESS_SECRET=your-access-secret
+JWT_REFRESH_SECRET=your-refresh-secret
+JWT_ACCESS_EXPIRES_IN=2h
+JWT_REFRESH_EXPIRES_IN=7d
+
+# AWS S3 (optional — USE_S3=false for local dev)
+USE_S3=false
+AWS_REGION=eu-south-1
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+S3_MEDIA_BUCKET=synapsisforge-media
+S3_PRIVATE_BUCKET=synapsisforge-private
+
+# Braintree (sandbox)
+BRAINTREE_ENVIRONMENT=sandbox
+BRAINTREE_MERCHANT_ID=your-merchant-id
+BRAINTREE_PUBLIC_KEY=your-public-key
+BRAINTREE_PRIVATE_KEY=your-private-key
+
+# Email (SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email
+SMTP_PASS=your-app-password
+```
+
+### Docker containers
+
+Three containers are always required for development:
+
+```bash
+docker compose -f infra/docker-compose.yaml up -d
+```
+
+| Service | Port | Credentials |
+|---------|------|-------------|
+| PostgreSQL 18 | 5432 | `admin` / `qwerty` / `pg_database` |
+| MongoDB 8 | 27017 | `admin` / `qwerty` (connection: `mongo_synapsis`) |
+| Redis 7 | 6379 | No auth |
 
 ---
 
-## Clone Repository
+## Deployment
+
+### Architecture (production)
+
+```txt
+                         User
+                          │
+                          ▼
+                  ┌───────────────┐
+                  │   Cloudflare   │
+                  │  DNS → EC2 IP  │
+                  └───────┬───────┘
+                          │ HTTPS (443)
+                          ▼
+                  ┌───────────────┐
+                  │    Nginx       │
+                  │ Reverse Proxy  │
+                  │ SSL (Certbot)  │
+                  └───┬───────┬───┘
+                      │       │
+              /api/*  │       │  /* (static)
+                      ▼       ▼
+              ┌──────────┐ ┌──────────┐
+              │  NestJS   │ │  Angular │
+              │  :3000    │ │  (nginx  │
+              │           │ │  serves) │
+              └──┬────┬───┘ └──────────┘
+                 │    │
+          ┌──────┘    └──────┐
+          ▼                   ▼
+   ┌──────────┐        ┌──────────┐
+   │PostgreSQL│        │ MongoDB  │
+   │    :5432 │        │  :27017  │
+   └──────────┘        └──────────┘
+          │
+          ▼
+   ┌──────────┐
+   │  Redis   │
+   │  :6379   │
+   └──────────┘
+```
+
+### Docker images
+
+- **Backend**: `infra-backend:latest` — Node 22 Alpine, multi-stage build (builder → runner), 578MB
+- **Frontend**: `infra-frontend:latest` — Node 22 Alpine builder + nginx:alpine, 95.6MB
+
+### Production server (EC2)
+
+1. SSH into EC2 instance
+2. Clone the repository
+3. Create `.env.production` with production values
+4. Run:
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### CI/CD pipeline (GitLab)
+
+The `.gitlab-ci.yml` defines 4 stages:
+
+```
+build → test → seed → deploy
+```
+
+- **build**: Builds Docker images and pushes to GitLab registry
+- **test**: Runs `npm run test:cov` on backend
+- **seed**: SSH to EC2, pulls images, resets DB volumes, runs schema sync + seeder
+- **deploy**: SSH to EC2, runs `docker compose up -d` with production compose file
+
+Pipeline runs on every push to `main`. The `deploy` stage only runs if all previous stages succeed.
+
+**CI/CD variables required**:
+- `EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY` — SSH connection
+- `DOCKER_COMPOSE_PROD` — base64-encoded production compose file
+- `ENV_PRODUCTION` — base64-encoded `.env.production`
+- `CI_REGISTRY_IMAGE` — auto-populated by GitLab
+
+### HTTPS
+
+SSL certificate managed via Certbot + Let's Encrypt on EC2, auto-renewal via cron.
+
+---
+
+## Demo Accounts
+
+All accounts share the same password: `Password123!`
+
+| Role | Email | Purpose |
+|------|-------|---------|
+| 🧑‍🏫 Student | `alice@example.com` | Browse courses, enroll, take quizzes, view certificates |
+| 🧑‍🏫 Student | `bob@example.com` | Same as Alice (alternative account) |
+| 👨‍🏫 Instructor | `mike@example.com` | Create and manage courses, view analytics |
+| 👨‍🏫 Instructor | `jessica@example.com` | Same as Mike (alternative account) |
+| 🛡️ Admin | `admin@example.com` | Full admin access: user management, course moderation, Bull Board |
+
+### Key test data
+
+- **Machine Learning course** (UUID: `01b236bc-7456-4380-80bc-0c47fd7566bf`)
+  - Alice is enrolled and partially completed
+  - Enrollment UUID: `163eb40f-d8ff-4abf-b50a-6672b052cdd2`
+- **Braintree test nonce**: `fake-valid-nonce`
+- **Braintree test cards**: `4111111111111111` (Visa), `4000111111111115` (declined)
+
+---
+
+## Quick Start (Local Development)
+
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/SuperPorz/SynapsisForge.git
 cd SynapsisForge
+
+# Backend
+cd backend && npm install && cd ..
+
+# Frontend
+cd frontend && npm install && cd ..
 ```
 
----
-
-## Install Dependencies
-
-### Backend
+### 2. Start infrastructure
 
 ```bash
-cd backend
-npm install
+docker compose -f infra/docker-compose.yaml up -d
 ```
 
-### Frontend
+### 3. Seed database
 
 ```bash
-cd frontend
-npm install
+cd backend && npm run db:seed && cd ..
 ```
 
----
-
-## Run Infrastructure
+### 4. Start services
 
 ```bash
-docker-compose up -d
+# Backend (terminal 1)
+cd backend && npm run start:dev
+
+# Frontend (terminal 2)
+cd frontend && ng serve
 ```
+
+Backend: `http://localhost:3000`  
+Frontend: `http://localhost:4200`  
+Swagger: `http://localhost:3000/api/docs`
 
 ---
 
-## Start Backend
-
-```bash
-npm run start:dev
-```
-
----
-
-## Start Frontend
-
-```bash
-ng serve
-```
-
----
-
-# API Documentation
-
-Swagger documentation will be available at:
-
-```txt
-/api/docs
-```
-
----
-
-# Redis Caching Strategy
-
-SynapsisForge uses Redis for API response caching, rate limiting, refresh token storage, and real-time enrollment counters via Pub/Sub.
-
-## Cache Layers
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Course lists | Redis (Keyv) | Paginated course queries, TTL 5min |
-| Course detail | Redis (Keyv) | Single course by ID/slug, TTL 10min |
-| Rate limiting | Redis (custom store) | Per-endpoint throttling counters |
-| Enrollment counters | Redis Pub/Sub | Real-time count via Pub/Sub + SQL fallback |
-| Refresh tokens | Redis (Keyv) | Session storage with JWT-matching TTL |
+## Redis Caching Strategy
 
 Full documentation: [`backend/docs/CACHING.md`](backend/docs/CACHING.md)
 
-## Performance Benchmark
+| Layer | Technology | TTL | Purpose |
+|-------|-----------|-----|---------|
+| Course lists | Redis (Keyv) | 5 min | Paginated course queries |
+| Course detail | Redis (Keyv) | 10 min | Single course by ID/slug |
+| Rate limiting | Redis (custom store) | window-based | Per-endpoint throttling |
+| Refresh tokens | Redis (Keyv) | matches JWT | Session storage |
+| Enrollment counters | Redis Pub/Sub | persistent | Real-time count via Pub/Sub + SQL fallback |
+
+### Performance Benchmark
 
 Results from `autocannon` (30s, 10 concurrent connections, local environment).
 
-### `GET /courses?page=1&limit=10`
+**`GET /courses?page=1&limit=10`**
 
 | Metric | Without Cache | With Cache |
 |--------|:------------:|:----------:|
 | Avg Latency | 8.26 ms | 8.12 ms |
 | Avg Req/s | 1,145 | 1,166 |
-| Total Requests (30s) | 34k | 35k |
 
-```
-> autocannon -c 10 -d 30 "http://localhost:3000/courses?page=1&limit=10"
-```
-
-### `GET /courses/slug/:slug`
+**`GET /courses/slug/:slug`**
 
 | Metric | Without Cache | With Cache |
 |--------|:------------:|:----------:|
 | Avg Latency | 3.88 ms | 3.87 ms |
 | Avg Req/s | 2,304 | 2,310 |
-| Total Requests (30s) | 69k | 69k |
-
-```
-> autocannon -c 10 -d 30 "http://localhost:3000/courses/slug/react-typescript-from-scratch"
-```
-
-> **Note**: Minimal improvement in local dev because backend and DB share the same machine. In production with separate DB hosts, cache hit latency gains would be significant (Redis in-memory vs network round-trip to PG/Mongo).
 
 ---
 
-# Learning Goals
+## API Documentation
+
+Swagger is available at:
+- Development: `http://localhost:3000/api/docs`
+- Production: `https://synapsisforge.shop/api/docs`
+
+---
+
+## Project Structure
+
+```bash
+SynapsisForge/
+├── backend/                # NestJS REST API
+│   ├── src/
+│   │   ├── common/         # Entities, DTOs, decorators, guards
+│   │   └── modules/        # Feature modules (auth, courses, payments, etc.)
+│   ├── uploads/            # Local file storage (dev only)
+│   └── package.json
+├── frontend/               # Angular SPA
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── core/       # Services, guards, interceptors
+│   │   │   ├── features/   # Pages and feature components
+│   │   │   └── shared/     # Shared components, pipes, directives
+│   │   └── environments/   # Environment configs
+│   └── package.json
+├── infra/                  # Infrastructure
+│   ├── docker-compose.yaml # Dev containers (PG, Mongo, Redis)
+│   ├── nginx/              # Nginx reverse proxy config
+│   └── redis/              # Custom Redis config
+├── .gitlab-ci.yml          # CI/CD pipeline
+└── README.md
+```
+
+---
+
+## Security
+
+- JWT authentication with access/refresh token rotation
+- Password hashing with bcrypt
+- Helmet security headers with custom CSP for Swagger
+- CORS restrictions
+- Rate limiting (Redis-backed, differentiated per endpoint)
+- RBAC guards on all protected endpoints
+- Input validation with class-validator pipes
+- Presigned S3 URLs (no public bucket access)
+
+---
+
+## Testing
+
+| Area | Command | Tool |
+|------|---------|------|
+| Backend unit tests | `npm run test` (in `backend/`) | Jest |
+| Backend e2e tests | `npm run test:e2e` (in `backend/`) | Jest + Supertest |
+| Frontend unit tests | `npm run test` (in `frontend/`) | Vitest |
+| Frontend build check | `npx ng build` (in `frontend/`) | Angular compiler |
+| Backend lint | `npm run lint` (in `backend/`) | ESLint |
+
+---
+
+## Learning Goals
 
 This project was designed to strengthen advanced skills in:
 
-* enterprise backend architecture
-* Angular ecosystem engineering
-* authentication & authorization systems
-* relational vs NoSQL database design
-* scalable REST APIs
-* cloud integrations
-* DevOps workflows
-* production-grade application development
+- Enterprise backend architecture (NestJS modular monolith)
+- Angular ecosystem engineering (standalone, Signals, zoneless)
+- Authentication & authorization systems (JWT, OAuth2, RBAC)
+- Relational vs NoSQL database design (PostgreSQL + MongoDB)
+- Caching and performance optimization (Redis)
+- Background job processing (BullMQ)
+- Cloud object storage (AWS S3)
+- Payment gateway integration (Braintree)
+- Containerization and orchestration (Docker)
+- CI/CD pipeline automation (GitLab)
+- SSL/HTTPS configuration (Let's Encrypt, Nginx)
 
 ---
 
-# Status
-
-🚧 Work in Progress
-
----
-
-# License
+## License
 
 MIT License
 
 ---
 
-# Author
+## Author
 
-Michelangelo Stega (SuperPorz) — aspiring full-stack software developer.
+**Michelangelo Stega** (SuperPorz) — aspiring full-stack software developer.
+
+- GitHub: [@SuperPorz](https://github.com/SuperPorz)
+- LinkedIn: [michelangelo-stega](https://linkedin.com/in/michelangelo-stega)
