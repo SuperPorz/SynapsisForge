@@ -354,7 +354,6 @@ slack-notify:
         --arg text "Pipeline *${CI_PIPELINE_ID}* — ${STATUS_ICON}\nBranch: ${CI_COMMIT_REF_NAME}\nCommit: ${CI_COMMIT_SHORT_SHA} (${CI_COMMIT_TITLE})\nURL: ${CI_PIPELINE_URL}" \
         '{attachments: [{color: $color, title: $title, text: $text, footer: "GitLab CI/CD", ts: now | floor}]}')
       curl -s -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$SLACK_WEBHOOK_URL"
-        "$SLACK_WEBHOOK_URL"
   when: always
   only:
     - main
