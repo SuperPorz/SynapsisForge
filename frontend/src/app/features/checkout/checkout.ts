@@ -108,8 +108,10 @@ export class Checkout implements OnInit, OnDestroy {
             this.router.navigate(['/dashboard/my-enrolls']);
           },
           error: (err) => {
-            this.error.set(err.error?.message ?? err.message ?? 'Payment failed.');
+            const msg = err.error?.message ?? err.message ?? 'Payment failed.';
+            this.error.set(msg);
             this.paying.set(false);
+            this.toast.show(msg, 'error');
           },
         });
       } else {
@@ -127,14 +129,18 @@ export class Checkout implements OnInit, OnDestroy {
             this.router.navigate(['/dashboard/my-enrolls']);
           },
           error: (err) => {
-            this.error.set(err.error?.message ?? err.message ?? 'Payment failed.');
+            const msg = err.error?.message ?? err.message ?? 'Payment failed.';
+            this.error.set(msg);
             this.paying.set(false);
+            this.toast.show(msg, 'error');
           },
         });
       }
     }).catch(() => {
-      this.error.set('Payment failed. Please try again.');
+      const msg = 'Payment failed. Please try again.';
+      this.error.set(msg);
       this.paying.set(false);
+      this.toast.show(msg, 'error');
     });
   }
 

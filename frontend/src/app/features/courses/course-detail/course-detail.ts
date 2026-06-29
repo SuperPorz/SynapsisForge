@@ -3,6 +3,7 @@ import { CourseService } from '../../../core/services/courses.service';
 import { EnrollmentService, EnrollmentResponse } from '../../../core/services/enrollment.service';
 import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Course } from '../../../core/models/course-model';
 import { ReviewSection } from '../review-section/review-section';
@@ -21,6 +22,7 @@ export class CourseDetail {
   private courseService = inject(CourseService);
   private enrollmentService = inject(EnrollmentService);
   private cartService = inject(CartService);
+  private toast = inject(ToastService);
   authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
@@ -105,10 +107,12 @@ export class CourseDetail {
       next: (enrollment) => {
         this.enrollment.set(enrollment);
         this.enrolling.set(false);
+        this.toast.show('Enrolled successfully!');
       },
       error: () => {
         this.error.set('Enrollment failed. Please try again.');
         this.enrolling.set(false);
+        this.toast.show('Enrollment failed. Please try again.', 'error');
       },
     });
   }
@@ -118,7 +122,9 @@ export class CourseDetail {
   addToCart() {
     const courseId = this.course()?.id;
     if (!courseId || this.inCart()) return;
-    this.cartService.addItem(courseId).subscribe();
+    this.cartService.addItem(courseId).subscribe({
+      next: () => this.toast.show('Added to cart!'),
+    });
   }
 
   buyNow() {

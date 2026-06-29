@@ -2,6 +2,7 @@ import { Component, computed, DestroyRef, inject, input, OnInit, signal } from '
 import { FormsModule } from '@angular/forms';
 import { ReviewsService, ReviewItem } from '../../../core/services/reviews.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { EnrollmentResponse } from '../../../core/services/enrollment.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -15,6 +16,7 @@ export class ReviewSection implements OnInit {
   enrollment = input<EnrollmentResponse | null>(null);
 
   private reviewsService = inject(ReviewsService);
+  private toast = inject(ToastService);
   authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
@@ -111,10 +113,12 @@ export class ReviewSection implements OnInit {
           this.saving.set(false);
           this.showForm.set(false);
           this.loadReviews();
+          this.toast.show('Review updated!');
         },
         error: () => {
           this.formError.set('Failed to update review.');
           this.saving.set(false);
+          this.toast.show('Failed to update review.', 'error');
         },
       });
     } else {
@@ -123,10 +127,12 @@ export class ReviewSection implements OnInit {
           this.saving.set(false);
           this.showForm.set(false);
           this.loadReviews();
+          this.toast.show('Review submitted!');
         },
         error: (err) => {
           this.formError.set(err.error?.message ?? 'Failed to submit review.');
           this.saving.set(false);
+          this.toast.show(err.error?.message ?? 'Failed to submit review.', 'error');
         },
       });
     }
@@ -135,7 +141,10 @@ export class ReviewSection implements OnInit {
   deleteReview(id: string) {
     if (!confirm('Delete this review?')) return;
     this.reviewsService.delete(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => this.loadReviews(),
+      next: () => {
+        this.loadReviews();
+        this.toast.show('Review deleted');
+      },
     });
   }
 

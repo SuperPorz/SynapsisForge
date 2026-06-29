@@ -1,6 +1,50 @@
 @if (loading()) {
-  <div class="flex items-center justify-center py-24">
-    <div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-fg-brand"></div>
+  <div class="animate-pulse">
+    <div class="relative h-72 bg-gray-200 dark:bg-gray-700">
+      <div class="absolute bottom-8 left-4 z-10 space-y-3 sm:left-6 lg:left-8">
+        <div class="h-5 w-24 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+        <div class="h-8 w-96 max-w-full rounded bg-gray-300 dark:bg-gray-600"></div>
+        <div class="flex gap-4">
+          <div class="h-4 w-32 rounded bg-gray-300 dark:bg-gray-600"></div>
+          <div class="h-4 w-40 rounded bg-gray-300 dark:bg-gray-600"></div>
+          <div class="h-4 w-24 rounded bg-gray-300 dark:bg-gray-600"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div class="space-y-10 lg:col-span-2">
+          <div class="space-y-3">
+            <div class="h-6 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+            <div class="h-4 w-full rounded bg-gray-200 dark:bg-gray-700"></div>
+            <div class="h-4 w-5/6 rounded bg-gray-200 dark:bg-gray-700"></div>
+            <div class="h-4 w-4/6 rounded bg-gray-200 dark:bg-gray-700"></div>
+          </div>
+          <div class="space-y-3">
+            <div class="h-6 w-28 rounded bg-gray-200 dark:bg-gray-700"></div>
+            @for (_ of [1,2,3]; track $index) {
+              <div class="h-14 w-full rounded-xl bg-gray-200 dark:bg-gray-700"></div>
+            }
+          </div>
+        </div>
+        <aside class="lg:col-span-1">
+          <div class="space-y-4 rounded-2xl border border-gray-200 bg-card-bg p-5 dark:border-gray-700 dark:bg-gray-800">
+            <div class="h-44 w-full rounded-lg bg-gray-300 dark:bg-gray-600"></div>
+            <div class="h-8 w-20 rounded bg-gray-300 dark:bg-gray-600"></div>
+            <div class="h-12 w-full rounded-xl bg-gray-300 dark:bg-gray-600"></div>
+            <hr class="border-gray-200 dark:border-gray-700" />
+            <div class="space-y-3">
+              @for (_ of [1,2,3,4]; track $index) {
+                <div class="flex items-center gap-2">
+                  <div class="h-4 w-4 rounded bg-gray-200 dark:bg-gray-700"></div>
+                  <div class="h-3 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+                </div>
+              }
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
   </div>
 }
 
