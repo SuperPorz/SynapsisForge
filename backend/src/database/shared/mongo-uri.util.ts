@@ -33,7 +33,10 @@ export function getMongoUri(): string {
   if (user && pass) {
     const encodedUser = encodeURIComponent(user);
     const encodedPass = encodeURIComponent(pass);
-    uriWithAuth = baseUri.replace('mongodb://', `mongodb://${encodedUser}:${encodedPass}@`);
+    uriWithAuth = baseUri.replace(
+      'mongodb://',
+      `mongodb://${encodedUser}:${encodedPass}@`,
+    );
   }
 
   // Aggiunge authSource come query param, gestendo sia il caso "nessun ?"

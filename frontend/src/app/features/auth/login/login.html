@@ -39,6 +39,10 @@
         Login
       </button>
 
+      @if (errorMessage()) {
+        <p class="text-sm text-red-500 text-center">{{ errorMessage() }}</p>
+      }
+
       <div class="relative">
         <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200 dark:border-gray-700"></div></div>
         <div class="relative flex justify-center text-xs text-fg-muted"><span class="bg-white px-2 dark:bg-gray-800">or continue with</span></div>

@@ -131,7 +131,7 @@
           <div class="flex items-center gap-3 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
             <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-fg-brand/10 text-sm font-semibold text-fg-brand">{{ i + 1 }}</span>
             <input type="text" [ngModel]="sec.title" (ngModelChange)="sectionTitle(i, $event)" class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="Section title (e.g. Getting Started)" />
-            <button (click)="removeSection(i)" class="text-red-500 hover:text-red-700 transition-colors" title="Remove section">
+            <button (click)="removeSection(i)" aria-label="Remove section" class="text-red-500 hover:text-red-700 transition-colors" title="Remove section">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
           </div>
@@ -173,7 +173,7 @@
                 <span class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ li + 1 }}.</span>
                 <input type="text" [value]="lesson.title" (input)="updateLesson(i, li, 'title', $any($event.target).value)" class="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="Lesson title" />
                 <input type="number" [value]="lesson.duration_seconds" (input)="updateLesson(i, li, 'duration_seconds', toNumber($any($event.target).value))" class="w-20 sm:w-24 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" placeholder="sec" min="0" />
-                <button (click)="removeLesson(i, li)" class="text-red-400 hover:text-red-600 transition-colors" title="Remove lesson">
+                <button (click)="removeLesson(i, li)" aria-label="Remove lesson" class="text-red-400 hover:text-red-600 transition-colors" title="Remove lesson">
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
               </div>

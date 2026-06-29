@@ -1,5 +1,12 @@
-// prettier-ignore
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, ConflictException, } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 
@@ -49,8 +56,44 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   // Metodo privato che "classifica" l'eccezione
   // e la converte sempre in HttpException
+  private isMongooseValidationError(
+    e: unknown,
+  ): e is { errors: Record<string, { message: string }> } {
+    return (
+      typeof e === 'object' &&
+      e !== null &&
+      (e as Record<string, unknown>)?.name === 'ValidationError' &&
+      typeof (e as Record<string, unknown>)?.errors === 'object'
+    );
+  }
+
+  private isMongooseCastError(
+    e: unknown,
+  ): e is { path: string; value: unknown } {
+    return (
+      typeof e === 'object' &&
+      e !== null &&
+      (e as Record<string, unknown>)?.name === 'CastError'
+    );
+  }
+
   private toHttpException(exception: unknown): HttpException {
-    // CASO 1: errore TypeORM — unique constraint violation
+    // CASO 1: Mongoose validation error
+    if (this.isMongooseValidationError(exception)) {
+      const messages = Object.values(exception.errors).map(
+        (e: { message: string }) => e.message,
+      );
+      return new BadRequestException(messages);
+    }
+
+    // CASO 1b: Mongoose CastError (invalid ObjectId, etc.)
+    if (this.isMongooseCastError(exception)) {
+      return new BadRequestException(
+        `Invalid ${String(exception.path)}: ${String(exception.value)}`,
+      );
+    }
+
+    // CASO 2: errore TypeORM — unique constraint violation
     if (exception instanceof QueryFailedError) {
       const driverError = exception.driverError as
         | { code?: string; errno?: number }
@@ -64,12 +107,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : new HttpException('Database error', HttpStatus.INTERNAL_SERVER_ERROR); // Altro errore TypeORM (connessione, sintassi SQL, ecc.) → 500
     }
 
-    // CASO 2: già una HttpException (NotFoundException, ForbiddenException, ecc.)
+    // CASO 3: già una HttpException (NotFoundException, ForbiddenException, ecc.)
     if (exception instanceof HttpException) {
       return exception;
     }
 
-    // CASO 3: errore sconosciuto (bug, TypeError, ecc.)
+    // CASO 4: errore sconosciuto (bug, TypeError, ecc.)
     // Log in produzione andrebbe qui — non esponiamo dettagli al client
     console.error('[UnhandledError]', exception);
     return new HttpException(

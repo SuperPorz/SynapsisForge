@@ -14,7 +14,10 @@ import { AuthService } from './auth.service';
 import { User } from 'src/common/entities/users.entity';
 import { UsersService } from '../users/users.service';
 import { CacheService } from 'src/modules/cache/cache.service';
-import { UserRole, SubscriptionPlan } from 'src/common/entities/enum/users.enum';
+import {
+  UserRole,
+  SubscriptionPlan,
+} from 'src/common/entities/enum/users.enum';
 import type { CreateUserDto } from '../users/dto/create-user.dto';
 
 jest.mock('bcrypt', () => ({
@@ -203,9 +206,7 @@ describe('AuthService', () => {
         password: null,
       });
 
-      await expect(service.login(loginDto)).rejects.toThrow(
-        'Google o GitHub',
-      );
+      await expect(service.login(loginDto)).rejects.toThrow('Google o GitHub');
     });
 
     it('should throw UnauthorizedException on wrong password', async () => {

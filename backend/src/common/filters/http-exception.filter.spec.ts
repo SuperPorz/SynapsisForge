@@ -44,7 +44,10 @@ describe('HttpExceptionFilter', () => {
 
   it('should format a BadRequestException with array message', () => {
     const exception = new HttpException(
-      { message: ['title is required', 'price must be positive'], error: 'Bad Request' },
+      {
+        message: ['title is required', 'price must be positive'],
+        error: 'Bad Request',
+      },
       HttpStatus.BAD_REQUEST,
     );
 

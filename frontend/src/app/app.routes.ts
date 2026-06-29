@@ -81,6 +81,13 @@ export const routes: Routes = [
   /////////////////////// ROTTE DASHBOARD /////////////////////////////////
 
   {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./features/not-found/not-found').then((m) => m.NotFound),
+  },
+  { path: '**', redirectTo: 'not-found' },
+
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./features/dashboard/dashboard-layout/dashboard-layout').then(

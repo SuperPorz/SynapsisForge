@@ -28,8 +28,18 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError(error => {
-        if (error instanceof HttpErrorResponse && error.status === 401) {
-          return this.handle401(req, next);
+        if (error instanceof HttpErrorResponse) {
+          if (error.status === 401) {
+            return this.handle401(req, next);
+          }
+          if (error.status === 0) {
+            return throwError(() => new HttpErrorResponse({
+              status: 0,
+              statusText: 'Network Error',
+              url: req.url,
+              error: { message: 'Unable to connect. Please check your internet connection.' },
+            }));
+          }
         }
         return throwError(() => error);
       })

@@ -29,7 +29,7 @@
     <div class="flex items-center gap-3">
       <!-- Cart icon -->
       @if (auth.isAuthenticated()) {
-        <a routerLink="/cart" class="relative rounded-lg bg-orange-500 p-2 text-black transition-colors hover:bg-orange-600">
+        <a routerLink="/cart" aria-label="Shopping cart" class="relative rounded-lg bg-orange-500 p-2 text-black transition-colors hover:bg-orange-600">
           <svg class="h-6 w-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
           </svg>

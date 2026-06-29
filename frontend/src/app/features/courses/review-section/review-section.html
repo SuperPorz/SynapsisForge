@@ -38,7 +38,7 @@
         <p class="mb-2 text-sm text-fg-muted">Rating</p>
         <div class="flex items-center gap-1">
           @for (n of [1,2,3,4,5]; track n) {
-            <button type="button" (click)="setRating(n)" class="transition-colors">
+            <button type="button" (click)="setRating(n)" [attr.aria-label]="n + ' star' + (n > 1 ? 's' : '')" class="transition-colors">
               <svg class="h-7 w-7" [class.text-yellow-400]="n <= formRating()" [class.text-gray-300]="n > formRating()" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
               </svg>

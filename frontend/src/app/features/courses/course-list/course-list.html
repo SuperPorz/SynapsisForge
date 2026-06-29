@@ -68,9 +68,9 @@
                 </svg>
               }
             </div>
-            <input type="text" [formControl]="searchControl" placeholder="Search courses, topics, instructors..." class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-800 placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20" />
+            <input type="text" [formControl]="searchControl" aria-label="Search courses" placeholder="Search courses, topics, instructors..." class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-800 placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20" />
             @if (searchControl.value) {
-              <button type="button" (click)="clearSearch()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-fg-muted transition-colors hover:text-heading">
+              <button type="button" (click)="clearSearch()" aria-label="Clear search" class="absolute inset-y-0 right-0 flex items-center pr-3 text-fg-muted transition-colors hover:text-heading">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                 </svg>
@@ -131,7 +131,7 @@
 
           @if (totalPages() > 1) {
             <div class="mt-10 flex items-center justify-center gap-1">
-              <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800">
+              <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)" aria-label="Previous page" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
               </button>
 
@@ -147,7 +147,7 @@
                 }
               }
 
-              <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800">
+              <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)" aria-label="Next page" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
               </button>
             </div>

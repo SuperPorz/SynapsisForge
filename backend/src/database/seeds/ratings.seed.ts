@@ -69,7 +69,9 @@ export async function seedRatings(
       relations: ['student', 'student.user'],
     });
 
-    const seededForCourse = allEnrollments.filter((e) => enrollmentIds.has(e.id));
+    const seededForCourse = allEnrollments.filter((e) =>
+      enrollmentIds.has(e.id),
+    );
 
     // Target 2-4 reviews per course
     const targetCount = randomInt(2, 4);
@@ -77,16 +79,25 @@ export async function seedRatings(
 
     // 1. Use existing enrollments first
     if (seededForCourse.length > 0) {
-      selectedEnrollments.push(...shuffle(seededForCourse).slice(0, targetCount));
+      selectedEnrollments.push(
+        ...shuffle(seededForCourse).slice(0, targetCount),
+      );
     }
 
     // 2. If we still need more reviews, pick random students to create fake enrollments
     if (selectedEnrollments.length < targetCount) {
       const students = await studentRepo.find({ relations: ['user'] });
-      const usedStudentIds = new Set(selectedEnrollments.map((e) => e.student.userId));
-      const availableStudents = students.filter((s) => !usedStudentIds.has(s.userId));
+      const usedStudentIds = new Set(
+        selectedEnrollments.map((e) => e.student.userId),
+      );
+      const availableStudents = students.filter(
+        (s) => !usedStudentIds.has(s.userId),
+      );
 
-      const extra = shuffle(availableStudents).slice(0, targetCount - selectedEnrollments.length);
+      const extra = shuffle(availableStudents).slice(
+        0,
+        targetCount - selectedEnrollments.length,
+      );
 
       for (const student of extra) {
         // Create a fake enrollment (just for the review) with completed status
@@ -120,5 +131,7 @@ export async function seedRatings(
     if (selectedEnrollments.length > 0) coursesWithReviews++;
   }
 
-  console.log(`  ✅ ${totalReviews} reviews created across ${coursesWithReviews} published courses`);
+  console.log(
+    `  ✅ ${totalReviews} reviews created across ${coursesWithReviews} published courses`,
+  );
 }

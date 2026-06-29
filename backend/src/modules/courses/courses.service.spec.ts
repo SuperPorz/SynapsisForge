@@ -79,7 +79,9 @@ describe('CoursesService', () => {
     aggregate: jest.fn(),
   };
 
-  const mockCacheManager: jest.Mocked<Pick<Cache, 'get' | 'set' | 'del' | 'wrap'>> = {
+  const mockCacheManager: jest.Mocked<
+    Pick<Cache, 'get' | 'set' | 'del' | 'wrap'>
+  > = {
     get: jest.fn(),
     set: jest.fn(),
     del: jest.fn(),
@@ -117,8 +119,8 @@ describe('CoursesService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    mockCacheManager.wrap.mockImplementation((_key: string, fn: () => unknown, _ttl?: number) =>
-      fn(),
+    mockCacheManager.wrap.mockImplementation(
+      (_key: string, fn: () => unknown, _ttl?: number) => fn(),
     );
 
     const module: TestingModule = await Test.createTestingModule({
@@ -126,7 +128,10 @@ describe('CoursesService', () => {
         CoursesService,
         { provide: getRepositoryToken(Course), useValue: mockCourseRepo },
         { provide: getRepositoryToken(Category), useValue: mockCategoryRepo },
-        { provide: getRepositoryToken(Enrollment), useValue: mockEnrollmentRepo },
+        {
+          provide: getRepositoryToken(Enrollment),
+          useValue: mockEnrollmentRepo,
+        },
         { provide: getRepositoryToken(Review), useValue: mockReviewRepo },
         { provide: getRepositoryToken(Lesson), useValue: mockLessonRepo },
         { provide: getRepositoryToken(Section), useValue: mockSectionRepo },
@@ -222,7 +227,9 @@ describe('CoursesService', () => {
     it('should throw NotFoundException when course does not exist', async () => {
       mockQueryBuilder.getOne.mockResolvedValue(null);
 
-      await expect(service.findOne(COURSE_ID)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(COURSE_ID)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should return null rating when no reviews exist', async () => {

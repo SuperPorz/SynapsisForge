@@ -4,6 +4,7 @@ import { Navbar } from './shared/components/navbar/navbar';
 import { Footer } from './shared/components/footer/footer';
 import { Toast } from './shared/components/toast/toast';
 import { ThemeService } from './core/services/theme.service';
+import { ConnectivityService } from './core/services/connectivity.service';
 import { routeAnimations } from './animations';
 
 @Component({
@@ -15,6 +16,7 @@ import { routeAnimations } from './animations';
 })
 export class App {
   theme = inject(ThemeService);
+  connectivity = inject(ConnectivityService);
   private contexts = inject(ChildrenOutletContexts);
 
   getRouteAnimationState() {

@@ -1,8 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  INestApplication,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { INestApplication, UnauthorizedException } from '@nestjs/common';
 import request from 'supertest';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';

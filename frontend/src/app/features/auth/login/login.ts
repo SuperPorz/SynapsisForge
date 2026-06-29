@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -18,6 +18,7 @@ export class Login implements OnInit {
 
   registered = false;
   verified = false;
+  errorMessage = signal('');
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -35,6 +36,7 @@ export class Login implements OnInit {
 
   onSubmit(): void {
     if (this.form.invalid) return;
+    this.errorMessage.set('');
     const { email, password } = this.form.value;
     this.authService
       .login({
@@ -43,7 +45,9 @@ export class Login implements OnInit {
       })
       .subscribe({
         next: () => this.router.navigate(['/courses']),
-        error: (err) => console.error(err),
+        error: (err) => {
+          this.errorMessage.set(err.error?.message || err.message || 'Login failed. Please try again.');
+        },
       });
   }
 

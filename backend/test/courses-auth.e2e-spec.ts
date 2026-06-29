@@ -179,11 +179,20 @@ describe('Courses — role-based access (e2e)', () => {
         { provide: getRepositoryToken(Course), useValue: mockCourseRepo },
         { provide: getRepositoryToken(Category), useValue: mockCategoryRepo },
         { provide: getRepositoryToken(Section), useValue: mockSectionRepo },
-        { provide: getRepositoryToken(Enrollment), useValue: mockEnrollmentRepo },
+        {
+          provide: getRepositoryToken(Enrollment),
+          useValue: mockEnrollmentRepo,
+        },
         { provide: getRepositoryToken(Review), useValue: mockReviewRepo },
         { provide: getRepositoryToken(Lesson), useValue: mockLessonRepo },
-        { provide: getRepositoryToken(InstructorProfile), useValue: mockInstructorProfileRepo },
-        { provide: getModelToken('LessonProgress', 'mongo_synapsis'), useValue: mockLessonProgressModel },
+        {
+          provide: getRepositoryToken(InstructorProfile),
+          useValue: mockInstructorProfileRepo,
+        },
+        {
+          provide: getModelToken('LessonProgress', 'mongo_synapsis'),
+          useValue: mockLessonProgressModel,
+        },
         { provide: CACHE_MANAGER, useValue: mockCacheManager },
         { provide: CacheService, useValue: mockCacheService },
         { provide: RedisPubSubService, useValue: mockRedisPubSub },
@@ -238,7 +247,10 @@ describe('Courses — role-based access (e2e)', () => {
       mockCacheManager.wrap.mockImplementation(
         (_key: string, fn: () => unknown) => fn(),
       );
-      mockQb.getManyAndCount.mockResolvedValue([[{ id: 'c1', title: 'Test' }], 1]);
+      mockQb.getManyAndCount.mockResolvedValue([
+        [{ id: 'c1', title: 'Test' }],
+        1,
+      ]);
       mockQb.getRawMany.mockResolvedValue([]);
 
       const res = await request(app.getHttpServer())
@@ -285,7 +297,10 @@ describe('Courses — role-based access (e2e)', () => {
       currentUser = { id: INSTRUCTOR_ID, role: 'INSTRUCTOR' };
 
       mockCourseRepo.create.mockReturnValue({ id: 'new-course-id' });
-      mockCourseRepo.save.mockResolvedValue({ id: 'new-course-id', title: 'New Course' });
+      mockCourseRepo.save.mockResolvedValue({
+        id: 'new-course-id',
+        title: 'New Course',
+      });
 
       const res = await request(app.getHttpServer())
         .post('/courses')

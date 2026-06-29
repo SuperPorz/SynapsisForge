@@ -25,6 +25,12 @@
   --color-card-bg: #374151;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-fg-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* Card backgrounds: light gray in light mode, lighter gray in dark mode */
 .dark .dark\:bg-gray-800 {
   background-color: var(--color-card-bg);

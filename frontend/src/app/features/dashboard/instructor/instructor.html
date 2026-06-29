@@ -1,10 +1,10 @@
 <div class="space-y-6">
   <div class="relative flex items-center justify-center">
-    <a routerLink="/dashboard" class="absolute left-0 inline-flex items-center justify-center rounded-lg bg-fg-brand p-2 text-white transition-colors hover:bg-fg-brand-strong">
+    <a routerLink="/dashboard" aria-label="Back to dashboard" class="absolute left-0 inline-flex items-center justify-center rounded-lg bg-fg-brand p-2 text-white transition-colors hover:bg-fg-brand-strong">
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
     </a>
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Instructor Panel</h1>
-    <a routerLink="/dashboard/instructor/new" class="absolute right-0 inline-flex items-center justify-center rounded-lg bg-fg-brand p-2 text-white transition-colors hover:bg-fg-brand-strong">
+    <a routerLink="/dashboard/instructor/new" aria-label="Create new course" class="absolute right-0 inline-flex items-center justify-center rounded-lg bg-fg-brand p-2 text-white transition-colors hover:bg-fg-brand-strong">
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
     </a>
   </div>
@@ -16,6 +16,7 @@
           <input
             type="text"
             placeholder="Search courses..."
+            aria-label="Search courses"
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
             class="w-full sm:w-64 rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
@@ -23,6 +24,7 @@
           <select
             [ngModel]="statusFilter()"
             (ngModelChange)="statusFilter.set($event)"
+            aria-label="Filter by status"
             class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           >
             <option value="all">All status</option>
@@ -43,7 +45,7 @@
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
           <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No courses yet</h3>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Create your first course to get started.</p>
-          <a routerLink="/dashboard/instructor/new" class="mt-4 inline-flex items-center justify-center rounded-lg bg-fg-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
+          <a routerLink="/dashboard/instructor/new" aria-label="Create new course" class="mt-4 inline-flex items-center justify-center rounded-lg bg-fg-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           </a>
         </div>
@@ -72,7 +74,7 @@
                   <td class="whitespace-nowrap px-3 sm:px-6 py-4 max-w-[160px] sm:max-w-none text-center sm:text-left">
                     <div class="flex items-center gap-3">
                       @if (course.thumbnail_url) {
-                        <img [src]="course.thumbnail_url" alt="" class="hidden sm:block h-10 w-16 rounded object-cover shrink-0" />
+                        <img [src]="course.thumbnail_url" [alt]="course.title" class="hidden sm:block h-10 w-16 rounded object-cover shrink-0" />
                       }
                       <div class="min-w-0">
                         <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ course.title }}</p>
@@ -108,16 +110,16 @@
                     <td class="whitespace-nowrap px-3 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">{{ course.enrollmentCount }}</td>
                   <td class="whitespace-nowrap px-3 sm:px-6 py-4 text-center sm:text-right text-sm">
                     <div class="flex items-center justify-end gap-1 sm:gap-3">
-                      <a routerLink="/dashboard/instructor/edit/{{ course.id }}" class="rounded-lg p-1.5 text-gray-700 transition-colors hover:bg-gray-200 hover:text-fg-brand dark:text-gray-300 dark:hover:bg-gray-700" title="Edit">
+                      <a routerLink="/dashboard/instructor/edit/{{ course.id }}" aria-label="Edit {{ course.title }}" class="rounded-lg p-1.5 text-gray-700 transition-colors hover:bg-gray-200 hover:text-fg-brand dark:text-gray-300 dark:hover:bg-gray-700" title="Edit">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         <span class="hidden sm:inline ml-1">Edit</span>
                       </a>
-                      <button (click)="selectCourse(course.id)" class="rounded-lg p-1.5 text-gray-700 transition-colors hover:bg-gray-200 hover:text-fg-brand dark:text-gray-300 dark:hover:bg-gray-700" title="Analytics">
+                      <button (click)="selectCourse(course.id)" aria-label="View analytics for {{ course.title }}" class="rounded-lg p-1.5 text-gray-700 transition-colors hover:bg-gray-200 hover:text-fg-brand dark:text-gray-300 dark:hover:bg-gray-700" title="Analytics">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                         <span class="hidden sm:inline ml-1">Analytics</span>
                       </button>
                       @if (course.status !== 'PUBLISHED') {
-                        <button (click)="deleteCourse(course)" class="rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20" title="Delete">
+                        <button (click)="deleteCourse(course)" aria-label="Delete {{ course.title }}" class="rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20" title="Delete">
                           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                           <span class="hidden sm:inline ml-1">Delete</span>
                         </button>
