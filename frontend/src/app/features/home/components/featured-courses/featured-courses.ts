@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CourseService } from '../../../../core/services/courses.service';
 import { Course } from '../../../../core/models/course-model';
 import { CourseCard } from '../../../../shared/components/course-card/course-card';
-import { FEATURED_COURSES_LIMIT } from '../../../../core/costants/pagination';
+import { FEATURED_COURSES_LIMIT } from '../../../../core/constants/pagination';
 
 @Component({
   selector: 'app-featured-courses',

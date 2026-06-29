@@ -65,6 +65,56 @@
         "maxAge": "5m",
         "timeout": "3s"
       }
+    },
+    {
+      "name": "api-admin",
+      "urls": ["/api/admin/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 20,
+        "maxAge": "5m",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "api-users",
+      "urls": ["/api/users/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 20,
+        "maxAge": "5m",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "api-payments",
+      "urls": ["/api/payments/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 10,
+        "maxAge": "30m",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "api-cart",
+      "urls": ["/api/cart/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 10,
+        "maxAge": "1h",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "api-certificates",
+      "urls": ["/api/certificates/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 10,
+        "maxAge": "30m",
+        "timeout": "5s"
+      }
     }
   ]
 }

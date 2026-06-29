@@ -1,6 +1,28 @@
 <app-hero />
 <div class="divide-y divide-gray-100 dark:divide-gray-800">
-  <app-featured-courses />
+  @defer (on timer(500)) {
+    <app-featured-courses />
+  } @placeholder {
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mb-10 text-center">
+        <h2 class="text-3xl font-bold text-heading">Featured courses</h2>
+        <p class="mt-2 text-fg-muted">The most popular courses right now</p>
+      </div>
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        @for (_ of [1, 2, 3]; track $index) {
+          <div class="animate-pulse rounded-xl border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-800">
+            <div class="mb-6 h-48 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+            <div class="mb-3 h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700"></div>
+            <div class="mb-6 h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700"></div>
+            <div class="flex items-center justify-between">
+              <div class="h-8 w-20 rounded bg-gray-200 dark:bg-gray-700"></div>
+              <div class="h-9 w-28 rounded bg-gray-200 dark:bg-gray-700"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
   <app-categories />
   <app-stats />
   <app-tech-stack />

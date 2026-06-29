@@ -175,20 +175,26 @@
             </div>
           </div>
 
-          <div class="grid gap-6 lg:grid-cols-2">
-            <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
-              <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Enrollments (last 30 days)</h3>
-              <div class="h-64">
-                <canvas baseChart type="line" [data]="enrollmentsChartData()" [options]="enrollmentsChartOptions"></canvas>
+          @defer {
+            <div class="grid gap-6 lg:grid-cols-2">
+              <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
+                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Enrollments (last 30 days)</h3>
+                <div class="h-64">
+                  <canvas baseChart type="line" [data]="enrollmentsChartData()" [options]="enrollmentsChartOptions"></canvas>
+                </div>
+              </div>
+              <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
+                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Top Lessons by Watch Time</h3>
+                <div class="h-64">
+                  <canvas baseChart type="bar" [data]="lessonsChartData()" [options]="lessonsChartOptions"></canvas>
+                </div>
               </div>
             </div>
-            <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
-              <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Top Lessons by Watch Time</h3>
-              <div class="h-64">
-                <canvas baseChart type="bar" [data]="lessonsChartData()" [options]="lessonsChartOptions"></canvas>
-              </div>
+          } @placeholder {
+            <div class="flex items-center justify-center py-12 text-gray-400">
+              Loading charts...
             </div>
-          </div>
+          }
       }
     }
   }
