@@ -2,10 +2,29 @@
 
 > Enterprise-oriented full-stack e-learning platform designed to showcase advanced software engineering, backend architecture, frontend engineering, authentication systems, cloud integrations, and DevOps workflows.
 
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitLab-orange?logo=gitlab)](https://gitlab.com/SuperPorz/synapsisforge)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular)](https://angular.dev)
+[![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs)](https://nestjs.com)
+
 **Live**: [https://synapsisforge.shop](https://synapsisforge.shop)  
 **API**: `https://synapsisforge.shop/api`  
 **Swagger**: `https://synapsisforge.shop/api/docs`  
 **Bull Board**: `https://synapsisforge.shop/admin/queues` (admin only)
+
+---
+
+## Screenshots
+
+| Page | Preview |
+|------|---------|
+| 🏠 **Homepage** — course catalog with search and filters | `screenshots/homepage.png` |
+| 📖 **Course player** — video lesson with sidebar navigation and progress | `screenshots/player.png` |
+| 📊 **Instructor dashboard** — analytics, enrollments over time | `screenshots/instructor-dashboard.png` |
+| 🛡️ **Admin panel** — user management, platform KPIs | `screenshots/admin-panel.png` |
+| 🛒 **Checkout** — Braintree Drop-in payment UI | `screenshots/checkout.png` |
+
+> **Note**: Screenshots are stored in the `screenshots/` directory. Live demo at [synapsisforge.shop](https://synapsisforge.shop).
 
 ---
 
@@ -65,6 +84,10 @@ SynapsisForge follows a **modular monolith** pattern with a clear separation of 
 | AWS S3 for media storage | Scalable, cost-effective object storage with presigned URL security |
 | Braintree for payments | Single SDK for credit card + PayPal + subscription management |
 | BullMQ for async jobs | Redis-backed reliable queueing with retry, scheduling, and monitoring via Bull Board |
+| JWT + HttpOnly cookies | Access token in `Authorization` header, refresh token in HttpOnly cookie (XSS-safe); automatic rotation on refresh |
+| Angular Signals + zoneless | Modern change detection without Zone.js — smaller bundles, better runtime performance |
+| Tailwind CSS 4 `@theme` | CSS-first configuration via `@import "tailwindcss"` — no `tailwind.config.js` needed |
+| Modular monolith (NestJS) | Single deployable with clear module boundaries (Auth, Courses, Payments, etc.) — easier DX than microservices at this scale |
 
 ---
 
@@ -449,6 +472,7 @@ SynapsisForge/
 │   │   │   └── shared/     # Shared components, pipes, directives
 │   │   └── environments/   # Environment configs
 │   └── package.json
+├── screenshots/            # Screenshot gallery images
 ├── infra/                  # Infrastructure
 │   ├── docker-compose.yaml # Dev containers (PG, Mongo, Redis)
 │   ├── nginx/              # Nginx reverse proxy config
