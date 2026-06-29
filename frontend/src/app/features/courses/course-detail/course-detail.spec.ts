@@ -5,6 +5,7 @@ import { CourseService } from '../../../core/services/courses.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ReviewsService } from '../../../core/services/reviews.service';
 
 describe('CourseDetail', () => {
   let component: CourseDetail;
@@ -19,6 +20,7 @@ describe('CourseDetail', () => {
         { provide: EnrollmentService, useValue: { getMyEnrollment: vi.fn(() => ({ subscribe: vi.fn() })), enroll: vi.fn(() => ({ subscribe: vi.fn() })) } },
         { provide: CartService, useValue: { isInCart: vi.fn(() => false), addItem: vi.fn(() => ({ subscribe: vi.fn() })) } },
         { provide: AuthService, useValue: { isLoggedIn: vi.fn(() => false), userId: vi.fn(() => null) } },
+        { provide: ReviewsService, useValue: { getCourseReviews: vi.fn(() => ({ subscribe: vi.fn() })) } },
       ],
     }).compileComponents();
 

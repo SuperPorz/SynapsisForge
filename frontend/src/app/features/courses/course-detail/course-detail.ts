@@ -5,12 +5,13 @@ import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Course } from '../../../core/models/course-model';
+import { ReviewSection } from '../review-section/review-section';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-course-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, ReviewSection],
   templateUrl: './course-detail.html',
   styleUrl: './course-detail.css',
 })

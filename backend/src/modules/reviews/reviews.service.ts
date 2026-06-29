@@ -87,6 +87,27 @@ export class ReviewsService {
     return await this.reviewsRepo.save(review);
   }
 
+  async findByCourse(courseId: string) {
+    const reviews = await this.reviewsRepo.find({
+      where: { enrollment: { course: { id: courseId } } },
+      relations: { enrollment: { student: { user: true } } },
+      order: { created_at: 'DESC' },
+    });
+
+    return reviews.map((review) => ({
+      id: review.id,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.created_at,
+      userId: review.enrollment.student.userId,
+      user: {
+        firstName: review.enrollment.student.user.first_name,
+        lastName: review.enrollment.student.user.last_name,
+        avatarUrl: review.enrollment.student.user.avatar_url,
+      },
+    }));
+  }
+
   async remove(reviewId: string, currentUserId: string): Promise<string> {
     const review = await this.reviewsRepo.findOne({
       where: { id: reviewId },

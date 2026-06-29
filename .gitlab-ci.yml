@@ -93,11 +93,17 @@ frontend-test:
   script:
     - cd frontend
     - npm ci
-    - npm test
+    - npm run test -- --coverage --coverage-reporters text --coverage-reporters cobertura
   cache:
     key: $CI_COMMIT_REF_SLUG-frontend
     paths:
       - frontend/node_modules/
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: frontend/coverage/cobertura-coverage.xml
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
 
 frontend-build-check:
   image: node:22-alpine

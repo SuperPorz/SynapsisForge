@@ -1,0 +1,118 @@
+<section class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-xl font-bold text-heading">
+      Reviews
+      @if (reviews().length > 0) {
+        <span class="ml-2 text-base font-normal text-fg-muted">({{ reviews().length }})</span>
+      }
+    </h2>
+
+    @if (canReview() && !showForm()) {
+      @if (hasReviewed()) {
+        <button type="button" (click)="openEditForm()" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-fg-muted transition-colors hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+          Edit your review
+        </button>
+      } @else {
+        <button type="button" (click)="openNewForm()" class="rounded-lg bg-fg-brand px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-fg-brand-strong">
+          Write a review
+        </button>
+      }
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center py-8">
+      <div class="h-6 w-6 animate-spin rounded-full border-4 border-gray-200 border-t-fg-brand"></div>
+    </div>
+  } @else if (error()) {
+    <p class="text-sm text-red-500">{{ error() }}</p>
+  } @else if (reviews().length === 0 && !showForm()) {
+    <p class="py-6 text-center text-sm text-fg-muted">No reviews yet. Be the first to review this course!</p>
+  }
+
+  @if (showForm()) {
+    <div class="rounded-xl border border-gray-200 bg-card-bg p-5 dark:border-gray-700">
+      <h3 class="mb-4 font-semibold text-heading">{{ editingReviewId() ? 'Edit your review' : 'Write a review' }}</h3>
+
+      <div class="mb-4">
+        <p class="mb-2 text-sm text-fg-muted">Rating</p>
+        <div class="flex items-center gap-1">
+          @for (n of [1,2,3,4,5]; track n) {
+            <button type="button" (click)="setRating(n)" class="transition-colors">
+              <svg class="h-7 w-7" [class.text-yellow-400]="n <= formRating()" [class.text-gray-300]="n > formRating()" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="mb-1 block text-sm text-fg-muted">Comment (optional)</label>
+        <textarea
+          [(ngModel)]="formComment"
+          rows="3"
+          class="w-full rounded-lg border border-gray-300 bg-surface p-3 text-sm text-heading outline-none transition-colors focus:border-fg-brand focus:ring-1 focus:ring-fg-brand dark:border-gray-600 dark:bg-gray-800"
+          placeholder="Share your experience..."
+        ></textarea>
+      </div>
+
+      @if (formError()) {
+        <p class="mb-3 text-sm text-red-500">{{ formError() }}</p>
+      }
+
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="submitForm()" [disabled]="saving()" class="rounded-lg bg-fg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-fg-brand-strong disabled:opacity-50">
+          @if (saving()) { Saving... } @else { {{ editingReviewId() ? 'Update' : 'Submit' }} }
+        </button>
+        <button type="button" (click)="cancelForm()" class="text-sm text-fg-muted underline transition-colors hover:text-heading">
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (reviews().length > 0) {
+    <div class="space-y-4">
+      @for (review of reviews(); track review.id) {
+        <div class="rounded-xl border border-gray-200 bg-card-bg p-5 dark:border-gray-700">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-fg-brand/10 text-sm font-bold text-fg-brand">
+                {{ review.user.firstName[0] }}{{ review.user.lastName[0] }}
+              </div>
+              <div>
+                <p class="font-semibold text-heading">{{ review.user.firstName }} {{ review.user.lastName }}</p>
+                <div class="flex items-center gap-2">
+                  <span class="flex items-center gap-0.5">
+                    @for (filled of starStates(review.rating); track $index) {
+                      <svg class="h-3.5 w-3.5" [class.text-yellow-400]="filled" [class.text-gray-300]="!filled" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+                      </svg>
+                    }
+                  </span>
+                  <span class="text-xs text-fg-muted">{{ formatDate(review.createdAt) }}</span>
+                </div>
+              </div>
+            </div>
+
+            @if (review.userId === currentUserId()) {
+              <div class="flex items-center gap-2">
+                <button type="button" (click)="openEditForm()" class="text-xs text-fg-muted underline transition-colors hover:text-fg-brand">
+                  Edit
+                </button>
+                <button type="button" (click)="deleteReview(review.id)" class="text-xs text-red-400 underline transition-colors hover:text-red-600">
+                  Delete
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (review.comment) {
+            <p class="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">{{ review.comment }}</p>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>
