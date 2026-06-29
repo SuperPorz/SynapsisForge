@@ -16,8 +16,8 @@ export interface SeededUsers {
 
 const ADMIN = {
   email: 'admin@example.com',
-  first_name: 'Miky',
-  last_name: 'Admin',
+  first_name: 'Admin',
+  last_name: 'User',
   birth_date: new Date('1995-01-01'),
   country: Country.ITALY,
   role: UserRole.ADMIN,
