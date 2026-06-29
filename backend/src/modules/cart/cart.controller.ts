@@ -7,13 +7,23 @@ import {
   Param,
   Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiBody,
+  ApiParam,
+  ApiResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { CartService, CartCache } from './cart.service';
 import { PaymentsService } from '../payments/payments.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { CartCheckoutDto } from './dto/cart-checkout.dto';
 
-@ApiTags('cart')
+@ApiTags('Cart')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
 @Controller('cart')
 export class CartController {
   constructor(
@@ -23,12 +33,14 @@ export class CartController {
 
   @Get()
   @ApiOperation({ summary: 'Get cart items with total' })
+  @ApiResponse({ status: 200, description: 'Cart items retrieved.' })
   async getCart(@Req() req: { user: { id: string } }): Promise<CartCache> {
     return this.cartService.getCart(req.user.id);
   }
 
   @Get('count')
   @ApiOperation({ summary: 'Get cart item count for badge' })
+  @ApiResponse({ status: 200, description: 'Cart count retrieved.' })
   async getCartCount(
     @Req() req: { user: { id: string } },
   ): Promise<{ count: number }> {
@@ -38,6 +50,8 @@ export class CartController {
 
   @Post()
   @ApiOperation({ summary: 'Add course to cart' })
+  @ApiBody({ type: AddToCartDto })
+  @ApiResponse({ status: 201, description: 'Course added to cart.' })
   async addItem(
     @Req() req: { user: { id: string } },
     @Body() dto: AddToCartDto,
@@ -47,6 +61,12 @@ export class CartController {
 
   @Delete(':courseId')
   @ApiOperation({ summary: 'Remove course from cart' })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course to remove',
+    type: String,
+  })
+  @ApiResponse({ status: 200, description: 'Course removed from cart.' })
   async removeItem(
     @Req() req: { user: { id: string } },
     @Param('courseId') courseId: string,
@@ -56,6 +76,7 @@ export class CartController {
 
   @Delete()
   @ApiOperation({ summary: 'Clear entire cart' })
+  @ApiResponse({ status: 200, description: 'Cart cleared.' })
   async clearCart(@Req() req: { user: { id: string } }) {
     await this.cartService.clearCart(req.user.id);
     return { success: true };
@@ -65,6 +86,8 @@ export class CartController {
   @ApiOperation({
     summary: 'Checkout all items in cart with single Braintree payment',
   })
+  @ApiBody({ type: CartCheckoutDto })
+  @ApiResponse({ status: 201, description: 'Cart checkout completed.' })
   async checkout(
     @Req() req: { user: { id: string } },
     @Body() dto: CartCheckoutDto,

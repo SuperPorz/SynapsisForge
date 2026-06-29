@@ -81,6 +81,11 @@ export const routes: Routes = [
   /////////////////////// ROTTE DASHBOARD /////////////////////////////////
 
   {
+    path: 'api-docs',
+    loadComponent: () =>
+      import('./features/api-docs/api-docs').then((m) => m.ApiDocs),
+  },
+  {
     path: 'not-found',
     loadComponent: () =>
       import('./features/not-found/not-found').then((m) => m.NotFound),

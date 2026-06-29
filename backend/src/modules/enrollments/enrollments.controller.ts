@@ -1,7 +1,7 @@
 //prettier-ignore
 import { Body, Controller, Param, Patch, Post, HttpCode, HttpStatus, ParseUUIDPipe, Get, Req, Query } from '@nestjs/common';
 //prettier-ignore
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody, ApiQuery, } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody, ApiQuery, ApiUnauthorizedResponse, } from '@nestjs/swagger';
 import { EnrollmentsService } from './enrollments.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { ResponseEnrollmentDto } from './dto/response-enrollment.dto';
@@ -9,6 +9,7 @@ import { Request } from 'express';
 
 @ApiTags('Enrollments')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
 @Controller('enrollments')
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
@@ -17,10 +18,10 @@ export class EnrollmentsController {
   @Get('my')
   @ApiOperation({
     summary:
-      "Restituisce l'enrollment per un corso specifico (se courseId fornito) o tutti gli enrollments dell'utente",
+      "Get enrollment for a specific course (if courseId provided) or all user enrollments",
   })
   @ApiQuery({ name: 'courseId', required: false, type: String })
-  @ApiResponse({ status: 200, description: 'Enrollment trovato o lista' })
+  @ApiResponse({ status: 200, description: 'Enrollment found or list of enrollments' })
   async getMyEnrollment(
     @Query('courseId') courseId: string | undefined,
     @Req() req: Request & { user: { id: string } },
@@ -35,8 +36,9 @@ export class EnrollmentsController {
   // ─── GET /enrollments/my/ids ─────────────────────────────────
   @Get('my/ids')
   @ApiOperation({
-    summary: "Restituisce gli ID dei corsi a cui l'utente è iscritto",
+    summary: "Get IDs of courses the user is enrolled in",
   })
+  @ApiResponse({ status: 200, description: 'List of course IDs.' })
   async getMyEnrolledCourseIds(
     @Req() req: Request & { user: { id: string } },
   ): Promise<string[]> {
@@ -45,8 +47,8 @@ export class EnrollmentsController {
 
   // ─── GET /enrollments/my/activity ────────────────────────────
   @Get('my/activity')
-  @ApiOperation({ summary: "Ultime 10 lezioni completate dall'utente" })
-  @ApiResponse({ status: 200, description: 'Attività recente' })
+  @ApiOperation({ summary: "Last 10 completed lessons for the user" })
+  @ApiResponse({ status: 200, description: 'Recent activity list' })
   async getMyActivity(@Req() req: Request & { user: { id: string } }) {
     const userId = req.user['id'];
     return this.enrollmentsService.findMyActivity(userId);
@@ -55,26 +57,26 @@ export class EnrollmentsController {
   // ─── POST /enrollments ────────────────────────────────────────────────────
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Iscrive uno studente a un corso' })
+  @ApiOperation({ summary: 'Enroll a student in a course' })
   @ApiBody({ type: CreateEnrollmentDto })
   @ApiResponse({
     status: 201,
-    description: 'Iscrizione creata',
+    description: 'Enrollment created',
     type: ResponseEnrollmentDto,
   })
   @ApiResponse({
     status: 400,
-    description: 'Corso non disponibile o senza lezioni',
+    description: 'Course not available or has no lessons',
   })
   @ApiResponse({
     status: 403,
-    description: 'Nessun pagamento completato trovato',
+    description: 'No completed payment found',
   })
   @ApiResponse({
     status: 404,
-    description: 'StudentProfile o corso non trovato',
+    description: 'Student profile or course not found',
   })
-  @ApiResponse({ status: 409, description: 'Studente già iscritto al corso' })
+  @ApiResponse({ status: 409, description: 'Student already enrolled in this course' })
   async enroll(
     @Body() dto: CreateEnrollmentDto,
   ): Promise<ResponseEnrollmentDto> {
@@ -82,18 +84,17 @@ export class EnrollmentsController {
   }
 
   // ─── PATCH /enrollments/:id/progress ─────────────────────────────────────
-  @ApiBearerAuth()
   @Patch(':id/progress')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Aggiorna il progresso di una lezione completata' })
-  @ApiParam({ name: 'id', description: "UUID dell'enrollment", type: String })
+  @ApiOperation({ summary: 'Update lesson completion progress' })
+  @ApiParam({ name: 'id', description: 'UUID of the enrollment', type: String })
   @ApiResponse({
     status: 200,
-    description: 'Progresso aggiornato',
+    description: 'Progress updated',
     type: ResponseEnrollmentDto,
   })
-  @ApiResponse({ status: 400, description: 'Il corso non ha lezioni' })
-  @ApiResponse({ status: 404, description: 'Enrollment non trovato' })
+  @ApiResponse({ status: 400, description: 'Course has no lessons' })
+  @ApiResponse({ status: 404, description: 'Enrollment not found' })
   async updateProgress(
     @Param('id', ParseUUIDPipe) enrollmentId: string,
   ): Promise<ResponseEnrollmentDto> {

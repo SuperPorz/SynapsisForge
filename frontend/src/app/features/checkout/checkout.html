@@ -26,7 +26,7 @@
         <div class="lg:col-span-2">
           <div class="rounded-xl bg-card-bg p-6">
             @if (c.thumbnail_url) {
-              <img [src]="c.thumbnail_url" [alt]="c.title" class="mb-4 h-40 w-full rounded-lg object-cover">
+              <img loading="lazy" [src]="c.thumbnail_url" [alt]="c.title" class="mb-4 h-40 w-full rounded-lg object-cover">
             }
             <h1 class="mb-2 text-xl font-bold text-heading">{{ c.title }}</h1>
             <p class="mb-4 text-3xl font-bold text-fg-brand">{{ c.price | currency:'EUR':'symbol':'1.2-2' }}</p>
@@ -61,7 +61,7 @@
             <div class="space-y-3">
               @for (item of cartItems(); track item.courseId) {
                 <div class="flex items-center gap-3">
-                  <img [src]="item.thumbnail_url" [alt]="item.title" class="h-12 w-20 shrink-0 rounded object-cover" />
+                  <img loading="lazy" [src]="item.thumbnail_url" [alt]="item.title" class="h-12 w-20 shrink-0 rounded object-cover" />
                   <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-medium text-heading">{{ item.title }}</p>
                     <p class="text-sm font-semibold text-fg-brand">{{ item.price | currency:'EUR':'symbol':'1.2-2' }}</p>

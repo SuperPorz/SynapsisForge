@@ -23,11 +23,15 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOperation,
+  ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid.pipe';
 import { ParsePositiveIntPipe } from 'src/common/pipes/parse-positive-int.pipe';
@@ -59,6 +63,48 @@ export class CoursesController {
   @ApiResponse({
     status: 404,
     description: 'No courses found for the given criteria.',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    type: String,
+    description: 'Filter by category slug',
+  })
+  @ApiQuery({
+    name: 'featured',
+    required: false,
+    type: Boolean,
+    description: 'Filter featured courses',
+  })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    type: String,
+    description: 'Search query',
+  })
+  @ApiQuery({
+    name: 'minPrice',
+    required: false,
+    type: Number,
+    description: 'Minimum price filter',
+  })
+  @ApiQuery({
+    name: 'maxPrice',
+    required: false,
+    type: Number,
+    description: 'Maximum price filter',
   })
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
@@ -111,6 +157,12 @@ export class CoursesController {
     status: 404,
     description: 'No courses found for the given search query.',
   })
+  @ApiQuery({
+    name: 'q',
+    required: true,
+    type: String,
+    description: 'Search query',
+  })
   @Get('search')
   search(@Query('q') query: string) {
     return this.CoursesService.search(query);
@@ -122,6 +174,7 @@ export class CoursesController {
     summary: 'Get all courses owned by the authenticated instructor',
   })
   @ApiResponse({ status: 200, description: 'Instructor courses retrieved.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
   @Get('my')
   findMyCourses(@Req() req: Request & { user: { id: string } }) {
     return this.CoursesService.findMyCourses(req.user.id);
@@ -133,6 +186,8 @@ export class CoursesController {
     summary: 'Get stats for a course (enrollments, rating, watch time)',
   })
   @ApiResponse({ status: 200, description: 'Course stats retrieved.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'id', description: 'UUID of the course', type: String })
   @Get('my/stats/:id')
   getCourseStats(
     @Req() req: Request & { user: { id: string } },
@@ -147,6 +202,8 @@ export class CoursesController {
     summary: 'Get lesson list with watch time stats for a course',
   })
   @ApiResponse({ status: 200, description: 'Lessons with stats retrieved.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'id', description: 'UUID of the course', type: String })
   @Get('my/:id/lessons')
   getCourseLessons(
     @Req() req: Request & { user: { id: string } },
@@ -160,6 +217,7 @@ export class CoursesController {
   @ApiOperation({ summary: 'Get a course by its ID' })
   @ApiResponse({ status: 200, description: 'Course retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
+  @ApiParam({ name: 'id', description: 'UUID of the course', type: String })
   @Get(':id')
   findOne(@Param('id', ParseUuidPipe) id: string) {
     return this.CoursesService.findOne(id);
@@ -170,6 +228,7 @@ export class CoursesController {
   @ApiOperation({ summary: 'Find a course by its slug' })
   @ApiResponse({ status: 200, description: 'Course found by slug.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
+  @ApiParam({ name: 'slug', description: 'Course slug', type: String })
   @Get('slug/:slug')
   findBySlug(@Param('slug') slug: string) {
     return this.CoursesService.findBySlug(slug);
@@ -180,8 +239,10 @@ export class CoursesController {
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Create a new course' })
+  @ApiBody({ type: CreateCourseDto })
   @ApiCreatedResponse({ description: 'Course created successfully.' })
   @ApiResponse({ status: 409, description: 'Course already exists.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
   @Post()
   create(
     @Body() dto: CreateCourseDto,
@@ -193,8 +254,11 @@ export class CoursesController {
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Update an existing course' })
+  @ApiBody({ type: UpdateCourseDto })
   @ApiResponse({ status: 200, description: 'Course updated successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'id', description: 'UUID of the course', type: String })
   @Patch(':id')
   update(
     @Param('id', ParseUuidPipe) id: string,
@@ -209,6 +273,8 @@ export class CoursesController {
   @ApiOperation({ summary: 'Delete a course' })
   @ApiResponse({ status: 200, description: 'Course deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'id', description: 'UUID of the course', type: String })
   @Delete(':id')
   delete(
     @Param('id', ParseUuidPipe) id: string,
@@ -223,6 +289,8 @@ export class CoursesController {
   @ApiResponse({ status: 200, description: 'Course restored successfully.' })
   @ApiResponse({ status: 404, description: 'Course not found.' })
   @ApiResponse({ status: 409, description: 'Course is already active.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'id', description: 'UUID of the course', type: String })
   @Patch(':id/restore')
   restore(
     @Param('id', ParseUuidPipe) id: string,
@@ -238,7 +306,10 @@ export class CoursesController {
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Create a section in a course' })
+  @ApiBody({ type: CreateSectionDto })
   @ApiCreatedResponse({ description: 'Section created successfully.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
   @Post(':courseId/sections')
   createSection(
     @Param('courseId', ParseUuidPipe) courseId: string,
@@ -251,7 +322,11 @@ export class CoursesController {
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Update a section' })
+  @ApiBody({ type: UpdateSectionDto })
   @ApiResponse({ status: 200, description: 'Section updated successfully.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({ name: 'sectionId', description: 'UUID of the section', type: String })
   @Patch(':courseId/sections/:sectionId')
   updateSection(
     @Param('courseId', ParseUuidPipe) courseId: string,
@@ -271,6 +346,9 @@ export class CoursesController {
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Delete a section' })
   @ApiNoContentResponse({ description: 'Section deleted successfully.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({ name: 'sectionId', description: 'UUID of the section', type: String })
   @Delete(':courseId/sections/:sectionId')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteSection(
@@ -284,7 +362,10 @@ export class CoursesController {
   @ApiBearerAuth()
   @Roles(UserRole.INSTRUCTOR)
   @ApiOperation({ summary: 'Reorder sections' })
+  @ApiBody({ type: ReorderSectionsDto })
   @ApiResponse({ status: 200, description: 'Sections reordered successfully.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
+  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
   @Patch(':courseId/sections/reorder')
   reorderSections(
     @Param('courseId', ParseUuidPipe) courseId: string,
@@ -294,12 +375,14 @@ export class CoursesController {
     return this.CoursesService.reorderSections(courseId, dto, req.user.id);
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Search for courses with filters' })
   @ApiResponse({ status: 200, description: 'Filtered courses found.' })
   @ApiResponse({
     status: 404,
     description: 'No courses found for the given filters.',
   })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
   @Get('search/filter')
   searchFilter(@Query() filters: SearchFilterDto) {
     return this.CoursesService.searchFilter(filters);

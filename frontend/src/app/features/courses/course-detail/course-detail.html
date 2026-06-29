@@ -61,7 +61,7 @@
 
   <div class="relative h-72 bg-gray-900">
     @if (c.thumbnail_url) {
-      <img [src]="c.thumbnail_url" [alt]="c.title" class="absolute inset-0 h-full w-full object-cover opacity-40" />
+      <img loading="lazy" [src]="c.thumbnail_url" [alt]="c.title" class="absolute inset-0 h-full w-full object-cover opacity-40" />
     }
     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
 
@@ -166,7 +166,7 @@
       <aside class="lg:col-span-1">
         <div class="sticky top-8 overflow-hidden rounded-2xl border border-gray-200 bg-card-bg shadow-sm dark:border-gray-700 dark:bg-gray-800">
           @if (c.thumbnail_url) {
-            <img [src]="c.thumbnail_url" [alt]="c.title" class="h-44 w-full object-cover" />
+            <img loading="lazy" [src]="c.thumbnail_url" [alt]="c.title" class="h-44 w-full object-cover" />
           } @else {
             <div class="flex h-44 items-center justify-center bg-gray-100 text-sm text-gray-400 dark:bg-gray-700">No preview</div>
           }

@@ -3,7 +3,15 @@ import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Req, Res, Unauthoriz
 import { Throttle } from '@nestjs/throttler';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import type { Response, Request } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { PasswordResetDto } from './dto/password-reset.dto';
@@ -25,7 +33,7 @@ const REFRESH_COOKIE_OPTIONS = {
   path: '/auth/refresh',
 };
 
-@ApiTags('auth')
+@ApiTags('Auth')
 @Controller('auth')
 @Throttle({ default: { limit: 10, ttl: 60000 } })
 export class AuthController {
@@ -37,14 +45,20 @@ export class AuthController {
 
   @Public()
   @Post('/register')
-  @ApiOperation({ summary: 'Crea utente e invia email di verifica' })
+  @ApiOperation({ summary: 'Register a new user and send verification email' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({ status: 201, description: 'User created successfully.' })
+  @ApiResponse({ status: 409, description: 'Email already registered.' })
   async register(@Body() body: CreateUserDto) {
     return this.authService.register(body);
   }
 
   @Public()
   @Get('/verify-email/:token')
-  @ApiOperation({ summary: 'Verifica email e restituisce access token' })
+  @ApiOperation({ summary: 'Verify email and return access token' })
+  @ApiParam({ name: 'token', description: 'UUID verification token', type: String })
+  @ApiResponse({ status: 200, description: 'Email verified successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token.' })
   async verifyEmail(
     @Param('token', ParseUUIDPipe) token: string,
     @Res({ passthrough: true }) res: Response,
@@ -58,8 +72,11 @@ export class AuthController {
   @Public()
   @Post('/login')
   @ApiOperation({
-    summary: 'Restituisce access token, refresh token in cookie',
+    summary: 'Login, returns access token (refresh token in httpOnly cookie)',
   })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: 'Login successful.' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -72,7 +89,12 @@ export class AuthController {
   @Public()
   @Post('/refresh')
   @ApiOperation({
-    summary: 'Rinnova access token tramite refresh token in cookie',
+    summary: 'Refresh access token using the refresh token cookie',
+  })
+  @ApiResponse({ status: 200, description: 'Token refreshed successfully.' })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token.',
   })
   async refresh(
     @Req() req: Request,
@@ -91,8 +113,11 @@ export class AuthController {
     return { accessToken };
   }
 
+  @ApiBearerAuth()
   @Post('/logout')
-  @ApiOperation({ summary: 'Invalida refresh token e pulisce il cookie' })
+  @ApiOperation({ summary: 'Invalidate refresh token and clear cookie' })
+  @ApiResponse({ status: 200, description: 'Logout successful.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
   async logout(
     @Req() req: RequestWithUser,
     @Res({ passthrough: true }) res: Response,
@@ -104,14 +129,25 @@ export class AuthController {
 
   @Public()
   @Post('/password/reset')
-  @ApiOperation({ summary: 'Richiede link di reset password via email' })
+  @ApiOperation({ summary: 'Request a password reset link via email' })
+  @ApiBody({ type: PasswordResetDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Reset email sent if the user exists (anti-enumeration).',
+  })
   async passwordReset(@Body() body: PasswordResetDto) {
     return this.authService.sendPasswordReset(body);
   }
 
   @Public()
   @Post('/password/confirm')
-  @ApiOperation({ summary: 'Conferma reset password con token' })
+  @ApiOperation({ summary: 'Confirm password reset with token' })
+  @ApiBody({ type: PasswordConfirmDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset successfully.',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token.' })
   async passwordConfirm(@Body() body: PasswordConfirmDto) {
     return this.authService.confirmPasswordReset(body);
   }
@@ -121,11 +157,18 @@ export class AuthController {
   @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Initiate Google OAuth2 login' })
+  @ApiResponse({ status: 302, description: 'Redirect to Google login page.' })
   googleLogin() {}
 
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Google OAuth2 callback handler' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirect to frontend with tokens.',
+  })
   googleCallback(
     @Req() req: Request & { user: AuthTokens },
     @Res() res: Response,
@@ -146,11 +189,18 @@ export class AuthController {
   @Public()
   @Get('github')
   @UseGuards(AuthGuard('github'))
+  @ApiOperation({ summary: 'Initiate GitHub OAuth2 login' })
+  @ApiResponse({ status: 302, description: 'Redirect to GitHub login page.' })
   githubLogin(): void {}
 
   @Public()
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
+  @ApiOperation({ summary: 'GitHub OAuth2 callback handler' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirect to frontend with tokens.',
+  })
   githubCallback(
     @Req() req: Request & { user: AuthTokens },
     @Res() res: Response,

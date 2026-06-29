@@ -35,7 +35,7 @@
         <div class="space-y-4 lg:col-span-2">
           @for (item of cart.items(); track item.courseId) {
             <div class="flex gap-4 rounded-xl bg-card-bg p-4 shadow-sm">
-              <img [src]="item.thumbnail_url" [alt]="item.title" class="h-20 w-32 shrink-0 rounded-lg object-cover" />
+              <img loading="lazy" [src]="item.thumbnail_url" [alt]="item.title" class="h-20 w-32 shrink-0 rounded-lg object-cover" />
               <div class="flex min-w-0 flex-1 flex-col justify-between">
                 <div>
                   <a [routerLink]="['/courses', item.courseId]" class="font-semibold text-heading hover:text-fg-brand line-clamp-1">{{ item.title }}</a>

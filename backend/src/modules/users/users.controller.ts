@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Patch, Req } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -43,6 +44,7 @@ export class UsersController {
   // birth_date, country. Email e role sono esclusi dal DTO per sicurezza.
   // ---------------------------------------------------------------------------
   @ApiOperation({ summary: 'Update authenticated user profile' })
+  @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ type: ResponseUserDto })
   @Patch('me')
   async updateProfile(

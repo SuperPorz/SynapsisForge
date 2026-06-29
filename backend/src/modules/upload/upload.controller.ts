@@ -17,7 +17,9 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -34,14 +36,17 @@ if (!existsSync(uploadsDir)) {
 }
 
 @ApiTags('Uploads')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
 @Controller('uploads')
 @UseGuards(RolesGuard)
 export class UploadController {
   constructor(private readonly s3Service: S3Service) {}
+  @ApiBearerAuth() // override class-level
   @Post('course-thumbnail')
   @Roles(UserRole.INSTRUCTOR, UserRole.ADMIN)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Upload a course thumbnail image' })
+  @ApiResponse({ status: 201, description: 'Thumbnail uploaded.' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -93,12 +98,14 @@ export class UploadController {
     };
   }
 
+  @ApiBearerAuth() // override class-level
   @Post('presigned-url')
   @Roles(UserRole.INSTRUCTOR, UserRole.ADMIN)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Generate a presigned PUT URL for video upload to S3',
   })
+  @ApiBody({ type: PresignedUrlDto })
+  @ApiResponse({ status: 201, description: 'Presigned URL generated.' })
   async generatePresignedUrl(@Body() dto: PresignedUrlDto) {
     const ext = extname(dto.fileName);
     const key = `videos/${randomUUID()}${ext}`;

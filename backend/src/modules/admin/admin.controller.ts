@@ -8,6 +8,7 @@ import {
   ApiForbiddenResponse,
   ApiBadRequestResponse,
   ApiParam,
+  ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
@@ -19,10 +20,10 @@ import { UserRole } from 'src/common/entities/enum/users.enum';
 @ApiBearerAuth()
 @ApiTags('Admin')
 @ApiUnauthorizedResponse({
-  description: 'Non autorizzato - JWT mancante o invalido.',
+  description: 'Unauthorized - missing or invalid JWT.',
 })
 @ApiForbiddenResponse({
-  description: 'Accesso negato - Permessi admin insufficienti.',
+  description: 'Forbidden - insufficient admin permissions.',
 })
 @Roles(UserRole.ADMIN) // ← protegge tutti gli endpoint del controller
 @Controller('admin')
@@ -31,14 +32,26 @@ export class AdminController {
 
   // ─── GET /admin/users ────────────────────────────────────────────────
   @ApiOperation({
-    summary: 'Ottieni utenti filtrati',
+    summary: 'Get filtered users',
     description:
-      'Ritorna una lista di utenti filtrabile per ruolo (UserRole) e stato di attività.',
+      'Returns a list of users filterable by role (UserRole) and active status.',
   })
-  @ApiOkResponse({ description: 'Lista utenti recuperata con successo.' })
+  @ApiOkResponse({ description: 'Users retrieved successfully.' })
   @ApiBadRequestResponse({
     description:
-      'Parametri di filtro non validi (es. ruolo inesistente o formato boolean errato).',
+      'Invalid filter parameters (e.g. non-existent role or invalid boolean format).',
+  })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    enum: ['STUDENT', 'INSTRUCTOR', 'ADMIN'],
+    description: 'Filter by user role',
+  })
+  @ApiQuery({
+    name: 'is_active',
+    required: false,
+    type: Boolean,
+    description: 'Filter by active status',
   })
   @Get('users')
   filtered_users(@Query() filters: FilterUsersDto) {
@@ -48,10 +61,10 @@ export class AdminController {
 
   // ─── GET /admin/courses/pending ──────────────────────────────────────────────────
   @ApiOperation({
-    summary: 'Ottieni corsi in attesa di approvazione',
-    description: 'Ritorna tutti i corsi con stato PENDING.',
+    summary: 'Get pending courses for moderation',
+    description: 'Returns all courses with PENDING status.',
   })
-  @ApiOkResponse({ description: 'Corsi pending recuperati con successo.' })
+  @ApiOkResponse({ description: 'Pending courses retrieved successfully.' })
   @Get('courses/pending')
   pending_courses() {
     return this.adminService.findPendingCourses();
@@ -59,19 +72,19 @@ export class AdminController {
 
   // ─── PATCH /admin/courses/:id/approve ────────────────────────────────────────────────
   @ApiOperation({
-    summary: 'Approva un corso',
+    summary: 'Approve a course',
     description:
-      'Imposta lo stato di un corso specifico su "approvato". Richiede un ID valido (UUID).',
+      'Sets the status of a course to "approved". Requires a valid UUID.',
   })
   @ApiParam({
     name: 'id',
-    description: 'UUID del corso da approvare',
+    description: 'UUID of the course to approve',
     type: 'string',
     format: 'uuid',
   })
-  @ApiOkResponse({ description: 'Corso approvato con successo.' })
-  @ApiNotFoundResponse({ description: 'Corso non trovato.' })
-  @ApiBadRequestResponse({ description: 'ID fornito non è un UUID valido.' })
+  @ApiOkResponse({ description: 'Course approved successfully.' })
+  @ApiNotFoundResponse({ description: 'Course not found.' })
+  @ApiBadRequestResponse({ description: 'Provided ID is not a valid UUID.' })
   @Patch('courses/:id/approve')
   approve_course(@Param() filters: CourseActionsDto) {
     // Utilizza CourseActionsDto per validare l'ID come UUID
@@ -80,18 +93,18 @@ export class AdminController {
 
   // ─── PATCH /admin/courses/:id/reject ────────────────────────────────────────────────
   @ApiOperation({
-    summary: 'Rifiuta un corso',
-    description: 'Imposta lo stato di un corso specifico su "rifiutato".',
+    summary: 'Reject a course',
+    description: 'Sets the status of a course to "rejected".',
   })
   @ApiParam({
     name: 'id',
-    description: 'UUID del corso da rifiutare',
+    description: 'UUID of the course to reject',
     type: 'string',
     format: 'uuid',
   })
-  @ApiOkResponse({ description: 'Corso rifiutato con successo.' })
-  @ApiNotFoundResponse({ description: 'Corso non trovato.' })
-  @ApiBadRequestResponse({ description: 'ID fornito non è un UUID valido.' })
+  @ApiOkResponse({ description: 'Course rejected successfully.' })
+  @ApiNotFoundResponse({ description: 'Course not found.' })
+  @ApiBadRequestResponse({ description: 'Provided ID is not a valid UUID.' })
   @Patch('courses/:id/reject')
   reject_course(@Param() filters: CourseActionsDto) {
     // L'ID viene estratto e validato tramite CourseActionsDto
@@ -100,11 +113,11 @@ export class AdminController {
 
   // ─── GET /admin/stats ────────────────────────────────────────────────
   @ApiOperation({
-    summary: 'Statistiche globali',
+    summary: 'Global platform statistics',
     description:
-      'Ritorna statistiche della piattaforma (utenti, corsi, vendite).',
+      'Returns platform statistics (users, courses, sales).',
   })
-  @ApiOkResponse({ description: 'Statistiche generate con successo.' })
+  @ApiOkResponse({ description: 'Statistics generated successfully.' })
   @Get('stats')
   get_stats() {
     return this.adminService.stats();
@@ -112,11 +125,11 @@ export class AdminController {
 
   // ─── GET /admin/cache-stats ──────────────────────────────────────────
   @ApiOperation({
-    summary: 'Statistiche Redis / cache',
+    summary: 'Redis cache statistics',
     description:
-      'Ritorna metriche della cache Redis (hit rate, memoria, chiavi per prefisso, policy di evizione).',
+      'Returns Redis cache metrics (hit rate, memory, keys by prefix, eviction policy).',
   })
-  @ApiOkResponse({ description: 'Metriche cache recuperate con successo.' })
+  @ApiOkResponse({ description: 'Cache metrics retrieved successfully.' })
   @Get('cache-stats')
   get_cache_stats() {
     return this.adminService.getCacheStats();
