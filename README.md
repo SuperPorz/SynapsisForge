@@ -74,20 +74,50 @@ SynapsisForge follows a **modular monolith** pattern with a clear separation of 
 └─────────────────────────────────────┘
 ```
 
-### Key design decisions
+## Architecture Decisions
+
+### Why modular monolith instead of microservices
+
+A modular monolith (NestJS with well-separated feature modules) was chosen over microservices for this project scale. The platform has ~15 entity types and a predictable request flow (auth → courses → payments → enrollments). Microservices would add network overhead, distributed transaction complexity, and deployment friction without proportional benefit. The NestJS module system enforces boundaries — `CoursesModule` imports `TypeOrmModule.forFeature([Course, Review])` without leaking into `PaymentsModule`. If the platform grows beyond a single team's capacity, extracting individual modules into services requires only adding HTTP/queue boundaries.
+
+### Why PostgreSQL + MongoDB dual database
+
+| Database | Used for | Rationale |
+|----------|----------|-----------|
+| PostgreSQL | Users, courses, enrollments, payments, certificates, reviews | Strongly relational with ACID guarantees — JOINs across entities, foreign key constraints, `AVG(review.rating)` aggregations |
+| MongoDB | Lesson content, quizzes, video metadata, lesson progress | Document-oriented: each lesson's content (video URL, quiz items, s3Key) is a single denormalized document. Progress tracking uses nested arrays (`quizAnswers[]`) without JOINs |
+
+This polyglot persistence avoids forcing either schema into the wrong paradigm. The cost is two query languages (SQL + Mongoose), but the bounded contexts are clearly separated — no cross-DB JOINs are needed.
+
+### Why Redis for caching, rate limiting, sessions, and queues
+
+Redis serves four distinct roles, each leveraging a different capability:
+
+1. **Response caching** (`@nestjs/cache-manager` + Keyv + Redis): course list/detail queries cached with 5-10 min TTL, auto-invalidated on mutations via `CacheService.invalidateByPattern()`
+2. **Rate limiting** (custom `RedisThrottlerStorage`): per-endpoint sliding window counters with differentiated limits (auth: 10/min, public: 60/min, general: 100/min)
+3. **Session storage**: refresh tokens stored as `sf:session:refresh:{userId}` → bcrypt hash, TTL matches `JWT_REFRESH_EXPIRES_IN`
+4. **BullMQ job queues**: Redis-backed reliable queueing for email, certificate PDFs, receipt PDFs, and scheduled maintenance
+
+A single Redis instance handles all four workloads. Key prefixes (`sf:cache:*`, `sf:rate:*`, `sf:session:*`, `sf:queue:*`) prevent collisions. The `CacheService` uses `SCAN` with pattern matching for targeted invalidation.
+
+### Additional decisions
 
 | Decision | Rationale |
 |----------|-----------|
-| PostgreSQL for relational data | Users, courses, enrollments, payments, certificates — strongly relational with ACID guarantees |
-| MongoDB for lesson content | Flexible schema for quizzes, video metadata, progress documents — no joins needed |
-| Redis for caching & jobs | In-memory performance for course list/detail caching, rate limiting, refresh tokens, BullMQ queues |
 | AWS S3 for media storage | Scalable, cost-effective object storage with presigned URL security |
 | Braintree for payments | Single SDK for credit card + PayPal + subscription management |
-| BullMQ for async jobs | Redis-backed reliable queueing with retry, scheduling, and monitoring via Bull Board |
 | JWT + HttpOnly cookies | Access token in `Authorization` header, refresh token in HttpOnly cookie (XSS-safe); automatic rotation on refresh |
 | Angular Signals + zoneless | Modern change detection without Zone.js — smaller bundles, better runtime performance |
 | Tailwind CSS 4 `@theme` | CSS-first configuration via `@import "tailwindcss"` — no `tailwind.config.js` needed |
-| Modular monolith (NestJS) | Single deployable with clear module boundaries (Auth, Courses, Payments, etc.) — easier DX than microservices at this scale |
+
+### References
+
+- [NestJS documentation — Modules](https://docs.nestjs.com/modules)
+- [Angular Signals guide](https://angular.dev/guide/signals)
+- [Tailwind CSS v4 configuration](https://tailwindcss.com/docs/configuration)
+- [BullMQ documentation](https://docs.bullmq.io/)
+- [Braintree Developer Docs](https://developer.paypal.com/braintree/)
+- [Redis — Key naming conventions](https://redis.io/docs/manual/patterns/)
 
 ---
 
@@ -351,66 +381,67 @@ SSL certificate managed via Certbot + Let's Encrypt on EC2, auto-renewal via cro
 
 ## Demo Accounts
 
+> **Prerequisite**: Run `npm run db:seed` (from `backend/`) to populate all demo accounts, courses, enrollments, and test data. The seed creates verified students, instructors with courses, sample enrollments with progress, reviews, payments, receipts, and certificates.
+
 All accounts share the same password: `Password123!`
 
 | Role | Email | Purpose |
 |------|-------|---------|
 | 🧑‍🏫 Student | `alice@example.com` | Browse courses, enroll, take quizzes, view certificates |
 | 🧑‍🏫 Student | `bob@example.com` | Same as Alice (alternative account) |
-| 👨‍🏫 Instructor | `mike@example.com` | Create and manage courses, view analytics |
-| 👨‍🏫 Instructor | `jessica@example.com` | Same as Mike (alternative account) |
+| 👨‍🏫 Instructor | `james.carter@synapsis.dev` | USA, verified — has published courses |
+| 👨‍🏫 Instructor | `sofia.esposito@synapsis.dev` | ITALY, verified |
+| 👨‍🏫 Instructor | `marco.weber@synapsis.dev` | GERMANY, verified |
+| 👨‍🏫 Instructor | `claire.dupont@synapsis.dev` | FRANCE, unverified (tests email verification flow) |
 | 🛡️ Admin | `admin@example.com` | Full admin access: user management, course moderation, Bull Board |
 
-### Key test data
+### Key UUIDs (seed data)
 
-- **Machine Learning course** (UUID: `01b236bc-7456-4380-80bc-0c47fd7566bf`)
-  - Alice is enrolled and partially completed
-  - Enrollment UUID: `163eb40f-d8ff-4abf-b50a-6672b052cdd2`
+These IDs are stable after `npm run db:sync-ids`. If you run `db:reset`, IDs change — run the sync command again to get fresh values.
+
+| Entity | UUID | Notes |
+|--------|------|-------|
+| 🎓 ML Course | `01b236bc-7456-4380-80bc-0c47fd7566bf` | Alice is enrolled and partially completed |
+| 📝 Alice's enrollment | `163eb40f-d8ff-4abf-b50a-6672b052cdd2` | Progress tracking, quiz answers available |
+| 📝 Bob's enrollment | *(run sync command)* | Bob is enrolled in the ML course |
+
+### Payment test data
+
 - **Braintree test nonce**: `fake-valid-nonce`
-- **Braintree test cards**: `4111111111111111` (Visa), `4000111111111115` (declined)
+- **Braintree test cards**: `4111111111111111` (Visa — success), `4000111111111115` (declined)
+- **Webhook testing**: `gateway.webhookTesting.sampleNotification(kind, id)` in backend tests
+
+> To get fresh UUIDs after reseed, run: `docker exec infra-postgres-1 psql -U admin -d pg_database -c "SELECT id, title FROM courses;"`
 
 ---
 
-## Quick Start (Local Development)
-
-### 1. Clone and install
+## Quick Start — Local Setup in 5 Commands
 
 ```bash
-git clone https://github.com/SuperPorz/SynapsisForge.git
-cd SynapsisForge
-
-# Backend
-cd backend && npm install && cd ..
-
-# Frontend
-cd frontend && npm install && cd ..
-```
-
-### 2. Start infrastructure
-
-```bash
+git clone https://github.com/SuperPorz/SynapsisForge.git && cd SynapsisForge
+cd backend && npm install && cd ../frontend && npm install && cd ..
 docker compose -f infra/docker-compose.yaml up -d
-```
-
-### 3. Seed database
-
-```bash
+cp backend/.env.example backend/.env  # then edit credentials
 cd backend && npm run db:seed && cd ..
 ```
 
-### 4. Start services
+> **Note**: Before running `db:seed`, edit `backend/.env` with actual secrets (JWT secrets, Braintree keys, SMTP credentials). The `.env.example` file has placeholder values.
+
+Then start services in two terminals:
 
 ```bash
-# Backend (terminal 1)
+# Terminal 1 — Backend
 cd backend && npm run start:dev
 
-# Frontend (terminal 2)
+# Terminal 2 — Frontend
 cd frontend && ng serve
 ```
 
-Backend: `http://localhost:3000`  
-Frontend: `http://localhost:4200`  
-Swagger: `http://localhost:3000/api/docs`
+| Service | URL |
+|---------|-----|
+| Frontend | `http://localhost:4200` |
+| Backend API | `http://localhost:3000` |
+| Swagger UI | `http://localhost:3000/api/docs` |
 
 ---
 
@@ -448,9 +479,23 @@ Results from `autocannon` (30s, 10 concurrent connections, local environment).
 
 ## API Documentation
 
-Swagger is available at:
-- Development: `http://localhost:3000/api/docs`
-- Production: `https://synapsisforge.shop/api/docs`
+Swagger UI is available at both development and production URLs:
+
+- Development: [`http://localhost:3000/api/docs`](http://localhost:3000/api/docs)
+- Production: [`https://synapsisforge.shop/api/docs`](https://synapsisforge.shop/api/docs)
+
+The Swagger spec covers every publicly documented endpoint grouped by module:
+
+| Tag | Endpoints |
+|-----|-----------|
+| Auth | Login, register, refresh, logout, OAuth2 (Google, GitHub), email verification, password reset |
+| Courses | CRUD, filtering (category, price, search), slug lookup, featured, instructor courses |
+| Enrollments | Enroll, progress tracking, lesson video + quiz data, completion |
+| Payments | Client token, checkout, subscription (create/cancel), webhooks, payment history |
+| Cart | Add, remove, clear, count, checkout all |
+| Certificates | List, download (presigned URL) |
+| Admin | KPIs, user management, pending course moderation |
+| Uploads | Presigned URL generation for video uploads |
 
 ---
 
