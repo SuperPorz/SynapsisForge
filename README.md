@@ -550,6 +550,7 @@ SynapsisForge/
 | Frontend unit tests | `npm run test` (in `frontend/`) | Vitest |
 | Frontend build check | `npx ng build` (in `frontend/`) | Angular compiler |
 | Backend lint | `npm run lint` (in `backend/`) | ESLint |
+| Load testing | See [`docs/LOAD_TESTING.md`](docs/LOAD_TESTING.md) | autocannon |
 
 ---
 
