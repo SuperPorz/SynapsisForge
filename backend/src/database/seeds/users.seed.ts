@@ -13,16 +13,12 @@ export interface SeededUsers {
 // ── User definitions ──────────────────────────────────────────────────────────
 // isVerified: true  → email confermata, può fare tutto
 // isVerified: false → email non confermata, testa il flusso di verifica
+//
+// Admin credentials are configurable via DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD
+// (default admin@example.com / Password123!). Set these in .env.development
+// locally and as GitHub Secrets in production.
 
-const ADMIN = {
-  email: 'admin@example.com',
-  first_name: 'Admin',
-  last_name: 'User',
-  birth_date: new Date('1995-01-01'),
-  country: Country.ITALY,
-  role: UserRole.ADMIN,
-  isVerified: true,
-};
+const DEMO_ADMIN_EMAIL = process.env.DEMO_ADMIN_EMAIL || 'admin@example.com';
 
 const INSTRUCTORS = [
   {
@@ -165,15 +161,29 @@ export async function seedUsers(ds: DataSource): Promise<SeededUsers> {
   const studentRepo = ds.getRepository(StudentProfile);
 
   const hash = await bcrypt.hash('Password123!', 10);
+  const DEMO_ADMIN_PASSWORD = process.env.DEMO_ADMIN_PASSWORD || 'Password123!';
+  const adminHash = DEMO_ADMIN_PASSWORD === 'Password123!'
+    ? hash
+    : await bcrypt.hash(DEMO_ADMIN_PASSWORD, 10);
 
-  // ── Admin ─────────────────────────────────────────────────────────────────
+  // ── Admin (configurable via DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD) ───────
   const adminUser = await userRepo.save(
-    userRepo.create({ ...ADMIN, password: hash, is_active: true }),
+    userRepo.create({
+      email: DEMO_ADMIN_EMAIL,
+      first_name: 'Admin',
+      last_name: 'User',
+      birth_date: new Date('1995-01-01'),
+      country: Country.ITALY,
+      role: UserRole.ADMIN,
+      isVerified: true,
+      password: adminHash,
+      is_active: true,
+    }),
   );
   await studentRepo.save(
     studentRepo.create({ userId: adminUser.id, user: adminUser }),
   );
-  console.log(`  ✅ admin: ${ADMIN.email}`);
+  console.log(`  ✅ admin: ${DEMO_ADMIN_EMAIL}`);
 
   // ── Instructors + profiles ────────────────────────────────────────────────
   const instructorProfiles: InstructorProfile[] = [];

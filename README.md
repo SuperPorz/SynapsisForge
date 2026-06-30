@@ -251,7 +251,7 @@ This README is focused on local development and testing. Production deployment i
 
 > **Prerequisite**: Run the seed command (see [Quick Start step 4](#quick-start--local-setup)) to populate all demo accounts, courses, enrollments, and test data. The seed creates verified students, instructors with courses, sample enrollments with progress, reviews, payments, receipts, and certificates.
 
-All accounts share the same password: `Password123!`
+All accounts (except admin in production) share the same password: `Password123!`
 
 | Role | Email | Purpose |
 |------|-------|---------|
@@ -261,7 +261,7 @@ All accounts share the same password: `Password123!`
 | 👨‍🏫 Instructor | `sofia.esposito@synapsis.dev` | ITALY, verified |
 | 👨‍🏫 Instructor | `marco.weber@synapsis.dev` | GERMANY, verified |
 | 👨‍🏫 Instructor | `claire.dupont@synapsis.dev` | FRANCE, unverified (tests email verification flow) |
-| 🛡️ Admin | `admin@example.com` | Full admin access: user management, course moderation, Bull Board |
+| 🛡️ Admin | `admin@example.com` (dev) | Full admin access: user management, course moderation, Bull Board — credentials are configurable via `DEMO_ADMIN_EMAIL` / `DEMO_ADMIN_PASSWORD` (GitHub Secrets in production) |
 
 ### Payment test data
 

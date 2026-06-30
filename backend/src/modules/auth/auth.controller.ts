@@ -70,6 +70,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('/login')
   @ApiOperation({
     summary: 'Login, returns access token (refresh token in httpOnly cookie)',

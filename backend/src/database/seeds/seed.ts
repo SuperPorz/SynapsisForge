@@ -101,8 +101,9 @@ async function main(): Promise<void> {
   // ── Done ───────────────────────────────────────────────────────────────────
   console.log('\n' + '─'.repeat(55));
   console.log('🎉 Seed complete!\n');
-  console.log('  Accounts (password: Password123!):');
-  console.log('  Admin:       admin@example.com');
+  const adminEmail = process.env.DEMO_ADMIN_EMAIL || 'admin@example.com';
+  console.log(`  Accounts (default password: Password123!):`);
+  console.log(`  Admin:       ${adminEmail} (configurable via DEMO_ADMIN_EMAIL)`);
   console.log('  Instructor:  james.carter@synapsis.dev');
   console.log('  Instructor:  sofia.esposito@synapsis.dev');
   console.log('  Instructor:  marco.weber@synapsis.dev');

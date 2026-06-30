@@ -180,6 +180,8 @@ jobs:
           SMTP_FROM=${{ secrets.SMTP_FROM }}
           FRONTEND_URL=${{ secrets.FRONTEND_URL }}
           CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+          DEMO_ADMIN_EMAIL=${{ secrets.DEMO_ADMIN_EMAIL }}
+          DEMO_ADMIN_PASSWORD=${{ secrets.DEMO_ADMIN_PASSWORD }}
           EOF
       - name: Copy files to EC2
         run: |
@@ -258,6 +260,8 @@ jobs:
           SMTP_FROM=${{ secrets.SMTP_FROM }}
           FRONTEND_URL=${{ secrets.FRONTEND_URL }}
           CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+          DEMO_ADMIN_EMAIL=${{ secrets.DEMO_ADMIN_EMAIL }}
+          DEMO_ADMIN_PASSWORD=${{ secrets.DEMO_ADMIN_PASSWORD }}
           EOF
       - name: Create deploy.sh
         run: |
