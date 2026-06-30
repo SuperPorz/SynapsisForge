@@ -1,0 +1,286 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NPM_CONFIG_LEGACY_PEER_DEPS: "true"
+  BACKEND_IMAGE: michelangelostega/synapsisforge-backend
+  FRONTEND_IMAGE: michelangelostega/synapsisforge-frontend
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  # BUILD
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.BACKEND_IMAGE }}:latest
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.FRONTEND_IMAGE }}:latest
+
+  # TEST
+  backend-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run lint
+        working-directory: backend
+
+  backend-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm test
+        working-directory: backend
+
+  backend-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run test:cov
+        working-directory: backend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage/
+
+  frontend-build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npx ng build
+        working-directory: frontend
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run test -- --coverage
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+
+  # SEED (main only)
+  seed-ec2:
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: webfactory/ssh-agent@v0.9
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Create .env.production
+        run: |
+          cat > .env.production << 'EOF'
+          NODE_ENV=production
+          DB_HOST=postgres
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_DATABASE=${{ secrets.DB_DATABASE }}
+          MONGO_URI=mongodb://mongodb:27017/mongo_synapsis
+          MONGO_USER=${{ secrets.MONGO_USER }}
+          MONGO_PASS=${{ secrets.MONGO_PASS }}
+          MONGO_AUTH_SOURCE=${{ secrets.MONGO_AUTH_SOURCE }}
+          REDIS_URL=redis://redis:6379
+          JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_ACCESS_EXPIRES_IN=${{ secrets.JWT_ACCESS_EXPIRES_IN }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}
+          AWS_REGION=${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_MEDIA_BUCKET=${{ secrets.S3_MEDIA_BUCKET }}
+          S3_PRIVATE_BUCKET=${{ secrets.S3_PRIVATE_BUCKET }}
+          USE_S3=${{ secrets.USE_S3 }}
+          BRAINTREE_MERCHANT_ID=${{ secrets.BRAINTREE_MERCHANT_ID }}
+          BRAINTREE_PUBLIC_KEY=${{ secrets.BRAINTREE_PUBLIC_KEY }}
+          BRAINTREE_PRIVATE_KEY=${{ secrets.BRAINTREE_PRIVATE_KEY }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
+          GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}
+          GITHUB_CALLBACK_URL=${{ secrets.GITHUB_CALLBACK_URL }}
+          SMTP_HOST=${{ secrets.SMTP_HOST }}
+          SMTP_PORT=${{ secrets.SMTP_PORT }}
+          SMTP_USER=${{ secrets.SMTP_USER }}
+          SMTP_PASS=${{ secrets.SMTP_PASS }}
+          SMTP_FROM=${{ secrets.SMTP_FROM }}
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+          EOF
+      - name: Copy .env.production to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no .env.production ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/.env.production
+      - name: Create & run seed.sh on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'SEEDSCRIPT'
+            set -e
+            cd ~/SynapsisForge
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production stop postgres 2>/dev/null || true
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production rm -f postgres 2>/dev/null || true
+            for vol in $(docker volume ls -q | grep -i pgdata); do
+              docker volume rm "$vol" 2>/dev/null || true
+            done
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres --wait
+            docker pull ${{ env.BACKEND_IMAGE }}:latest
+            docker run --rm --network infra_default \
+              --env-file ~/SynapsisForge/.env.production \
+              ${{ env.BACKEND_IMAGE }}:latest \
+              node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
+            docker run --rm --network infra_default \
+              --env-file ~/SynapsisForge/.env.production \
+              ${{ env.BACKEND_IMAGE }}:latest \
+              node dist/database/seeds/seed.js
+          SEEDSCRIPT
+
+  # DEPLOY (main only)
+  deploy-ec2:
+    runs-on: ubuntu-latest
+    needs: [seed-ec2]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: webfactory/ssh-agent@v0.9
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Create .env.production
+        run: |
+          cat > .env.production << 'EOF'
+          NODE_ENV=production
+          DB_HOST=postgres
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_DATABASE=${{ secrets.DB_DATABASE }}
+          MONGO_URI=mongodb://mongodb:27017/mongo_synapsis
+          MONGO_USER=${{ secrets.MONGO_USER }}
+          MONGO_PASS=${{ secrets.MONGO_PASS }}
+          MONGO_AUTH_SOURCE=${{ secrets.MONGO_AUTH_SOURCE }}
+          REDIS_URL=redis://redis:6379
+          JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_ACCESS_EXPIRES_IN=${{ secrets.JWT_ACCESS_EXPIRES_IN }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_REFRESH_EXPIRES_IN=${{ secrets.JWT_REFRESH_EXPIRES_IN }}
+          AWS_REGION=${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_MEDIA_BUCKET=${{ secrets.S3_MEDIA_BUCKET }}
+          S3_PRIVATE_BUCKET=${{ secrets.S3_PRIVATE_BUCKET }}
+          USE_S3=${{ secrets.USE_S3 }}
+          BRAINTREE_MERCHANT_ID=${{ secrets.BRAINTREE_MERCHANT_ID }}
+          BRAINTREE_PUBLIC_KEY=${{ secrets.BRAINTREE_PUBLIC_KEY }}
+          BRAINTREE_PRIVATE_KEY=${{ secrets.BRAINTREE_PRIVATE_KEY }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
+          GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}
+          GITHUB_CALLBACK_URL=${{ secrets.GITHUB_CALLBACK_URL }}
+          SMTP_HOST=${{ secrets.SMTP_HOST }}
+          SMTP_PORT=${{ secrets.SMTP_PORT }}
+          SMTP_USER=${{ secrets.SMTP_USER }}
+          SMTP_PASS=${{ secrets.SMTP_PASS }}
+          SMTP_FROM=${{ secrets.SMTP_FROM }}
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+          EOF
+      - name: Create deploy.sh
+        run: |
+          cat > deploy.sh << 'DEPLOYSCRIPT'
+          #!/bin/bash
+          set -e
+          cd ~/SynapsisForge
+          docker pull ${{ env.BACKEND_IMAGE }}:latest
+          docker pull ${{ env.FRONTEND_IMAGE }}:latest
+          docker compose -f infra/docker-compose.prod.yml --env-file .env.production pull
+          docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+              echo 'Backend healthy'
+              break
+            fi
+            sleep 5
+          done
+          curl -sf http://localhost:3000/health > /dev/null 2>&1 || { echo 'Backend failed'; exit 1; }
+          docker image prune -f
+          echo 'Deploy complete'
+          DEPLOYSCRIPT
+      - name: Copy files & deploy
+        run: |
+          scp -o StrictHostKeyChecking=no .env.production ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/.env.production
+          scp -o StrictHostKeyChecking=no deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/deploy.sh
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "bash ~/SynapsisForge/deploy.sh"
