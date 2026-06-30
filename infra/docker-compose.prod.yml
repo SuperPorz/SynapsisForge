@@ -34,7 +34,7 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN}
       FRONTEND_URL: ${FRONTEND_URL}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
-      GITHUB_CALLBACK_URL: ${GITHUB_CALLBACK_URL}
+      GH_CALLBACK_URL: ${GH_CALLBACK_URL}
     env_file: ../.env.production
     depends_on:
       postgres:
