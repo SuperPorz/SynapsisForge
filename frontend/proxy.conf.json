@@ -6,6 +6,7 @@
   },
   "/api/docs": {
     "target": "http://localhost:3000",
+    "pathRewrite": {"^/api/docs": "/docs"},
     "secure": false,
     "logLevel": "debug"
   }
