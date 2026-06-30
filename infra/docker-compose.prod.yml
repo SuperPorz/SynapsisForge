@@ -1,3 +1,5 @@
+name: synapsis
+
 services:
   seeder:
     image: michelangelostega/synapsisforge-backend:latest
