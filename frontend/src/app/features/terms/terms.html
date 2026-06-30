@@ -1,0 +1,87 @@
+<div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+  <a routerLink="/" class="mb-8 inline-flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg-brand">
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    Back to Home
+  </a>
+
+  <h1 class="text-3xl font-extrabold text-heading">Terms &amp; Conditions</h1>
+  <p class="mt-1 text-sm text-fg-muted">Last updated: June 2026</p>
+
+  <section class="mt-10 space-y-8">
+    <div>
+      <h2 class="text-xl font-semibold text-heading">1. Nature of the Service</h2>
+      <p class="mt-2 text-fg-muted">
+        SynapsisForge is a <strong>personal portfolio project</strong> created by Michelangelo Stega to demonstrate full-stack software engineering skills.
+        It is <strong>not a commercial service</strong>, and no fees are charged for its use.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-heading">2. Data Collection &amp; Retention</h2>
+      <div class="mt-2 overflow-x-auto">
+        <table class="w-full text-left text-sm text-fg-muted">
+          <thead>
+            <tr class="border-b border-gray-300 dark:border-gray-600">
+              <th class="pb-2 font-medium text-heading">Data type</th>
+              <th class="pb-2 font-medium text-heading">Collected?</th>
+              <th class="pb-2 font-medium text-heading">Retention</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr><td class="py-2 pr-4">Email address</td><td class="py-2 pr-4">Yes (registration)</td><td class="py-2">Max 3 hours — periodic cron purge</td></tr>
+            <tr><td class="py-2 pr-4">Password</td><td class="py-2 pr-4">Yes (bcrypt hashed)</td><td class="py-2">Same as above</td></tr>
+            <tr><td class="py-2 pr-4">Profile info</td><td class="py-2 pr-4">Yes (name, country)</td><td class="py-2">Same as above</td></tr>
+            <tr><td class="py-2 pr-4">Course progress</td><td class="py-2 pr-4">Yes</td><td class="py-2">Same as above</td></tr>
+            <tr><td class="py-2 pr-4">Payment info</td><td class="py-2 pr-4"><strong>No</strong> — sandbox only</td><td class="py-2">N/A</td></tr>
+            <tr><td class="py-2 pr-4">Cookies</td><td class="py-2 pr-4">Yes (JWT, httpOnly)</td><td class="py-2">Session duration</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-heading">3. Automated Reset</h2>
+      <p class="mt-2 text-fg-muted">
+        The entire site — including database contents, uploaded files, and user-submitted content —
+        is automatically reset every <strong>3 hours</strong>. No user data persists beyond this window.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-heading">4. Third-Party Services</h2>
+      <ul class="mt-2 list-inside list-disc space-y-1 text-fg-muted">
+        <li><strong>AWS S3</strong> — file storage. All files deleted every reset cycle.</li>
+        <li><strong>Braintree</strong> — sandbox payment gateway. No real transactions.</li>
+        <li><strong>Google &amp; GitHub OAuth</strong> — authentication convenience. No profile data stored beyond registration.</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-heading">5. Your Rights (GDPR)</h2>
+      <ul class="mt-2 list-inside list-disc space-y-1 text-fg-muted">
+        <li><strong>Right to access</strong> — view your data via the profile page</li>
+        <li><strong>Right to rectification</strong> — edit your profile at any time</li>
+        <li><strong>Right to erasure</strong> — data auto-deleted within 3 hours; no request needed</li>
+        <li><strong>Right to data portability</strong> — email the contact below for an export</li>
+      </ul>
+      <p class="mt-2 text-sm text-fg-muted">Since this is a portfolio project at non-commercial scale, these rights are fulfilled by the automatic reset cycle.</p>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-heading">6. Disclaimer</h2>
+      <p class="mt-2 text-fg-muted">
+        This project is provided <strong>"as is"</strong> for demonstration purposes.
+        There is no warranty, no uptime guarantee, and no obligation to maintain service continuity.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-heading">7. Contact</h2>
+      <p class="mt-2 text-fg-muted">
+        Michelangelo Stega<br>
+        GitHub: <a href="https://github.com/SuperPorz" class="text-fg-brand hover:underline" target="_blank" rel="noopener">&#64;SuperPorz</a><br>
+        LinkedIn: <a href="https://linkedin.com/in/michelangelo-stega" class="text-fg-brand hover:underline" target="_blank" rel="noopener">michelangelo-stega</a>
+      </p>
+    </div>
+  </section>
+</div>

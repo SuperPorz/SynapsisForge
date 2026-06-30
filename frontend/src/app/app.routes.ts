@@ -78,6 +78,12 @@ export const routes: Routes = [
     ),
 },
 
+  {
+    path: 'terms',
+    loadComponent: () =>
+      import('./features/terms/terms').then((m) => m.Terms),
+  },
+
   /////////////////////// ROTTE DASHBOARD /////////////////////////////////
 
   {

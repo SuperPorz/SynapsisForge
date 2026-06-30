@@ -288,5 +288,14 @@ jobs:
         run: |
           scp -o StrictHostKeyChecking=no .env.production ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/.env.production
           scp -o StrictHostKeyChecking=no infra/docker-compose.prod.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/infra/docker-compose.prod.yml
+          scp -o StrictHostKeyChecking=no infra/reset.sh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/infra/reset.sh
           scp -o StrictHostKeyChecking=no deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/deploy.sh
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "bash ~/SynapsisForge/deploy.sh"
+      - name: Install periodic reset cron job (every 3 hours)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'CRONSCRIPT'
+            set -e
+            chmod +x ~/SynapsisForge/infra/reset.sh
+            (crontab -l 2>/dev/null | grep -v 'reset.sh'; echo "0 */3 * * * ~/SynapsisForge/infra/reset.sh >> ~/reset.log 2>&1") | crontab -
+            echo "Cron installed: $(crontab -l | grep reset.sh)"
+          CRONSCRIPT
