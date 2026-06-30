@@ -189,12 +189,12 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'SEEDSCRIPT'
             set -e
             cd ~/SynapsisForge
-            docker compose -f infra/docker-compose.prod.yml --env-file .env.production stop postgres 2>/dev/null || true
-            docker compose -f infra/docker-compose.prod.yml --env-file .env.production rm -f postgres 2>/dev/null || true
-            for vol in $(docker volume ls -q | grep -i pgdata); do
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production stop postgres mongodb 2>/dev/null || true
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production rm -f postgres mongodb 2>/dev/null || true
+            for vol in $(docker volume ls -q | grep -iE 'pgdata|mongo_data'); do
               docker volume rm "$vol" 2>/dev/null || true
             done
-            docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres --wait
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres mongodb --wait
             docker pull ${{ env.BACKEND_IMAGE }}:latest
             docker run --rm --network synapsis_default \
               --env-file ~/SynapsisForge/.env.production \
