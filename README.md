@@ -554,6 +554,89 @@ SynapsisForge/
 
 ---
 
+## Retrospective
+
+### What worked well
+
+| Decision | Outcome |
+|----------|---------|
+| **Modular monolith** (NestJS) | Clear module boundaries without microservice overhead. Easy to navigate, test, and deploy. |
+| **Redis for 4 roles** (cache, rate limit, sessions, queues) | Single infrastructure dependency serving four distinct purposes. Cost-effective and well-documented. |
+| **JWT + HttpOnly cookie** | Secure auth without CSRF vulnerability. Auto-refresh via interceptor works reliably. |
+| **BullMQ job queues** | Email, certificate PDFs, and receipt generation decoupled from request cycle. Bull Board provides observability. |
+| **Presigned S3 URLs** | Upload and deliver video without exposing AWS credentials. 403 on direct access. |
+| **Angular Signals + zoneless** | Smaller bundles, predictable change detection, no Zone.js overhead. |
+| **Docker Compose (dev & prod)** | Identical environment across local and production. CI/CD pipeline uses the same images. |
+
+### What I would do differently
+
+**1. MongoDB → consolidate into PostgreSQL + JSONB**
+
+The polyglot persistence (PostgreSQL + MongoDB) added operational complexity — two ORMs, two seed systems, two monitoring surfaces — without proportional benefit. Lesson content and progress tracking could have been handled by PostgreSQL `JSONB` columns and optimized Redis counters. The cost of maintaining a second database exceeded the document-store advantage for this project's scale.
+
+**2. Reduce npm dependency surface**
+
+72 vulnerabilities at peak (even in dev-only dependencies). The `@nestjs-modules/mailer` package alone pulled 242 transitive deps. During the project we replaced it with raw Nodemailer + Handlebars, cutting the vulnerability count to 22 (all unfixable dev deps). Lesson: write internal utilities for cache wrappers, charting, and validation rather than importing heavy libraries.
+
+**3. Frontend framework — Angular vs React**
+
+Angular is a powerful framework but proved over-engineered for this project's needs. Standalone components and Signals improved DX, but the framework still carries significant boilerplate (DI, interceptors, guards, module patterns). A React + Vite stack would have delivered comparable results with less ceremony and faster iteration. A **frontend migration to React is not planned** — the codebase is stable and production-tested — but it remains an extreme option should future requirements (e.g., a mobile-first rewrite) justify a deep reevaluation.
+
+> **Note**: Backend technology choices (NestJS, TypeORM) remain solid. No migration is planned or recommended.
+
+### Quantitative results
+
+| Area | Result |
+|------|--------|
+| **Lighthouse** | Ran on 7/8 pages (player skipped: auth gated). Lazy loading, `loading="lazy"` on images, gzip via nginx. |
+| **Angular bundle** | < 500 KB gzipped. 3 heavy components use `@defer` for lazy chunking. |
+| **Backend coverage** | ~22% (unit + integration). Target: 60%. |
+| **Frontend coverage** | ~42% (component + service tests). Target: 40%. |
+| **Load test — `GET /courses`** | P50: 43ms · P99: 174ms · 100% 200 (1 r/s, under rate limit). |
+| **Load test — `POST /auth/login`** | P50: 140ms · P99: 378ms (bcrypt overhead). 100% 201. |
+| **Rate limiter** | Auth (10/min): blocks ~99% excess → 429. Public (60/min): blocks exactly at threshold. |
+| **Zero 5xx** | No server errors during any load test. |
+
+---
+
+## Future Roadmap
+
+Prioritized by impact and implementation effort:
+
+### Near-term (high impact, low effort)
+
+- **Google Pay** — enable via Braintree Drop-in `googlePay: {}` option
+- **Amazon Pay** — configure in Braintree Control Panel + Drop-in option
+- **Enhanced course search** — full-text search with PostgreSQL `tsvector`
+
+### Medium-term (high impact, medium effort)
+
+- **Stripe payment gateway** — separate integration alongside Braintree (new module, Stripe SDK, PaymentIntent flow)
+- **Mobile app** — API consumed by React Native or Flutter client; existing REST API is already mobile-ready
+- **AI-powered recommendations** — course suggestions based on enrollment history and completed lessons
+- **Instructor payouts** — automated monthly payouts to instructors via Stripe Connect or similar
+
+### Long-term (strategic)
+
+- **Learning paths** — curated course sequences with prerequisites and milestones
+- **Community features** — discussion forums, live Q&A sessions, peer reviews
+- **Gamification** — badges, leaderboards, streaks (Redis sorted sets already support this pattern)
+- **Content delivery network** — CloudFront CDN in front of S3 for global video optimization
+
+---
+
+## Technologies to Explore Further
+
+| Technology | Why interesting | Potential use |
+|------------|----------------|---------------|
+| **tRPC** | End-to-end type safety between frontend and backend without REST boilerplate. Shared types via TypeScript. | Replace REST controllers with type-safe procedure calls. |
+| **Bun** | All-in-one JS runtime (transpiler, bundler, package manager). Faster than Node.js in benchmarks. | Runtime for backend dev, test runner, and build tooling. |
+| **Drizzle ORM** | Lightweight SQL ORM with full type inference. No code generation step. | Alternative to TypeORM for new projects — simpler API, better TypeScript integration. |
+| **Apache ECharts** | More chart types and better performance than Chart.js for large datasets. | Replace ng2-charts for instructor/admin analytics with complex datasets. |
+| **Playwright** | Browser-based E2E testing with multi-browser support. | Add E2E tests to complement unit/integration coverage. |
+
+---
+
 ## Learning Goals
 
 This project was designed to strengthen advanced skills in:
