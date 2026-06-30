@@ -1,0 +1,46 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SynapsisForge architecture diagram">
+  <rect width="1280" height="760" fill="#f8fafc"/>
+  <rect x="40" y="40" width="1200" height="680" rx="24" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+
+  <text x="640" y="95" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#111827">SynapsisForge Architecture</text>
+  <text x="640" y="128" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#475569">Modern full-stack learning platform with a modular backend and a responsive Angular frontend</text>
+
+  <rect x="140" y="180" width="260" height="120" rx="18" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+  <text x="270" y="230" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#5b21b6">Angular SPA</text>
+  <text x="270" y="260" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#4c1d95">PWA · Signals · Tailwind</text>
+
+  <rect x="510" y="180" width="260" height="120" rx="18" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="640" y="230" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#1d4ed8">NestJS API</text>
+  <text x="640" y="260" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#1e3a8a">Modular monolith · Auth · Payments</text>
+
+  <rect x="880" y="180" width="260" height="120" rx="18" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="1010" y="230" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#166534">External Services</text>
+  <text x="1010" y="260" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#14532d">AWS S3 · Braintree · Email</text>
+
+  <line x1="400" y1="240" x2="510" y2="240" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="770" y1="240" x2="880" y2="240" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="160" y="400" width="220" height="120" rx="18" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="270" y="450" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#92400e">PostgreSQL</text>
+  <text x="270" y="480" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#78350f">Users · Courses · Enrollments</text>
+
+  <rect x="430" y="400" width="220" height="120" rx="18" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="540" y="450" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#991b1b">MongoDB</text>
+  <text x="540" y="480" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#7f1d1d">Lessons · Quizzes · Progress</text>
+
+  <rect x="700" y="400" width="220" height="120" rx="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="810" y="450" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#075985">Redis</text>
+  <text x="810" y="480" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#0c4a6e">Cache · Rate limit · Jobs</text>
+
+  <line x1="640" y1="300" x2="270" y2="400" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="640" y1="300" x2="540" y2="400" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="640" y1="300" x2="810" y2="400" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <text x="640" y="620" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600" fill="#334155">API-first architecture designed for scalability, clear module boundaries, and reliable background processing</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>
