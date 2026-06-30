@@ -4,19 +4,11 @@ import mongoose from 'mongoose';
 import { LessonContentSchema } from '../../modules/lessons/schemas/lesson-content.schema';
 import { SeededLesson } from './sections.seed';
 
-// ── Video pubblici di test (no auth, no S3 richiesto) ─────────────────────────
-// Tutti MP4 direct-link, funzionano con USE_S3=false
+// ── Singolo video di test ──────────────────────────────────────────────────────
+// Tutte e 240 lezioni usano lo stesso video (1MB). Dopo ogni reset S3,
+// reset.sh lo ricarica su S3 con la stessa s3Key.
 const TEST_VIDEOS = [
   'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
-  'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4',
-  'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_5MB.mp4',
-  'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_10MB.mp4',
-  'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
-  'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4',
-  'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_2MB.mp4',
-  'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_5MB.mp4',
-  'https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4',
-  'https://test-videos.co.uk/vids/jellyfish/mp4/h264/1080/Jellyfish_1080_10s_2MB.mp4',
 ];
 
 // ── Transcript pool ───────────────────────────────────────────────────────────

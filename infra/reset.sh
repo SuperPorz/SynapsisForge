@@ -59,6 +59,26 @@ docker run --rm --network infra_default \
   "$BACKEND_IMAGE" \
   node dist/database/seeds/seed.js >> "$LOG" 2>&1
 
+# ── Upload single test video to S3 ──────────────────────────────────────────
+if command -v aws &> /dev/null && [ -n "$AWS_ACCESS_KEY_ID" ]; then
+  echo "→ Uploading test video to S3..." | tee -a "$LOG"
+  VIDEO_URL="https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4"
+  FILENAME="${VIDEO_URL##*/}"
+  LC_FILENAME=$(echo "$FILENAME" | tr '[:upper:]' '[:lower:]')
+  S3_KEY="videos/$(echo "$LC_FILENAME" | sed 's/[^a-z0-9._-]/_/g')"
+  TMP_VIDEO=$(mktemp /tmp/synapsis-test-video-XXXXXX.mp4)
+  if curl -sL -o "$TMP_VIDEO" "$VIDEO_URL"; then
+    aws s3 cp "$TMP_VIDEO" "s3://${S3_MEDIA_BUCKET:-synapsisforge-media}/${S3_KEY}" \
+      --content-type video/mp4 >> "$LOG" 2>&1 && \
+      echo "✅ Test video uploaded to s3://${S3_MEDIA_BUCKET:-synapsisforge-media}/${S3_KEY}" | tee -a "$LOG"
+  else
+    echo "⚠️  Failed to download test video" | tee -a "$LOG"
+  fi
+  rm -f "$TMP_VIDEO"
+else
+  echo "⚠️  AWS CLI not available — skipping S3 video upload" | tee -a "$LOG"
+fi
+
 # ── Start all services ─────────────────────────────────────────────────────
 echo "→ Starting all services..." | tee -a "$LOG"
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d >> "$LOG" 2>&1
