@@ -196,11 +196,11 @@ jobs:
             done
             docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres mongodb --wait
             docker pull ${{ env.BACKEND_IMAGE }}:latest
-            docker run --rm --network synapsis_default \
+            docker run --rm --network infra_default \
               --env-file ~/SynapsisForge/.env.production \
               ${{ env.BACKEND_IMAGE }}:latest \
               node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
-            docker run --rm --network synapsis_default \
+            docker run --rm --network infra_default \
               --env-file ~/SynapsisForge/.env.production \
               ${{ env.BACKEND_IMAGE }}:latest \
               node dist/database/seeds/seed.js
