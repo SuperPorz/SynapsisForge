@@ -170,9 +170,9 @@ jobs:
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
-          GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}
-          GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}
-          GITHUB_CALLBACK_URL=${{ secrets.GITHUB_CALLBACK_URL }}
+          GH_CLIENT_ID=${{ secrets.GH_CLIENT_ID }}
+          GH_CLIENT_SECRET=${{ secrets.GH_CLIENT_SECRET }}
+          GH_CALLBACK_URL=${{ secrets.GH_CALLBACK_URL }}
           SMTP_HOST=${{ secrets.SMTP_HOST }}
           SMTP_PORT=${{ secrets.SMTP_PORT }}
           SMTP_USER=${{ secrets.SMTP_USER }}
@@ -247,9 +247,9 @@ jobs:
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
-          GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}
-          GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}
-          GITHUB_CALLBACK_URL=${{ secrets.GITHUB_CALLBACK_URL }}
+          GH_CLIENT_ID=${{ secrets.GH_CLIENT_ID }}
+          GH_CLIENT_SECRET=${{ secrets.GH_CLIENT_SECRET }}
+          GH_CALLBACK_URL=${{ secrets.GH_CALLBACK_URL }}
           SMTP_HOST=${{ secrets.SMTP_HOST }}
           SMTP_PORT=${{ secrets.SMTP_PORT }}
           SMTP_USER=${{ secrets.SMTP_USER }}
