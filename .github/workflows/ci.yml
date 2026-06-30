@@ -181,9 +181,10 @@ jobs:
           FRONTEND_URL=${{ secrets.FRONTEND_URL }}
           CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
           EOF
-      - name: Copy .env.production to EC2
+      - name: Copy files to EC2
         run: |
           scp -o StrictHostKeyChecking=no .env.production ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/.env.production
+          scp -o StrictHostKeyChecking=no infra/docker-compose.prod.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/infra/docker-compose.prod.yml
       - name: Create & run seed.sh on EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'SEEDSCRIPT'
@@ -282,5 +283,6 @@ jobs:
       - name: Copy files & deploy
         run: |
           scp -o StrictHostKeyChecking=no .env.production ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/.env.production
+          scp -o StrictHostKeyChecking=no infra/docker-compose.prod.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/infra/docker-compose.prod.yml
           scp -o StrictHostKeyChecking=no deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/deploy.sh
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "bash ~/SynapsisForge/deploy.sh"
