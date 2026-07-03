@@ -91,12 +91,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/api-docs/api-docs').then((m) => m.ApiDocs),
   },
-  {
-    path: 'not-found',
-    loadComponent: () =>
-      import('./features/not-found/not-found').then((m) => m.NotFound),
-  },
-  { path: '**', redirectTo: 'not-found' },
 
   {
     path: 'dashboard',
@@ -169,4 +163,10 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./features/not-found/not-found').then((m) => m.NotFound),
+  },
+  { path: '**', redirectTo: 'not-found' },
 ];
