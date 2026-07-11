@@ -19,7 +19,6 @@ export class Navbar implements OnInit {
   _mobileMenuOpen = signal(false);
 
   ngOnInit() {
-    this.cart.loadCart();
     if (this.auth.isLoggedIn()) {
       this.enrollment.loadEnrolledCourseIds();
     }

@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -31,6 +31,19 @@ export class CartService {
   loading = signal(false);
 
   courseIds = signal<Set<string>>(new Set());
+
+  constructor() {
+    effect(() => {
+      const user = this.auth.currentUser();
+      this.items.set([]);
+      this.total.set(0);
+      this.count.set(0);
+      this.courseIds.set(new Set());
+      if (user) {
+        this.loadCart();
+      }
+    });
+  }
 
   loadCart() {
     if (!this.auth.isLoggedIn()) return;
