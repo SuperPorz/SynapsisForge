@@ -22,7 +22,7 @@ describe('TestCredentials', () => {
   });
 
   it('should display 3 test accounts', () => {
-    const cards = fixture.nativeElement.querySelectorAll('.grid > div');
+    const cards = fixture.nativeElement.querySelectorAll('div.rounded-xl');
     expect(cards.length).toBe(3);
   });
 
