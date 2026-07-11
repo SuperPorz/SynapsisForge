@@ -15,12 +15,24 @@ LOG="${HOME_DIR}/reset.log"
 
 echo "[$(date)] 🔄 SynapsisForge — Full site reset" | tee -a "$LOG"
 
-# ── Source AWS credentials from .env.production ──────────────────────────────
-if [ -f "$ENV_FILE" ]; then
-  set -a
-  source "$ENV_FILE"
-  set +a
-fi
+# ── Load AWS/S3 credentials from .env.production (safe: no shell eval) ────────
+# Avoids 'source' which breaks on passwords with spaces
+load_env_val() {
+  local key="$1"
+  grep -m1 "^${key}=" "$ENV_FILE" 2>/dev/null | cut -d= -f2- | sed 's/^"//; s/"$//'
+}
+
+S3_MEDIA_BUCKET=$(load_env_val S3_MEDIA_BUCKET)
+export S3_MEDIA_BUCKET
+S3_PRIVATE_BUCKET=$(load_env_val S3_PRIVATE_BUCKET)
+export S3_PRIVATE_BUCKET
+
+AWS_ACCESS_KEY_ID=$(load_env_val AWS_ACCESS_KEY_ID)
+export AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY=$(load_env_val AWS_SECRET_ACCESS_KEY)
+export AWS_SECRET_ACCESS_KEY
+AWS_REGION=$(load_env_val AWS_REGION)
+export AWS_REGION
 
 # ── Stop everything and remove all volumes ──────────────────────────────────
 echo "→ Stopping services and removing volumes..." | tee -a "$LOG"
@@ -44,19 +56,12 @@ echo "→ Starting databases..." | tee -a "$LOG"
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d postgres mongodb --wait >> "$LOG" 2>&1
 
 # ── Schema sync + seed ──────────────────────────────────────────────────────
-BACKEND_IMAGE=$(grep '^\s*image:' "$COMPOSE_FILE" | head -1 | awk '{print $2}')
-BACKEND_IMAGE="${BACKEND_IMAGE:-michelangelostega/synapsisforge-backend:latest}"
-
 echo "→ Running schema sync..." | tee -a "$LOG"
-docker run --rm --network infra_default \
-  --env-file "$ENV_FILE" \
-  "$BACKEND_IMAGE" \
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm backend \
   node node_modules/.bin/typeorm schema:sync -d dist/data-source.js >> "$LOG" 2>&1
 
 echo "→ Running seed..." | tee -a "$LOG"
-docker run --rm --network infra_default \
-  --env-file "$ENV_FILE" \
-  "$BACKEND_IMAGE" \
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm backend \
   node dist/database/seeds/seed.js >> "$LOG" 2>&1
 
 # ── Upload single test video to S3 ──────────────────────────────────────────

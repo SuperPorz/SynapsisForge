@@ -198,14 +198,10 @@ jobs:
               docker volume rm "$vol" 2>/dev/null || true
             done
             docker compose -f infra/docker-compose.prod.yml --env-file .env.production up -d postgres mongodb --wait
-            docker pull ${{ env.BACKEND_IMAGE }}:latest
-            docker run --rm --network infra_default \
-              --env-file ~/SynapsisForge/.env.production \
-              ${{ env.BACKEND_IMAGE }}:latest \
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production pull backend
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production run --rm backend \
               node node_modules/.bin/typeorm schema:sync -d dist/data-source.js
-            docker run --rm --network infra_default \
-              --env-file ~/SynapsisForge/.env.production \
-              ${{ env.BACKEND_IMAGE }}:latest \
+            docker compose -f infra/docker-compose.prod.yml --env-file .env.production run --rm backend \
               node dist/database/seeds/seed.js
           SEEDSCRIPT
 
