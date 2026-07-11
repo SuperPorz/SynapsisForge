@@ -3,11 +3,12 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { TestCredentials } from '../components/test-credentials/test-credentials';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TestCredentials],
   templateUrl: './login.html',
 })
 export class Login implements OnInit {
@@ -30,8 +31,14 @@ export class Login implements OnInit {
   }
 
   ngOnInit(): void {
-    this.registered = this.activatedRoute.snapshot.queryParamMap.get('registered') === 'true';
-    this.verified = this.activatedRoute.snapshot.queryParamMap.get('verified') === 'true';
+    const params = this.activatedRoute.snapshot.queryParamMap;
+    this.registered = params.get('registered') === 'true';
+    this.verified = params.get('verified') === 'true';
+
+    const email = params.get('email');
+    const password = params.get('password');
+    if (email) this.form.patchValue({ email });
+    if (password) this.form.patchValue({ password });
   }
 
   onSubmit(): void {

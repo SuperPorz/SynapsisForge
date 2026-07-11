@@ -38,6 +38,12 @@ services:
       MONGO_PASS: ${MONGO_PASS:-qwerty}
       MONGO_AUTH_SOURCE: admin
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-placeholder}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-placeholder}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:3000/auth/google/callback}
+      GH_CLIENT_ID: ${GH_CLIENT_ID:-placeholder}
+      GH_CLIENT_SECRET: ${GH_CLIENT_SECRET:-placeholder}
+      GH_CALLBACK_URL: ${GH_CALLBACK_URL:-http://localhost:3000/auth/github/callback}
     env_file: ../.env.development
     depends_on:
       postgres:
