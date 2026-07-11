@@ -1,7 +1,6 @@
-import { Component, Input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-interface Account {
+export interface Account {
   role: string;
   email: string;
   password: string;
@@ -10,12 +9,13 @@ interface Account {
 
 @Component({
   selector: 'app-test-credentials',
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './test-credentials.html',
   styleUrl: './test-credentials.css',
 })
 export class TestCredentials {
   @Input() showUseButton = false;
+  @Output() useAccount = new EventEmitter<Account>();
 
   accounts: Account[] = [
     {

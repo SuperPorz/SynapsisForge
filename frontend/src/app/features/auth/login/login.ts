@@ -35,10 +35,14 @@ export class Login implements OnInit {
     this.registered = params.get('registered') === 'true';
     this.verified = params.get('verified') === 'true';
 
-    const email = params.get('email');
-    const password = params.get('password');
-    if (email) this.form.patchValue({ email });
-    if (password) this.form.patchValue({ password });
+    const nav = this.router.getCurrentNavigation();
+    const state = nav?.extras?.state as { email?: string; password?: string } | undefined;
+    if (state?.email) this.form.patchValue({ email: state.email });
+    if (state?.password) this.form.patchValue({ password: state.password });
+  }
+
+  fillForm(acc: { email: string; password: string }): void {
+    this.form.patchValue(acc);
   }
 
   onSubmit(): void {

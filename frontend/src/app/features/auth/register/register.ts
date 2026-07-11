@@ -17,6 +17,10 @@ export class Register {
   private authService = inject(AuthService);
   private router = inject(Router);
 
+  goToLogin(acc: { email: string; password: string }): void {
+    this.router.navigate(['/login'], { state: { email: acc.email, password: acc.password } });
+  }
+
   // Valori dell'enum Country — DA SISTEMARE IN FUTURO
   countries = [
     'ITALY', 'FRANCE', 'GERMANY', 'SPAIN', 'PORTUGAL',

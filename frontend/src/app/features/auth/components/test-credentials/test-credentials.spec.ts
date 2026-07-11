@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { TestCredentials } from './test-credentials';
 
 describe('TestCredentials', () => {
@@ -9,7 +8,6 @@ describe('TestCredentials', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TestCredentials],
-      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestCredentials);
@@ -42,15 +40,27 @@ describe('TestCredentials', () => {
   });
 
   it('should not show use button by default', () => {
-    const btn = fixture.nativeElement.querySelector('a');
+    const btn = fixture.nativeElement.querySelector('button');
     expect(btn).toBeNull();
   });
 
   it('should show use button when showUseButton is true', () => {
     fixture.componentRef.setInput('showUseButton', true);
     fixture.detectChanges();
-    const btns = fixture.nativeElement.querySelectorAll('a');
+    const btns = fixture.nativeElement.querySelectorAll('button');
     expect(btns.length).toBe(3);
     expect(btns[0].textContent).toContain('Use this');
+  });
+
+  it('should emit account on button click', () => {
+    fixture.componentRef.setInput('showUseButton', true);
+    fixture.detectChanges();
+    const spy = vi.fn();
+    component.useAccount.subscribe(spy);
+
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ email: 'admin@example.com', password: 'Password123!' }));
   });
 });
