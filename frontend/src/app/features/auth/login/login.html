@@ -1,6 +1,6 @@
 <div class="min-h-[calc(100vh-8rem)] px-4 py-12">
   <div class="mx-auto flex max-w-5xl flex-col items-center gap-8 lg:flex-row lg:items-start lg:justify-center">
-    <app-test-credentials class="w-full max-w-md shrink-0 lg:order-1" />
+    <app-test-credentials [showUseButton]="true" class="w-full max-w-md shrink-0 lg:order-1" />
     <div class="w-full max-w-md order-first lg:order-2">
       <div class="rounded-2xl border border-gray-200 bg-card-bg p-8 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         @if (registered) {
