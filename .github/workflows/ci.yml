@@ -287,6 +287,23 @@ jobs:
           scp -o StrictHostKeyChecking=no infra/reset.sh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/infra/reset.sh
           scp -o StrictHostKeyChecking=no deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/SynapsisForge/deploy.sh
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "bash ~/SynapsisForge/deploy.sh"
+      - name: Upload sample video to S3 (so videos work immediately after deploy)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_MEDIA_BUCKET: ${{ secrets.S3_MEDIA_BUCKET }}
+        run: |
+          VIDEO_URL="https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4"
+          S3_KEY="videos/big_buck_bunny_720_10s_1mb.mp4"
+          TMP_VIDEO=$(mktemp)
+          echo "→ Downloading sample video..."
+          curl -sL -o "$TMP_VIDEO" "$VIDEO_URL"
+          echo "→ Uploading to s3://${S3_MEDIA_BUCKET}/${S3_KEY} ..."
+          aws s3 cp "$TMP_VIDEO" "s3://${S3_MEDIA_BUCKET}/${S3_KEY}" --content-type video/mp4
+          rm -f "$TMP_VIDEO"
+          echo "✅ Sample video uploaded to S3"
+
       - name: Install periodic reset cron job (every 3 hours)
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'CRONSCRIPT'
