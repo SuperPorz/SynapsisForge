@@ -293,16 +293,29 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           S3_MEDIA_BUCKET: ${{ secrets.S3_MEDIA_BUCKET }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          VIDEO_URL="https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4"
           S3_KEY="videos/big_buck_bunny_720_10s_1mb.mp4"
           TMP_VIDEO=$(mktemp)
-          echo "→ Downloading sample video..."
-          curl -sL -o "$TMP_VIDEO" "$VIDEO_URL"
-          echo "→ Uploading to s3://${S3_MEDIA_BUCKET}/${S3_KEY} ..."
-          aws s3 cp "$TMP_VIDEO" "s3://${S3_MEDIA_BUCKET}/${S3_KEY}" --content-type video/mp4
+          echo "→ Trying local file from EC2 first..."
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+            "${SSH_USER}@${SSH_HOST}:~/SynapsisForge/test-video.mp4" \
+            "$TMP_VIDEO" 2>/dev/null && {
+            echo "→ Got video from EC2, uploading to S3..."
+            aws s3 cp "$TMP_VIDEO" "s3://${S3_MEDIA_BUCKET}/${S3_KEY}" --content-type video/mp4
+            echo "✅ Sample video uploaded from EC2 local file"
+          } || {
+            echo "→ EC2 file not available, downloading from test-videos.co.uk..."
+            VIDEO_URL="https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4"
+            curl -sL --max-time 30 -o "$TMP_VIDEO" "$VIDEO_URL" && {
+              aws s3 cp "$TMP_VIDEO" "s3://${S3_MEDIA_BUCKET}/${S3_KEY}" --content-type video/mp4
+              echo "✅ Sample video uploaded from external source"
+            } || {
+              echo "⚠️  Failed to get sample video from any source"
+            }
+          }
           rm -f "$TMP_VIDEO"
-          echo "✅ Sample video uploaded to S3"
 
       - name: Install periodic reset cron job (every 3 hours)
         run: |
