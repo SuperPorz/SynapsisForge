@@ -104,7 +104,17 @@ export class AuthController {
     const refreshToken = req.cookies['refresh_token'] as string | undefined;
     if (!refreshToken) throw new UnauthorizedException();
 
-    const payload = this.jwtService.decode<{ sub: string }>(refreshToken);
+    let payload: { sub: string } | null;
+    try {
+      payload = await this.jwtService.verifyAsync<{ sub: string }>(
+        refreshToken,
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+        },
+      );
+    } catch {
+      throw new UnauthorizedException('Refresh token scaduto o non valido');
+    }
     if (!payload?.sub) throw new UnauthorizedException();
 
     const { accessToken, refreshToken: newRefreshToken } =

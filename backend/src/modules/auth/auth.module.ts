@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { AuthMobileController } from './auth-mobile.controller';
 import { User } from 'src/common/entities/users.entity';
 import { UsersModule } from '../users/users.module';
 import { StringValue } from 'ms';
@@ -35,6 +36,6 @@ import { GithubStrategy } from './strategies/github.strategy';
   //prettier-ignore
   providers: [AuthService, JwtStrategy, JwtAuthGuard, GoogleStrategy, GithubStrategy],
   exports: [JwtModule],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthMobileController],
 })
 export class AuthModule {}

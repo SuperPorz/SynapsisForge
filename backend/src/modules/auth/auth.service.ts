@@ -2,7 +2,9 @@ import {
   ConflictException,
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
+  OnModuleDestroy,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,7 +12,10 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
+import { createClient } from '@redis/client';
+import { createHash } from 'node:crypto';
 
 import { User } from 'src/common/entities/users.entity';
 import { UsersService } from '../users/users.service';
@@ -23,9 +28,10 @@ import { CacheService } from 'src/modules/cache/cache.service';
 
 export interface JwtPayload {
   sub: string;
-  email: string | null;
+  email: string;
   role: string;
   plan: string;
+  jti?: string;
 }
 
 export interface AuthTokens {
@@ -34,7 +40,7 @@ export interface AuthTokens {
 }
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleDestroy {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -204,13 +210,111 @@ export class AuthService {
       );
     }
 
-    const tokenMatch = await bcrypt.compare(refreshToken, storedHash);
+    const tokenMatch = await this.verifyToken(refreshToken, storedHash);
     if (!tokenMatch) {
       throw new UnauthorizedException('Refresh token non valido');
     }
 
     const tokens = await this.generateTokens(user);
     await this.saveRefreshTokenHash(user.id, tokens.refreshToken);
+    return tokens;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // REFRESH TOKENS (MOBILE) — con reuse detection
+  // Usa Redis diretto (non cache-manager) per consistenza immediata.
+  // ─────────────────────────────────────────────────────────────────────────────
+  async onModuleDestroy() {
+    if (this.redisClient && this.redisClient.isOpen) {
+      await this.redisClient.quit();
+    }
+  }
+
+  private redisClient: ReturnType<typeof createClient> | null = null;
+
+  private readonly logger = new Logger(AuthService.name);
+
+  private getRedis() {
+    if (!this.redisClient) {
+      const url =
+        process.env.REDIS_URL || 'redis://localhost:6379';
+      this.redisClient = createClient({ url } as any);
+      this.redisClient.on('error', (err: Error) =>
+        this.logger.error('Redis error:', err.message),
+      );
+    }
+    return this.redisClient;
+  }
+
+  private async redisGet(key: string): Promise<string | null> {
+    const client = this.getRedis();
+    if (!client.isOpen) await client.connect();
+    const raw = await client.get(`keyv::keyv:${key}`);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw).value as string;
+    } catch {
+      return null;
+    }
+  }
+
+  private async redisSet(
+    key: string,
+    value: string,
+    ttlMs: number,
+  ): Promise<void> {
+    const client = this.getRedis();
+    if (!client.isOpen) await client.connect();
+    const payload = JSON.stringify({
+      value,
+      expires: Date.now() + ttlMs,
+    });
+    await client.set(`keyv::keyv:${key}`, payload, { PX: ttlMs });
+  }
+
+  private async redisDel(key: string): Promise<void> {
+    const client = this.getRedis();
+    if (!client.isOpen) await client.connect();
+    await client.del(`keyv::keyv:${key}`);
+  }
+
+  async refreshTokensMobile(
+    userId: string,
+    refreshToken: string,
+  ): Promise<AuthTokens> {
+    const user = await this.usersRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('Utente non trovato');
+
+    const key = `sf:session:refresh:${userId}`;
+    const storedHash = await this.redisGet(key);
+
+    if (!storedHash) {
+      throw new UnauthorizedException(
+        'Sessione scaduta, effettua nuovamente il login',
+      );
+    }
+
+    const tokenMatch = await this.verifyToken(refreshToken, storedHash);
+    if (!tokenMatch) {
+      await this.redisDel(key);
+      throw new UnauthorizedException(
+        'Sessione terminata per sicurezza. Effettua nuovamente il login.',
+      );
+    }
+
+    const tokens = await this.generateTokens(user);
+    const newHash = await this.hashToken(tokens.refreshToken);
+    const ttl = this.parseTtl(
+      this.configService.get('JWT_REFRESH_EXPIRES_IN', { infer: true }) ?? '7d',
+    );
+    await this.redisSet(key, newHash, ttl);
+    const payloadPart = tokens.refreshToken.split('.')[1];
+    const decoded = payloadPart
+      ? JSON.parse(Buffer.from(payloadPart, 'base64').toString())
+      : null;
+    this.logger.warn(
+      `[MOBILE_DEBUG] saved new hash for token iat=${decoded?.iat}`,
+    );
     return tokens;
   }
 
@@ -349,14 +453,22 @@ export class AuthService {
   private async generateTokens(user: User): Promise<AuthTokens> {
     const payload: JwtPayload = {
       sub: user.id,
-      email: user.email,
+      email: user.email!,
       role: user.role,
       plan: user.plan,
     };
 
+    const refreshPayload: JwtPayload = {
+      email: user.email!,
+      jti: uuidv4(),
+      plan: user.plan,
+      role: user.role,
+      sub: user.id,
+    };
+
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
-      this.jwtService.signAsync(payload, {
+      this.jwtService.signAsync(refreshPayload, {
         secret: this.configService.get('JWT_REFRESH_SECRET', { infer: true }),
         expiresIn:
           this.configService.get('JWT_REFRESH_EXPIRES_IN', { infer: true }) ??
@@ -367,11 +479,21 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  private async hashToken(token: string): Promise<string> {
+    const sha256 = createHash('sha256').update(token).digest('hex');
+    return bcrypt.hash(sha256, 10);
+  }
+
+  private async verifyToken(token: string, hash: string): Promise<boolean> {
+    const sha256 = createHash('sha256').update(token).digest('hex');
+    return bcrypt.compare(sha256, hash);
+  }
+
   private async saveRefreshTokenHash(
     userId: string,
     refreshToken: string,
   ): Promise<void> {
-    const hash = await bcrypt.hash(refreshToken, 10);
+    const hash = await this.hashToken(refreshToken);
     const ttl = this.parseTtl(
       this.configService.get('JWT_REFRESH_EXPIRES_IN', { infer: true }) ?? '7d',
     );

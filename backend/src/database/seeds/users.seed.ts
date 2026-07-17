@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { User } from '../../common/entities/users.entity';
 import { InstructorProfile } from '../../common/entities/instructor-profile.entity';
 import { StudentProfile } from '../../common/entities/student-profile.entity';
