@@ -20,7 +20,7 @@ import {
 } from 'src/common/entities/enum/users.enum';
 import type { CreateUserDto } from '../users/dto/create-user.dto';
 
-jest.mock('bcrypt', () => ({
+jest.mock('bcryptjs', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
   compare: jest.fn().mockResolvedValue(true),
 }));

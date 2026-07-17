@@ -2,6 +2,7 @@ import {
   ConflictException,
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   OnModuleDestroy,
@@ -16,6 +17,7 @@ import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@redis/client';
 import { createHash } from 'node:crypto';
+import { OAuth2Client } from 'google-auth-library';
 
 import { User } from 'src/common/entities/users.entity';
 import { UsersService } from '../users/users.service';
@@ -399,6 +401,238 @@ export class AuthService implements OnModuleDestroy {
     await this.cacheService.del(`sf:session:refresh:${user.id}`);
 
     return { message: 'Password aggiornata. Effettua nuovamente il login.' };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // GOOGLE — verifica idToken dal client mobile
+  // ─────────────────────────────────────────────────────────────────────────────
+  async loginWithGoogle(idToken: string): Promise<AuthTokens> {
+    const client = new OAuth2Client(
+      this.configService.get('GOOGLE_CLIENT_ID', { infer: true }),
+    );
+
+    let payload: { sub: string; email: string; given_name: string; family_name: string };
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: this.configService.get('GOOGLE_CLIENT_ID', { infer: true }),
+      });
+      const gp = ticket.getPayload()!;
+      payload = {
+        sub: gp.sub,
+        email: gp.email ?? '',
+        given_name: gp.given_name ?? '',
+        family_name: gp.family_name ?? '',
+      };
+    } catch {
+      throw new UnauthorizedException('Token Google non valido');
+    }
+
+    return this.findOrCreateOAuthUser(
+      'google',
+      payload.sub,
+      payload.email,
+      payload.given_name,
+      payload.family_name,
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // GITHUB — scambia il codice OAuth con GitHub e recupera il profilo
+  // ─────────────────────────────────────────────────────────────────────────────
+  async loginWithGithubCode(code: string): Promise<AuthTokens> {
+    const ghClientId = this.configService.get('GH_CLIENT_ID', { infer: true });
+    const ghClientSecret = this.configService.get('GH_CLIENT_SECRET', { infer: true });
+
+    // 1. Scambia il codice per un access token
+    let accessToken: string;
+    try {
+      const tokenResp = await fetch(
+        'https://github.com/login/oauth/access_token',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            client_id: ghClientId,
+            client_secret: ghClientSecret,
+            code,
+          }),
+        },
+      );
+      const tokenData = (await tokenResp.json()) as {
+        access_token?: string;
+        error_description?: string;
+      };
+      if (!tokenData.access_token) {
+        throw new Error(tokenData.error_description ?? 'No access token');
+      }
+      accessToken = tokenData.access_token;
+    } catch (err) {
+      throw new UnauthorizedException(
+        `Scambio codice GitHub fallito: ${(err as Error).message}`,
+      );
+    }
+
+    // 2. Recupera il profilo utente GitHub
+    let ghProfile: { id: number; email: string | null; name: string | null };
+    try {
+      const userResp = await fetch('https://api.github.com/user', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      ghProfile = (await userResp.json()) as {
+        id: number;
+        email: string | null;
+        name: string | null;
+      };
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Recupero profilo GitHub fallito: ${(err as Error).message}`,
+      );
+    }
+
+    // 3. Tenta anche di ottenere l'email (può essere privata)
+    let email = ghProfile.email;
+    if (!email) {
+      try {
+        const emailsResp = await fetch('https://api.github.com/user/emails', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const emails = (await emailsResp.json()) as Array<{
+          email: string;
+          primary: boolean;
+        }>;
+        const primary = emails.find((e) => e.primary);
+        if (primary) email = primary.email;
+      } catch {
+        // fallback — nessuna email
+      }
+    }
+
+    const fullName = (ghProfile.name ?? '').split(' ');
+    return this.findOrCreateOAuthUser(
+      'github',
+      String(ghProfile.id),
+      email ?? null,
+      fullName[0] ?? '',
+      fullName.slice(1).join(' ') ?? '',
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // GITHUB DEVICE FLOW — per dispositivi senza browser (mobile)
+  // ─────────────────────────────────────────────────────────────────────────────
+  async initGithubDeviceFlow(): Promise<{
+    device_code: string;
+    user_code: string;
+    verification_uri: string;
+    interval: number;
+  }> {
+    const ghClientId = this.configService.get('GH_CLIENT_ID', { infer: true });
+
+    const resp = await fetch('https://github.com/login/device/code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        client_id: ghClientId,
+        scope: 'user:email',
+      }),
+    });
+
+    const data = (await resp.json()) as {
+      device_code: string;
+      user_code: string;
+      verification_uri: string;
+      interval: number;
+    };
+
+    // Salva il device_code in Redis con TTL 15 minuti
+    const ttlMs = 15 * 60 * 1000;
+    await this.cacheService.set(
+      `sf:github:device:${data.device_code}`,
+      'pending',
+      ttlMs,
+    );
+
+    return data;
+  }
+
+  async pollGithubDeviceFlow(
+    deviceCode: string,
+  ): Promise<{ status: string } | AuthTokens> {
+    const ghClientId = this.configService.get('GH_CLIENT_ID', { infer: true });
+    const ghClientSecret = this.configService.get('GH_CLIENT_SECRET', { infer: true });
+
+    // Fa il polling di GitHub per sapere se l'utente ha autorizzato
+    const tokenResp = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        client_id: ghClientId,
+        client_secret: ghClientSecret,
+        device_code: deviceCode,
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+      }),
+    });
+
+    const data = (await tokenResp.json()) as {
+      access_token?: string;
+      error?: string;
+      error_description?: string;
+    };
+
+    if (data.access_token) {
+      // L'utente ha autorizzato — recupera profilo e genera JWT
+      const userResp = await fetch('https://api.github.com/user', {
+        headers: { Authorization: `Bearer ${data.access_token}` },
+      });
+      const ghProfile = (await userResp.json()) as {
+        id: number;
+        email: string | null;
+        name: string | null;
+      };
+
+      let email = ghProfile.email;
+      if (!email) {
+        try {
+          const emailsResp = await fetch('https://api.github.com/user/emails', {
+            headers: { Authorization: `Bearer ${data.access_token}` },
+          });
+          const emails = (await emailsResp.json()) as Array<{
+            email: string;
+            primary: boolean;
+          }>;
+          const primary = emails.find((e) => e.primary);
+          if (primary) email = primary.email;
+        } catch {
+          // fallback
+        }
+      }
+
+      const fullName = (ghProfile.name ?? '').split(' ');
+      await this.cacheService.del(`sf:github:device:${deviceCode}`);
+      return this.findOrCreateOAuthUser(
+        'github',
+        String(ghProfile.id),
+        email ?? null,
+        fullName[0] ?? '',
+        fullName.slice(1).join(' ') ?? '',
+      );
+    }
+
+    if (data.error === 'authorization_pending') {
+      return { status: 'pending' };
+    }
+
+    if (data.error === 'slow_down') {
+      return { status: 'pending' };
+    }
+
+    // expired, access_denied, etc.
+    await this.cacheService.del(`sf:github:device:${deviceCode}`);
+    return { status: 'expired' };
   }
 
   // ─────────────────────────────────────────────────────────────────────────────

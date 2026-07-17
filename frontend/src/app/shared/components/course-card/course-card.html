@@ -33,6 +33,8 @@
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
           Included
         </span>
+      } @else if (isFree()) {
+        <span class="text-2xl font-extrabold text-green-600 dark:text-green-400">Free</span>
       } @else {
         <span class="text-2xl font-extrabold text-heading"> ${{ course().price }} </span>
       }
@@ -41,6 +43,14 @@
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
           Go to course
         </a>
+      } @else if (isFree()) {
+        <button type="button" (click)="enroll()" [disabled]="enrolling()" class="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">
+          @if (enrolling()) {
+            Enrolling...
+          } @else {
+            Enroll for free
+          }
+        </button>
       } @else if (inCart()) {
         <button type="button" disabled class="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm opacity-70 cursor-not-allowed">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>

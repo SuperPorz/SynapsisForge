@@ -85,6 +85,52 @@ export class AuthMobileController {
   }
 
   @Public()
+  @Post('/google')
+  @ApiOperation({
+    summary:
+      '[Mobile] Login/Register with Google. Accepts the Google idToken from google_sign_in.',
+  })
+  @ApiResponse({ status: 200, description: 'Login successful.' })
+  @ApiResponse({ status: 401, description: 'Invalid Google token.' })
+  async googleLogin(@Body('idToken') idToken: string): Promise<AuthTokens> {
+    return this.authService.loginWithGoogle(idToken);
+  }
+
+  @Public()
+  @Post('/github')
+  @ApiOperation({
+    summary:
+      '[Mobile] Login/Register with GitHub. Accepts the OAuth authorization code (exchanged via WebView/device flow).',
+  })
+  @ApiResponse({ status: 200, description: 'Login successful.' })
+  @ApiResponse({ status: 401, description: 'Invalid GitHub code.' })
+  async githubLogin(@Body('code') code: string): Promise<AuthTokens> {
+    return this.authService.loginWithGithubCode(code);
+  }
+
+  @Public()
+  @Post('/github/device')
+  @ApiOperation({
+    summary:
+      '[Mobile] Initiate GitHub Device Authorization flow. Returns user_code and verification_uri.',
+  })
+  async githubDevice() {
+    return this.authService.initGithubDeviceFlow();
+  }
+
+  @Public()
+  @Post('/github/device/poll')
+  @ApiOperation({
+    summary:
+      '[Mobile] Poll GitHub device auth status. Returns JWT tokens when user authorizes.',
+  })
+  async githubDevicePoll(
+    @Body('device_code') deviceCode: string,
+  ): Promise<{ status: string } | AuthTokens> {
+    return this.authService.pollGithubDeviceFlow(deviceCode);
+  }
+
+  @Public()
   @Post('/refresh')
   @ApiOperation({
     summary:
