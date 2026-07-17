@@ -6,7 +6,7 @@
 
   <div class="flex flex-wrap justify-center gap-3">
     @for (category of categories; track category.id) {
-      <a [routerLink]="['/courses']" [queryParams]="{ category: category.slug }" class="rounded-full border border-brand-subtle bg-brand-softer px-5 py-2 text-sm font-medium text-fg-brand-strong transition-colors hover:bg-fg-brand hover:text-white dark:text-indigo-200 dark:hover:text-white">
+      <a [routerLink]="['/courses']" [queryParams]="{ category: category.slug }" class="rounded-full border border-brand-purple/30 bg-brand-purple/10 px-5 py-2 text-sm font-medium text-brand-purple transition-colors hover:bg-brand-purple hover:text-white">
         {{ category.label }}
       </a>
     }

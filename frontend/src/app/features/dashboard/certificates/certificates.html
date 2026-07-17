@@ -4,7 +4,7 @@
   @if (loading()) {
     <div class="animate-pulse space-y-4">
       @for (_ of [1,2,3]; track $index) {
-        <div class="flex items-center gap-5 rounded-xl border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex items-center gap-5 rounded-xl border border-brand-slate/30 bg-card-bg p-6">
           <div class="h-14 w-14 flex-shrink-0 rounded-full bg-gray-300 dark:bg-gray-600"></div>
           <div class="min-w-0 flex-1 space-y-2">
             <div class="h-5 w-2/3 rounded bg-gray-200 dark:bg-gray-700"></div>
@@ -15,7 +15,7 @@
       }
     </div>
   } @else if (certificates().length === 0) {
-    <div class="rounded-xl border border-dashed border-gray-300 bg-card-bg p-12 text-center dark:border-gray-600 dark:bg-gray-800">
+    <div class="rounded-xl border border-dashed border-gray-300 bg-card-bg p-12 text-center dark:border-brand-slate/60 dark:bg-brand-slate">
       <p class="text-fg-muted">You haven't completed any courses yet.</p>
       <a routerLink="/courses" class="mt-4 inline-block rounded-lg bg-fg-brand px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
         Browse courses
@@ -24,7 +24,7 @@
   } @else {
     <div class="grid gap-4">
       @for (c of certificates(); track c.id) {
-        <div class="flex items-center gap-5 rounded-xl border border-gray-200 bg-card-bg p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex items-center gap-5 rounded-xl border border-brand-slate/30 bg-card-bg p-6 shadow-sm transition-shadow hover:shadow-md">
           <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
             <svg class="h-7 w-7 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
           </div>
@@ -36,7 +36,7 @@
             }
           </div>
           @if (c.s3_key || c.pdf_url) {
-            <button (click)="download(c)" [disabled]="downloading() === c.id" class="shrink-0 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+            <button (click)="download(c)" [disabled]="downloading() === c.id" class="shrink-0 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-brand-slate/60 dark:text-gray-300 dark:hover:bg-gray-700">
               {{ downloading() === c.id ? 'Downloading...' : 'Download PDF' }}
             </button>
           }

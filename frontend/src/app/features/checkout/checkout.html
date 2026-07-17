@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-surface-alt dark:bg-gray-900 py-8 px-4">
+<div class="min-h-screen bg-surface-alt py-8 px-4">
   <div class="mx-auto max-w-4xl">
 
     <a routerLink="/cart" class="mb-6 inline-flex items-center text-sm text-fg-muted hover:text-fg-brand">
@@ -69,7 +69,7 @@
                 </div>
               }
             </div>
-            <hr class="my-4 border-gray-200 dark:border-gray-700" />
+            <hr class="my-4 border-brand-slate/30" />
             <div class="flex justify-between text-lg font-bold text-heading">
               <span>Total</span>
               <span class="text-fg-brand">{{ cartTotal() | currency:'EUR':'symbol':'1.2-2' }}</span>

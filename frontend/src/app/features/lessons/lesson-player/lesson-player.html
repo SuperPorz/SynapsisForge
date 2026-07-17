@@ -1,6 +1,6 @@
 <div class="min-h-screen bg-surface">
   <!-- HEADER -->
-  <header class="bg-surface-alt border-b border-gray-200 px-6 py-4 flex items-center gap-4">
+  <header class="bg-surface-alt border-b border-brand-slate/30 px-6 py-4 flex items-center gap-4">
     <a
       routerLink="/dashboard/my-enrolls"
       class="flex items-center gap-2 text-fg-muted hover:text-fg transition-colors"
@@ -68,7 +68,7 @@
 
         <!-- Quiz -->
         @if (quiz().length > 0) {
-          <div class="bg-surface-alt rounded-xl border border-gray-200 p-6">
+          <div class="bg-surface-alt rounded-xl border border-brand-slate/30 p-6">
             <h3 class="text-base font-semibold text-heading mb-5 flex items-center gap-2">
               <span>📝</span> Quiz
             </h3>
@@ -102,7 +102,7 @@
                 Go to my certificates
               </a>
               <button
-                class="w-full px-6 py-3 border border-gray-200 text-fg text-sm font-medium rounded-lg hover:bg-surface-alt transition-colors"
+                class="w-full px-6 py-3 border border-brand-slate/30 text-fg text-sm font-medium rounded-lg hover:bg-surface-alt transition-colors"
                 (click)="showCongratulations.set(false)"
               >
                 Continue exploring
@@ -128,21 +128,21 @@
       }
 
       <aside
-        class="lg:col-span-1 border-l border-gray-200 overflow-y-auto bg-surface-alt lg:sticky lg:top-0 lg:max-h-[calc(100vh-65px)] fixed inset-x-0 bottom-0 z-50 max-h-[70vh] rounded-t-2xl shadow-2xl transition-transform lg:rounded-none lg:shadow-none lg:static lg:max-h-none lg:z-auto lg:translate-y-0"
+        class="lg:col-span-1 border-l border-brand-slate/30 overflow-y-auto bg-surface-alt lg:sticky lg:top-0 lg:max-h-[calc(100vh-65px)] fixed inset-x-0 bottom-0 z-50 max-h-[70vh] rounded-t-2xl shadow-2xl transition-transform lg:rounded-none lg:shadow-none lg:static lg:max-h-none lg:z-auto lg:translate-y-0"
         [class.translate-y-0]="_sidebarOpen()"
         [class.translate-y-full]="!_sidebarOpen()"
       >
-        <div class="p-4 border-b border-gray-200 flex items-center justify-between lg:justify-start">
+        <div class="p-4 border-b border-brand-slate/30 flex items-center justify-between lg:justify-start">
           <h3 class="font-semibold text-heading text-sm uppercase tracking-wide">
             Course content
           </h3>
-          <button (click)="_sidebarOpen.set(false)" aria-label="Close sidebar" class="lg:hidden rounded-lg p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <button (click)="_sidebarOpen.set(false)" aria-label="Close sidebar" class="lg:hidden rounded-lg p-1 text-gray-500 hover:bg-brand-slate/20">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
         @for (section of sections(); track section.id) {
-          <div class="border-b border-gray-100">
+          <div class="border-b border-brand-slate/20">
             <!-- Titolo sezione -->
             <div class="px-4 py-3 bg-surface">
               <p class="text-sm font-semibold text-fg-muted uppercase tracking-wide">
@@ -153,7 +153,7 @@
             <!-- Lezioni della sezione -->
             @for (lesson of section.lessons; track lesson.id) {
               <button
-                class="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-surface transition-colors cursor-pointer border-b border-gray-50 last:border-0"
+                class="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-surface transition-colors cursor-pointer border-b border-brand-slate/10 last:border-0"
 [class.bg-surface-alt]="lesson.id === lessonId()"
 [class.border-l-2]="lesson.id === lessonId()"
 [class.border-l-fg-brand]="lesson.id === lessonId()"

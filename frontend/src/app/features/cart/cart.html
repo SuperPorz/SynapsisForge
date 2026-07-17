@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-surface-alt dark:bg-gray-900 py-8 px-4">
+<div class="min-h-screen bg-surface-alt py-8 px-4">
   <div class="mx-auto max-w-4xl">
     <a routerLink="/courses" class="mb-6 inline-flex items-center text-sm text-fg-muted hover:text-fg-brand">
       <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -58,7 +58,7 @@
                 <span>Items ({{ cart.count() }})</span>
                 <span>{{ cart.total() | currency:'EUR':'symbol':'1.2-2' }}</span>
               </div>
-              <hr class="border-gray-200 dark:border-gray-700" />
+              <hr class="border-brand-slate/30" />
               <div class="flex justify-between text-lg font-bold text-heading">
                 <span>Total</span>
                 <span class="text-fg-brand">{{ cart.total() | currency:'EUR':'symbol':'1.2-2' }}</span>

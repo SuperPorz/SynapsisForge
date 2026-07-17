@@ -3,7 +3,7 @@
     <a routerLink="/dashboard" aria-label="Back to dashboard" class="absolute left-0 inline-flex items-center justify-center rounded-lg bg-fg-brand p-2 text-white transition-colors hover:bg-fg-brand-strong">
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
     </a>
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Instructor Panel</h1>
+    <h1 class="text-2xl font-bold text-heading">Instructor Panel</h1>
     <a routerLink="/dashboard/instructor/new" aria-label="Create new course" class="absolute right-0 inline-flex items-center justify-center rounded-lg bg-fg-brand p-2 text-white transition-colors hover:bg-fg-brand-strong">
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
     </a>
@@ -19,13 +19,13 @@
             aria-label="Search courses"
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
-            class="w-full sm:w-64 rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+            class="w-full sm:w-64 rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/20 dark:border-brand-slate/60 dark:bg-brand-slate dark:text-white dark:placeholder-gray-500"
           />
           <select
             [ngModel]="statusFilter()"
             (ngModelChange)="statusFilter.set($event)"
             aria-label="Filter by status"
-            class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-fg-brand focus:outline-none focus:ring-2 focus:ring-fg-brand/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/20 dark:border-brand-slate/60 dark:bg-brand-slate dark:text-white"
           >
             <option value="all">All status</option>
             <option value="PUBLISHED">Published</option>
@@ -41,9 +41,9 @@
           <div class="h-8 w-8 animate-spin rounded-full border-4 border-fg-brand border-t-transparent"></div>
         </div>
       } @else if (filteredCourses().length === 0) {
-        <div class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600">
+        <div class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-brand-slate/60">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-          <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No courses yet</h3>
+          <h3 class="mt-4 text-lg font-semibold text-heading">No courses yet</h3>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Create your first course to get started.</p>
           <a routerLink="/dashboard/instructor/new" aria-label="Create new course" class="mt-4 inline-flex items-center justify-center rounded-lg bg-fg-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -51,14 +51,14 @@
         </div>
       }       @else {
         <!-- Status legend for mobile -->
-        <div class="flex items-center gap-4 border-b border-gray-200 px-1 pb-2 text-xs text-gray-500 md:hidden dark:border-gray-700 dark:text-gray-400">
+        <div class="flex items-center gap-4 border-b border-gray-200 px-1 pb-2 text-xs text-gray-500 md:hidden dark:border-brand-slate/50 dark:text-gray-400">
           <span class="flex items-center gap-1"><span class="inline-flex h-2 w-2 rounded-full bg-green-500"></span> Published</span>
           <span class="flex items-center gap-1"><span class="inline-flex h-2 w-2 rounded-full bg-yellow-500"></span> Pending</span>
           <span class="flex items-center gap-1"><span class="inline-flex h-2 w-2 rounded-full bg-gray-400"></span> Draft</span>
         </div>
-        <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="overflow-x-auto rounded-lg border border-brand-slate/30">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-800">
+            <thead class="bg-gray-50 dark:bg-brand-slate">
               <tr>
                 <th class="px-3 sm:px-6 py-3 text-center sm:text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Course</th>
                 <th class="px-3 sm:px-6 py-3 text-center sm:text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
@@ -68,7 +68,7 @@
                 <th class="px-3 sm:px-6 py-3 text-center sm:text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-card-bg dark:divide-gray-700 dark:bg-gray-900">
+            <tbody class="divide-y divide-brand-slate/20 bg-card-bg">
               @for (course of filteredCourses(); track course.id) {
                 <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td class="whitespace-nowrap px-3 sm:px-6 py-4 max-w-[160px] sm:max-w-none text-center sm:text-left">
@@ -77,7 +77,7 @@
                         <img loading="lazy" [src]="course.thumbnail_url" [alt]="course.title" class="hidden sm:block h-10 w-16 rounded object-cover shrink-0" />
                       }
                       <div class="min-w-0">
-                        <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ course.title }}</p>
+                        <p class="truncate text-sm font-medium text-heading">{{ course.title }}</p>
                         <p class="hidden sm:block text-xs text-gray-500 dark:text-gray-400 truncate">{{ course.category }}</p>
                       </div>
                     </div>
@@ -110,11 +110,11 @@
                     <td class="whitespace-nowrap px-3 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">{{ course.enrollmentCount }}</td>
                   <td class="whitespace-nowrap px-3 sm:px-6 py-4 text-center sm:text-right text-sm">
                     <div class="flex items-center justify-end gap-1 sm:gap-3">
-                      <a routerLink="/dashboard/instructor/edit/{{ course.id }}" aria-label="Edit {{ course.title }}" class="rounded-lg p-1.5 text-gray-700 transition-colors hover:bg-gray-200 hover:text-fg-brand dark:text-gray-300 dark:hover:bg-gray-700" title="Edit">
+                      <a routerLink="/dashboard/instructor/edit/{{ course.id }}" aria-label="Edit {{ course.title }}" class="rounded-lg p-1.5 text-brand-white/70 transition-colors hover:bg-brand-slate hover:text-brand-orange" title="Edit">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         <span class="hidden sm:inline ml-1">Edit</span>
                       </a>
-                      <button (click)="selectCourse(course.id)" aria-label="View analytics for {{ course.title }}" class="rounded-lg p-1.5 text-gray-700 transition-colors hover:bg-gray-200 hover:text-fg-brand dark:text-gray-300 dark:hover:bg-gray-700" title="Analytics">
+                      <button (click)="selectCourse(course.id)" aria-label="View analytics for {{ course.title }}" class="rounded-lg p-1.5 text-brand-white/70 transition-colors hover:bg-brand-slate hover:text-brand-orange" title="Analytics">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                         <span class="hidden sm:inline ml-1">Analytics</span>
                       </button>
@@ -143,16 +143,16 @@
     } @else {
       @let stats = courseStats();
       @if (stats) {
-        <button (click)="clearSelection()" class="mb-4 inline-flex items-center gap-1 text-sm text-fg-brand hover:text-fg-brand-strong transition-colors">
+        <button (click)="clearSelection()" class="mb-4 inline-flex items-center gap-1 text-sm text-brand-orange hover:text-brand-orange/80 transition-colors">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
           Back to courses
         </button>
         <div class="grid gap-6 sm:grid-cols-3">
-            <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
+            <div class="rounded-lg border border-brand-slate/30 bg-card-bg p-6">
               <p class="text-sm text-gray-500 dark:text-gray-400">Enrollments</p>
-              <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ stats.enrollmentCount }}</p>
+              <p class="mt-1 text-3xl font-bold text-heading">{{ stats.enrollmentCount }}</p>
             </div>
-            <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
+            <div class="rounded-lg border border-brand-slate/30 bg-card-bg p-6">
               <p class="text-sm text-gray-500 dark:text-gray-400">Average Rating</p>
               <div class="mt-1 flex items-center gap-2">
                 <span class="flex items-center gap-0.5">
@@ -163,28 +163,28 @@
                   }
                 </span>
                 @if (stats.averageRating) {
-                  <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.averageRating }}</span>
+                  <span class="text-3xl font-bold text-heading">{{ stats.averageRating }}</span>
                 } @else {
                   <span class="text-sm text-gray-400">Unrated</span>
                 }
               </div>
             </div>
-            <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
+            <div class="rounded-lg border border-brand-slate/30 bg-card-bg p-6">
               <p class="text-sm text-gray-500 dark:text-gray-400">Total Watch Time</p>
-              <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ (stats.totalWatchTimeSeconds / 3600).toFixed(1) }}h</p>
+              <p class="mt-1 text-3xl font-bold text-heading">{{ (stats.totalWatchTimeSeconds / 3600).toFixed(1) }}h</p>
             </div>
           </div>
 
           @defer {
             <div class="grid gap-6 lg:grid-cols-2">
-              <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
-                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Enrollments (last 30 days)</h3>
+              <div class="rounded-lg border border-brand-slate/30 bg-card-bg p-6">
+                <h3 class="mb-4 text-lg font-semibold text-heading">Enrollments (last 30 days)</h3>
                 <div class="h-64">
                   <canvas baseChart type="line" [data]="enrollmentsChartData()" [options]="enrollmentsChartOptions"></canvas>
                 </div>
               </div>
-              <div class="rounded-lg border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-900">
-                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Top Lessons by Watch Time</h3>
+              <div class="rounded-lg border border-brand-slate/30 bg-card-bg p-6">
+                <h3 class="mb-4 text-lg font-semibold text-heading">Top Lessons by Watch Time</h3>
                 <div class="h-64">
                   <canvas baseChart type="bar" [data]="lessonsChartData()" [options]="lessonsChartOptions"></canvas>
                 </div>

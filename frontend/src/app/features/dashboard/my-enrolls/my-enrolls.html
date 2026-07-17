@@ -4,7 +4,7 @@
   @if (loading()) {
     <div class="animate-pulse space-y-4">
       @for (_ of [1,2,3]; track $index) {
-        <div class="flex flex-col gap-4 rounded-xl border border-gray-200 bg-card-bg p-6 sm:flex-row sm:items-center dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex flex-col gap-4 rounded-xl border border-gray-200 bg-card-bg p-6 sm:flex-row sm:items-center dark:border-brand-slate/50 dark:bg-brand-slate">
           <div class="h-24 w-full flex-shrink-0 rounded-lg bg-gray-300 sm:w-40 dark:bg-gray-600"></div>
           <div class="min-w-0 flex-1 space-y-3">
             <div class="h-5 w-3/4 rounded bg-gray-200 dark:bg-gray-700"></div>
@@ -16,7 +16,7 @@
       }
     </div>
   } @else if (enrollments().length === 0) {
-    <div class="rounded-xl border border-dashed border-gray-300 bg-card-bg p-12 text-center dark:border-gray-600 dark:bg-gray-800">
+    <div class="rounded-xl border border-dashed border-gray-300 bg-card-bg p-12 text-center dark:border-brand-slate/60 dark:bg-brand-slate">
       <p class="text-fg-muted">You are not enrolled in any course yet.</p>
       <a routerLink="/courses" class="mt-4 inline-block rounded-lg bg-fg-brand px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
         Browse courses
@@ -25,7 +25,7 @@
   } @else {
     <div class="grid gap-6">
       @for (e of enrollments(); track e.id) {
-        <div class="flex flex-col gap-4 rounded-xl border border-gray-200 bg-card-bg p-6 text-center shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:text-left sm:items-center dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex flex-col gap-4 rounded-xl border border-gray-200 bg-card-bg p-6 text-center shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:text-left sm:items-center dark:border-brand-slate/50 dark:bg-brand-slate">
           <img
             [src]="e.courseThumbnail || '/assets/course-placeholder.svg'"
             [alt]="e.courseTitle"
@@ -46,7 +46,7 @@
                   <div
                     class="h-full rounded-full transition-all"
                     [class.bg-green-500]="e.progress_percent === 100"
-                    [class.bg-fg-brand]="e.progress_percent < 100"
+                    [class.bg-brand-orange]="e.progress_percent < 100"
                     [style.width.%]="e.progress_percent"
                   ></div>
                 </div>
@@ -71,9 +71,9 @@
   @if (activities().length > 0) {
     <section class="mt-10">
       <h2 class="mb-4 text-xl font-bold text-heading">Recent activity</h2>
-      <div class="rounded-xl border border-gray-200 bg-card-bg dark:border-gray-700 dark:bg-gray-800">
+      <div class="rounded-xl border border-gray-200 bg-card-bg dark:border-brand-slate/50 dark:bg-brand-slate">
         @for (a of activities(); track a.lessonId; let last = $last) {
-          <div class="flex items-center gap-4 border-gray-100 px-6 py-4 dark:border-gray-700" [class.border-b]="!last">
+          <div class="flex items-center gap-4 border-gray-100 px-6 py-4 dark:border-brand-slate/50" [class.border-b]="!last">
             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
               <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             </div>

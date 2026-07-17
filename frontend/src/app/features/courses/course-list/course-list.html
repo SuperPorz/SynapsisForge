@@ -1,5 +1,5 @@
-<div class="bg-surface-alt dark:bg-gray-900">
-  <div class="border-b border-gray-200 bg-card-bg dark:border-gray-700 dark:bg-gray-800">
+<div class="bg-surface-alt">
+  <div class="border-b border-gray-200 bg-card-bg dark:border-brand-slate/50 dark:bg-brand-slate">
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 class="mb-1 text-3xl font-bold text-heading">Browse courses</h1>
       <p class="text-sm text-fg-muted">Discover the full catalog and start learning today</p>
@@ -9,7 +9,7 @@
   <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
     <div class="flex flex-col gap-8 lg:flex-row">
       <aside class="w-full shrink-0 lg:w-64">
-        <div class="rounded-xl border border-gray-200 bg-card-bg p-5 shadow-sm lg:sticky lg:top-6 dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-xl border border-gray-200 bg-card-bg p-5 shadow-sm lg:sticky lg:top-6 dark:border-brand-slate/50 dark:bg-brand-slate">
           <div class="mb-5 flex items-center justify-between">
             <span class="text-sm font-semibold text-heading">Filters</span>
             <button (click)="resetFilters()" type="button" class="text-xs font-medium text-fg-brand transition-colors hover:text-fg-brand-strong">
@@ -21,31 +21,31 @@
             <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">Category</p>
             @for (category of categories(); track category.id) {
               <label class="group flex cursor-pointer items-center gap-2.5">
-                <input (change)="onCategoryChange(category.slug)" [checked]="isCategoryActive(category.slug)" type="checkbox" class="h-4 w-4 cursor-pointer accent-indigo-600" [value]="category.slug" />
+                <input (change)="onCategoryChange(category.slug)" [checked]="isCategoryActive(category.slug)" type="checkbox" class="h-4 w-4 cursor-pointer accent-brand-orange" [value]="category.slug" />
                 <span class="text-sm text-gray-700 transition-colors group-hover:text-heading dark:text-gray-300">{{ category.name }}</span>
               </label>
             }
           </div>
 
-          <div class="mb-6 border-t border-gray-200 dark:border-gray-700"></div>
+          <div class="mb-6 border-t border-gray-200 dark:border-brand-slate/50"></div>
 
           <div class="mb-6 space-y-2">
             <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">Level</p>
             @for (level of levels; track level.value) {
               <label class="group flex cursor-pointer items-center gap-2.5">
-                <input (change)="onLevelChange(level.value)" [checked]="isLevelActive(level.value)" type="radio" name="level" class="h-4 w-4 cursor-pointer accent-indigo-600" [value]="level.value" />
+                <input (change)="onLevelChange(level.value)" [checked]="isLevelActive(level.value)" type="radio" name="level" class="h-4 w-4 cursor-pointer accent-brand-orange" [value]="level.value" />
                 <span class="text-sm text-gray-700 transition-colors group-hover:text-heading dark:text-gray-300">{{ level.label }}</span>
               </label>
             }
           </div>
 
-          <div class="mb-6 border-t border-gray-200 dark:border-gray-700"></div>
+          <div class="mb-6 border-t border-gray-200 dark:border-brand-slate/50"></div>
 
           <div class="space-y-2">
             <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">Price</p>
             @for (range of priceRanges; track range.label) {
               <label class="group flex cursor-pointer items-center gap-2.5">
-                <input (change)="onPriceChange(range.value)" [checked]="isPriceActive(range.value)" type="radio" name="price" class="h-4 w-4 cursor-pointer accent-indigo-600" [value]="range.value" />
+                <input (change)="onPriceChange(range.value)" [checked]="isPriceActive(range.value)" type="radio" name="price" class="h-4 w-4 cursor-pointer accent-brand-orange" [value]="range.value" />
                 <span class="text-sm text-gray-700 transition-colors group-hover:text-heading dark:text-gray-300">{{ range.label }}</span>
               </label>
             }
@@ -68,7 +68,7 @@
                 </svg>
               }
             </div>
-            <input type="text" [formControl]="searchControl" aria-label="Search courses" placeholder="Search courses, topics, instructors..." class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-800 placeholder:text-gray-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20" />
+            <input type="text" [formControl]="searchControl" aria-label="Search courses" placeholder="Search courses, topics, instructors..." class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-brand-purple/20 dark:border-brand-slate/60 dark:bg-brand-slate dark:text-brand-white dark:placeholder:text-brand-white/50 dark:focus:border-brand-purple dark:focus:ring-brand-purple/30" />
             @if (searchControl.value) {
               <button type="button" (click)="clearSearch()" aria-label="Clear search" class="absolute inset-y-0 right-0 flex items-center pr-3 text-fg-muted transition-colors hover:text-heading">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
@@ -90,7 +90,7 @@
         @if (isLoading()) {
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
-              <div class="animate-pulse rounded-xl border border-gray-200 bg-card-bg p-6 dark:border-gray-700 dark:bg-gray-800">
+              <div class="animate-pulse rounded-xl border border-gray-200 bg-card-bg p-6 dark:border-brand-slate/50 dark:bg-brand-slate">
                 <div class="mb-6 h-48 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
                 <div class="mb-3 h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700"></div>
                 <div class="mb-6 h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700"></div>
@@ -131,7 +131,7 @@
 
           @if (totalPages() > 1) {
             <div class="mt-10 flex items-center justify-center gap-1">
-              <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)" aria-label="Previous page" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800">
+              <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)" aria-label="Previous page" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-brand-slate/50 dark:hover:bg-gray-800">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
               </button>
 
@@ -141,13 +141,13 @@
                 } @else {
                   <button type="button" (click)="goToPage(page)" [class]="page === currentPage()
                     ? 'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-fg-brand text-sm font-semibold text-white shadow-sm border border-fg-brand'
-                    : 'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-heading dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'">
+                    : 'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-heading dark:border-brand-slate/50 dark:text-gray-300 dark:hover:bg-gray-800'">
                     {{ page }}
                   </button>
                 }
               }
 
-              <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)" aria-label="Next page" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800">
+              <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)" aria-label="Next page" class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-fg-muted transition-colors hover:bg-gray-50 hover:text-heading disabled:cursor-not-allowed disabled:opacity-40 dark:border-brand-slate/50 dark:hover:bg-gray-800">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
               </button>
             </div>

@@ -126,8 +126,8 @@ export class Instructor implements OnInit {
         {
           label: 'Enrollments',
           data: base.map((d) => d.enrollments),
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+          borderColor: '#5A4B9F',
+          backgroundColor: 'rgba(90, 75, 159, 0.1)',
           fill: true,
           tension: 0.4,
         },
@@ -159,7 +159,7 @@ export class Instructor implements OnInit {
         {
           label: 'Watch time (seconds)',
           data: lessons.map((l) => l.totalWatchTimeSeconds),
-          backgroundColor: '#6366f1',
+          backgroundColor: '#5A4B9F',
           borderRadius: 4,
         },
       ],

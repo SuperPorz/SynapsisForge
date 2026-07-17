@@ -2,21 +2,21 @@
   <h1 class="mb-8 text-2xl font-bold text-heading">My profile</h1>
 
   @if (profile(); as p) {
-    <div class="rounded-xl border border-gray-200 bg-card-bg p-8 dark:border-gray-700 dark:bg-gray-800">
+    <div class="rounded-xl border border-brand-slate/30 bg-card-bg p-8">
       @if (!editing()) {
         <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-          <div class="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+          <div class="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 dark:bg-brand-slate">
             @if (p.avatar_url) {
               <img loading="lazy" [src]="p.avatar_url" [alt]="p.first_name" class="h-full w-full object-cover" />
             } @else {
-              <span class="text-3xl font-bold text-gray-400">{{ p.first_name[0] }}{{ p.last_name[0] }}</span>
+              <span class="text-3xl font-bold text-brand-white/50">{{ p.first_name[0] }}{{ p.last_name[0] }}</span>
             }
           </div>
           <div class="text-center sm:text-left">
             <h2 class="text-xl font-bold text-heading">{{ p.first_name }} {{ p.last_name }}</h2>
             <p class="text-sm text-fg-muted">{{ p.email }}</p>
             @if (p.bio) {
-              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">{{ p.bio }}</p>
+              <p class="mt-2 text-sm text-fg dark:text-brand-white/80">{{ p.bio }}</p>
             }
             <p class="mt-2 text-xs text-fg-muted">Member since {{ p.createdAt | date:'longDate' }}</p>
             <button (click)="startEditing()" class="mt-4 rounded-lg bg-fg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong">
@@ -27,36 +27,36 @@
       } @else {
         <form (ngSubmit)="saveProfile()" class="space-y-5">
           <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-            <div class="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            <div class="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 dark:bg-brand-slate">
               @if (editForm.avatar_url) {
                 <img loading="lazy" [src]="editForm.avatar_url" alt="Avatar" class="h-full w-full object-cover" />
               } @else {
-                <span class="text-3xl font-bold text-gray-400">{{ p.first_name[0] }}{{ p.last_name[0] }}</span>
+                <span class="text-3xl font-bold text-brand-white/50">{{ p.first_name[0] }}{{ p.last_name[0] }}</span>
               }
             </div>
             <div class="flex-1 space-y-4">
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Avatar URL</label>
-                <input [(ngModel)]="editForm.avatar_url" name="avatar_url" type="url" class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm transition-colors focus:border-fg-brand focus:outline-none focus:ring-1 focus:ring-fg-brand dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" placeholder="https://example.com/avatar.jpg" />
+                <label class="mb-1 block text-sm font-medium text-fg dark:text-brand-white/80">Avatar URL</label>
+                <input [(ngModel)]="editForm.avatar_url" name="avatar_url" type="url" class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm transition-colors focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange dark:border-brand-slate/60 dark:bg-brand-slate dark:text-brand-white" placeholder="https://example.com/avatar.jpg" />
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">First name</label>
-                  <input [(ngModel)]="editForm.first_name" name="first_name" required class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm transition-colors focus:border-fg-brand focus:outline-none focus:ring-1 focus:ring-fg-brand dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
+                  <label class="mb-1 block text-sm font-medium text-fg dark:text-brand-white/80">First name</label>
+                  <input [(ngModel)]="editForm.first_name" name="first_name" required class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm transition-colors focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange dark:border-brand-slate/60 dark:bg-brand-slate dark:text-brand-white" />
                 </div>
                 <div>
-                  <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Last name</label>
-                  <input [(ngModel)]="editForm.last_name" name="last_name" required class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm transition-colors focus:border-fg-brand focus:outline-none focus:ring-1 focus:ring-fg-brand dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
+                  <label class="mb-1 block text-sm font-medium text-fg dark:text-brand-white/80">Last name</label>
+                  <input [(ngModel)]="editForm.last_name" name="last_name" required class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm transition-colors focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange dark:border-brand-slate/60 dark:bg-brand-slate dark:text-brand-white" />
                 </div>
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
-                <textarea [(ngModel)]="editForm.bio" name="bio" rows="3" class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm transition-colors focus:border-fg-brand focus:outline-none focus:ring-1 focus:ring-fg-brand dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500" placeholder="Tell us about yourself..."></textarea>
+                <label class="mb-1 block text-sm font-medium text-fg dark:text-brand-white/80">Bio</label>
+                <textarea [(ngModel)]="editForm.bio" name="bio" rows="3" class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm transition-colors focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange dark:border-brand-slate/60 dark:bg-brand-slate dark:text-brand-white dark:placeholder:text-brand-white/50" placeholder="Tell us about yourself..."></textarea>
               </div>
             </div>
           </div>
-          <div class="flex justify-end gap-3 border-t border-gray-200 pt-5 dark:border-gray-700">
-            <button type="button" (click)="cancelEditing()" class="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+          <div class="flex justify-end gap-3 border-t border-gray-200 pt-5 dark:border-brand-slate/50">
+            <button type="button" (click)="cancelEditing()" class="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-fg transition-colors hover:bg-gray-50 dark:border-brand-slate/60 dark:text-brand-white/80 dark:hover:bg-brand-slate">
               Cancel
             </button>
             <button type="submit" [disabled]="saving()" class="rounded-lg bg-fg-brand px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-fg-brand-strong disabled:opacity-50">

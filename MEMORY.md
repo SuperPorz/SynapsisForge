@@ -1336,3 +1336,17 @@ Missing API endpoints added (all `freshness` strategy):
 - `infra/reset.sh` now downloads + uploads the video after every seed (step between seed and "Start all services")
 - s3Key derivation: `filename.toLowerCase().replace(/[^a-z0-9._-]/g, '_')` — kept identical in TypeScript (mongo.seed.ts) and bash (reset.sh)
 - `upload-videos-to-s3.ts` simplified to single video, kept as manual fallback
+
+## Brand UI rebrand (2026-07-18)
+
+- **Palette**: `brand-purple #5A4B9F`, `brand-orange #F47316`, `brand-navy #1C1E2B`, `brand-slate #3A3F4D`, `brand-white #F0F1F6`
+- **Fonts**: Poppins 700/800 (headings), Open Sans 400/600 (body) — loaded via Google Fonts `@import` in `styles.css`
+- **No tailwind.config.js/ts** — all brand tokens in `@theme` block in `styles.css`
+- **Semantic tokens**: `fg-brand` = brand-purple, `heading` = `#111827` light / `#F0F1F6` dark, `surface` = white light / brand-navy dark, `surface-alt` = brand-white light / brand-slate dark, `card-bg` = `#e5e5e5` light / brand-slate dark
+- **Focus ring**: `:focus-visible` uses brand-orange via CSS, form inputs use `focus:border-brand-orange focus:ring-brand-orange` via Tailwind
+- **CTA buttons**: gradient (purple→orange) reserved for primary CTA on hero; `bg-fg-brand` used for standard purple CTAs
+- **Progress bars**: active progress uses `bg-brand-orange`
+- **Dark mode backgrounds**: `dark:bg-gray-800` → `dark:bg-brand-slate`, `dark:bg-gray-900` removed (handled by semantic tokens)
+- **Dark mode borders**: `dark:border-gray-700` → `dark:border-brand-slate/50`, `dark:border-gray-600` → `dark:border-brand-slate/60`
+- **Chart.js colors**: `#6366f1` → `#5A4B9F` in admin.ts and instructor.ts
+- **Build note**: `@import url(...)` for fonts appears after `@layer theme` in the compiled CSS — harmless warning, no functional impact

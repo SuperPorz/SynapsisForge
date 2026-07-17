@@ -9,7 +9,7 @@
 
     @if (canReview() && !showForm()) {
       @if (hasReviewed()) {
-        <button type="button" (click)="openEditForm()" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-fg-muted transition-colors hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+        <button type="button" (click)="openEditForm()" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-fg-muted transition-colors hover:bg-gray-100 dark:border-brand-slate/60 dark:hover:bg-gray-700">
           Edit your review
         </button>
       } @else {
@@ -31,7 +31,7 @@
   }
 
   @if (showForm()) {
-    <div class="rounded-xl border border-gray-200 bg-card-bg p-5 dark:border-gray-700">
+    <div class="rounded-xl border border-brand-slate/30 bg-card-bg p-5">
       <h3 class="mb-4 font-semibold text-heading">{{ editingReviewId() ? 'Edit your review' : 'Write a review' }}</h3>
 
       <div class="mb-4">
@@ -52,7 +52,7 @@
         <textarea
           [(ngModel)]="formComment"
           rows="3"
-          class="w-full rounded-lg border border-gray-300 bg-surface p-3 text-sm text-heading outline-none transition-colors focus:border-fg-brand focus:ring-1 focus:ring-fg-brand dark:border-gray-600 dark:bg-gray-800"
+          class="w-full rounded-lg border border-gray-300 bg-surface p-3 text-sm text-heading outline-none transition-colors focus:border-brand-orange focus:ring-1 focus:ring-brand-orange dark:border-brand-slate/60 dark:bg-brand-slate"
           placeholder="Share your experience..."
         ></textarea>
       </div>
@@ -75,7 +75,7 @@
   @if (reviews().length > 0) {
     <div class="space-y-4">
       @for (review of reviews(); track review.id) {
-        <div class="rounded-xl border border-gray-200 bg-card-bg p-5 dark:border-gray-700">
+        <div class="rounded-xl border border-brand-slate/30 bg-card-bg p-5">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-fg-brand/10 text-sm font-bold text-fg-brand">

@@ -1,26 +1,26 @@
-<header class="sticky top-0 z-50 border-b border-gray-200 bg-gray-200/95 backdrop-blur supports-[backdrop-filter]:bg-gray-200/80 dark:border-gray-700 dark:bg-gray-900/95">
+<header class="sticky top-0 z-50 border-b border-brand-slate/30 bg-brand-navy/95 backdrop-blur supports-[backdrop-filter]:bg-brand-navy/80">
     <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
     <div class="flex items-center gap-10">
       <a routerLink="/" class="flex items-center">
         <img src="/brand_identity.png" alt="Synapsis Forge" class="h-14 w-auto" loading="lazy" />
       </a>
       <nav class="hidden items-center gap-1 md:flex">
-        <a routerLink="/" routerLinkActive="text-fg-brand font-medium" [routerLinkActiveOptions]="{exact:true}" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
+        <a routerLink="/" routerLinkActive="text-brand-orange font-medium" [routerLinkActiveOptions]="{exact:true}" class="rounded-lg px-4 py-2 text-base text-brand-white/80 transition-colors hover:bg-brand-slate hover:text-brand-white">
           Home
         </a>
-        <a routerLink="/courses" routerLinkActive="text-fg-brand font-medium" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
+        <a routerLink="/courses" routerLinkActive="text-brand-orange font-medium" class="rounded-lg px-4 py-2 text-base text-brand-white/80 transition-colors hover:bg-brand-slate hover:text-brand-white">
           Courses
         </a>
         @if (auth.isAuthenticated()) {
-          <a routerLink="/dashboard" routerLinkActive="text-fg-brand font-medium" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
+          <a routerLink="/dashboard" routerLinkActive="text-brand-orange font-medium" class="rounded-lg px-4 py-2 text-base text-brand-white/80 transition-colors hover:bg-brand-slate hover:text-brand-white">
             Dashboard
           </a>
-          <a [routerLink]="auth.plan() === 'PREMIUM' ? '/dashboard/subscription' : '/subscribe'" routerLinkActive="ring-2 ring-fg-brand" class="rounded-lg bg-fg-brand px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-fg-brand-strong">
+          <a [routerLink]="auth.plan() === 'PREMIUM' ? '/dashboard/subscription' : '/subscribe'" routerLinkActive="ring-2 ring-brand-orange" class="rounded-lg bg-fg-brand px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-fg-brand-strong">
             Premium
           </a>
         }
         @if (auth.role() === 'ADMIN') {
-          <a routerLink="/admin" routerLinkActive="text-fg-brand font-medium" class="rounded-lg bg-gray-700 px-4 py-2 text-base text-white transition-colors hover:bg-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-100">
+          <a routerLink="/admin" routerLinkActive="text-brand-orange font-medium" class="rounded-lg px-4 py-2 text-base text-brand-white/80 transition-colors hover:bg-brand-slate hover:text-brand-white">
             Admin
           </a>
         }
@@ -29,33 +29,33 @@
     <div class="flex items-center gap-3">
       <!-- Cart icon -->
       @if (auth.isAuthenticated()) {
-        <a routerLink="/cart" aria-label="Shopping cart" class="relative rounded-lg bg-orange-500 p-2 text-black transition-colors hover:bg-orange-600">
-          <svg class="h-6 w-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/cart" aria-label="Shopping cart" class="relative rounded-lg bg-brand-orange p-2 text-white transition-colors hover:bg-brand-orange/80">
+          <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
           </svg>
           @if (cart.count() > 0) {
-            <span class="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-black px-1 text-[10px] font-bold leading-none text-white">
+            <span class="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand-orange px-1 text-[10px] font-bold leading-none text-white">
               {{ cart.count() }}
             </span>
           }
         </a>
       }
       <!-- Mobile hamburger -->
-      <button (click)="_mobileMenuOpen.set(!_mobileMenuOpen())" class="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 md:hidden dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" aria-label="Toggle menu">
+      <button (click)="_mobileMenuOpen.set(!_mobileMenuOpen())" class="rounded-lg p-2 text-brand-white/60 transition-colors hover:bg-brand-slate hover:text-brand-white md:hidden" aria-label="Toggle menu">
         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
 
 
       @if (auth.isAuthenticated()) {
-        <span class="hidden text-base text-gray-500 md:inline dark:text-gray-400">{{ auth.currentUser()?.email }}</span>
-        <a routerLink="/dashboard/profile" class="hidden rounded-lg border border-fg-brand/30 px-4 py-2 text-base font-medium text-fg-brand transition-colors hover:bg-fg-brand hover:text-white md:inline-block dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-fg-brand dark:hover:text-white">
+        <span class="hidden text-base text-brand-white/60 md:inline">{{ auth.currentUser()?.email }}</span>
+        <a routerLink="/dashboard/profile" class="hidden rounded-lg border border-brand-white/30 px-4 py-2 text-base font-medium text-brand-white transition-colors hover:bg-brand-orange hover:text-white md:inline-block">
           Profile
         </a>
-        <button (click)="auth.logout()" class="rounded-lg border border-gray-300 px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800">
+        <button (click)="auth.logout()" class="rounded-lg border border-brand-slate px-4 py-2 text-base font-medium text-brand-white/70 transition-colors hover:bg-brand-slate hover:text-brand-white">
           Logout
         </button>
       } @else {
-        <a routerLink="/login" class="rounded-lg border border-gray-300 px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800">
+        <a routerLink="/login" class="rounded-lg border border-brand-slate px-4 py-2 text-base font-medium text-brand-white/70 transition-colors hover:bg-brand-slate hover:text-brand-white">
           Login
         </a>
         <a routerLink="/register" class="rounded-lg bg-fg-brand px-4 py-2 text-base font-medium text-white transition-colors hover:bg-fg-brand-strong">
@@ -68,28 +68,28 @@
   <!-- Mobile dropdown menu -->
   @if (_mobileMenuOpen()) {
     <div (click)="_mobileMenuOpen.set(false)" class="fixed inset-0 z-30 md:hidden"></div>
-    <div class="absolute left-0 right-0 top-full z-40 mx-4 mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl md:hidden dark:border-gray-700 dark:bg-gray-900">
-      <nav class="divide-y divide-gray-100 dark:divide-gray-800">
-        <a (click)="_mobileMenuOpen.set(false)" routerLink="/" routerLinkActive="text-fg-brand font-semibold" [routerLinkActiveOptions]="{exact:true}" class="flex items-center gap-3 px-5 py-4 text-base text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800">
+    <div class="absolute left-0 right-0 top-full z-40 mx-4 mt-2 overflow-hidden rounded-2xl border border-brand-slate bg-brand-navy shadow-2xl md:hidden">
+      <nav class="divide-y divide-brand-slate/50">
+        <a (click)="_mobileMenuOpen.set(false)" routerLink="/" routerLinkActive="text-brand-orange font-semibold" [routerLinkActiveOptions]="{exact:true}" class="flex items-center gap-3 px-5 py-4 text-base text-brand-white/80 transition-colors hover:bg-brand-slate">
           <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
           Home
         </a>
-        <a (click)="_mobileMenuOpen.set(false)" routerLink="/courses" routerLinkActive="text-fg-brand font-semibold" class="flex items-center gap-3 px-5 py-4 text-base text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800">
+        <a (click)="_mobileMenuOpen.set(false)" routerLink="/courses" routerLinkActive="text-brand-orange font-semibold" class="flex items-center gap-3 px-5 py-4 text-base text-brand-white/80 transition-colors hover:bg-brand-slate">
           <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
           Courses
         </a>
         @if (auth.isAuthenticated()) {
-          <a (click)="_mobileMenuOpen.set(false)" routerLink="/dashboard" routerLinkActive="text-fg-brand font-semibold" class="flex items-center gap-3 px-5 py-4 text-base text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800">
+          <a (click)="_mobileMenuOpen.set(false)" routerLink="/dashboard" routerLinkActive="text-brand-orange font-semibold" class="flex items-center gap-3 px-5 py-4 text-base text-brand-white/80 transition-colors hover:bg-brand-slate">
             <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
             Dashboard
           </a>
-          <a (click)="_mobileMenuOpen.set(false)" [routerLink]="auth.plan() === 'PREMIUM' ? '/dashboard/subscription' : '/subscribe'" routerLinkActive="text-fg-brand font-semibold" class="flex items-center gap-3 px-5 py-4 text-base font-semibold text-fg-brand transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+          <a (click)="_mobileMenuOpen.set(false)" [routerLink]="auth.plan() === 'PREMIUM' ? '/dashboard/subscription' : '/subscribe'" routerLinkActive="text-brand-orange font-semibold" class="flex items-center gap-3 px-5 py-4 text-base font-semibold text-brand-orange transition-colors hover:bg-brand-slate">
             <svg class="h-5 w-5 shrink-0 text-fg-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
             Premium
           </a>
         }
         @if (auth.role() === 'ADMIN') {
-          <a (click)="_mobileMenuOpen.set(false)" routerLink="/admin" routerLinkActive="text-fg-brand font-semibold" class="flex items-center gap-3 px-5 py-4 text-base text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800">
+          <a (click)="_mobileMenuOpen.set(false)" routerLink="/admin" routerLinkActive="text-brand-orange font-semibold" class="flex items-center gap-3 px-5 py-4 text-base text-brand-white/80 transition-colors hover:bg-brand-slate">
             <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             Admin
           </a>

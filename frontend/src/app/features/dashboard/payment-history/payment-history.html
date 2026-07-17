@@ -9,14 +9,14 @@
       <div class="h-8 w-8 animate-spin rounded-full border-4 border-fg-brand border-t-transparent"></div>
     </div>
   } @else if (payments().length === 0) {
-    <div class="rounded-xl border border-dashed border-gray-300 bg-card-bg p-12 text-center dark:border-gray-600">
+    <div class="rounded-xl border border-dashed border-gray-300 bg-card-bg p-12 text-center dark:border-brand-slate/60">
       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
       <p class="mt-4 text-sm text-gray-500">No payments yet</p>
     </div>
   } @else {
-    <div class="overflow-hidden rounded-xl border border-gray-200 bg-card-bg dark:border-gray-700">
+    <div class="overflow-hidden rounded-xl border border-brand-slate/30 bg-card-bg">
       <table class="w-full text-left text-sm">
-        <thead class="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        <thead class="border-b border-gray-200 bg-brand-slate/10 text-xs uppercase text-brand-white/50 dark:border-brand-slate/50">
           <tr>
             <th class="px-4 py-3 font-medium">Date</th>
             <th class="px-4 py-3 font-medium">Course</th>
@@ -26,7 +26,7 @@
             <th class="px-4 py-3 font-medium text-right">Receipt</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <tbody class="divide-y divide-brand-slate/20">
           @for (p of payments(); track p.id) {
             <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
               <td class="whitespace-nowrap px-4 py-3 text-gray-700 dark:text-gray-300">
@@ -74,11 +74,11 @@
         <span>Showing {{ (page() - 1) * limit() + 1 }}–{{ Math.min(page() * limit(), total()) }} of {{ total() }}</span>
         <div class="flex gap-2">
           <button (click)="prevPage()" [disabled]="page() <= 1"
-                  class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm transition-colors hover:bg-gray-100 disabled:opacity-40 dark:border-gray-600 dark:hover:bg-gray-800">
+                  class="rounded-lg border border-brand-slate px-3 py-1.5 text-sm transition-colors hover:bg-brand-slate disabled:opacity-40">
             Previous
           </button>
           <button (click)="nextPage()" [disabled]="page() * limit() >= total()"
-                  class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm transition-colors hover:bg-gray-100 disabled:opacity-40 dark:border-gray-600 dark:hover:bg-gray-800">
+                  class="rounded-lg border border-brand-slate px-3 py-1.5 text-sm transition-colors hover:bg-brand-slate disabled:opacity-40">
             Next
           </button>
         </div>

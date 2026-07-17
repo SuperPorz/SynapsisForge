@@ -1,12 +1,12 @@
 <div class="space-y-2">
   @if (uploading()) {
-    <div class="rounded-lg border border-fg-brand/20 bg-fg-brand/5 p-4">
-      <p class="mb-2 text-sm font-medium text-fg-brand">Uploading video...</p>
+    <div class="rounded-lg border border-brand-orange/20 bg-brand-orange/5 p-4">
+      <p class="mb-2 text-sm font-medium text-brand-orange">Uploading video...</p>
       @if (progress(); as p) {
-        <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-          <div class="h-full rounded-full bg-fg-brand transition-all duration-300" [style.width.%]="p.percent"></div>
+        <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+          <div class="h-full rounded-full bg-brand-orange transition-all duration-300" [style.width.%]="p.percent"></div>
         </div>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ p.percent }}% ({{ (p.loaded / 1024 / 1024).toFixed(1) }}MB / {{ (p.total / 1024 / 1024).toFixed(1) }}MB)</p>
+        <p class="mt-1 text-xs text-gray-500">{{ p.percent }}% ({{ (p.loaded / 1024 / 1024).toFixed(1) }}MB / {{ (p.total / 1024 / 1024).toFixed(1) }}MB)</p>
       }
     </div>
   } @else if (uploadedKey(); as key) {
@@ -20,7 +20,7 @@
       </div>
     </div>
   } @else if (!canUpload()) {
-    <div class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 p-6 dark:border-gray-700">
+    <div class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 p-6 dark:border-brand-slate/50">
       <svg class="mb-2 h-8 w-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
       <p class="text-sm text-gray-400 dark:text-gray-500">Save the course first to enable video upload</p>
     </div>
@@ -35,7 +35,7 @@
       [class.border-gray-300]="!dragOver()"
       [class.hover:border-fg-brand]="!dragOver()"
       [class.hover:bg-fg-brand/[0.03]]="!dragOver()"
-      [class.dark:border-gray-600]="!dragOver()"
+      [class.dark:border-brand-slate/60]="!dragOver()"
       [class.dark:hover:border-fg-brand]="!dragOver()"
       (click)="fileInput.click()"
     >

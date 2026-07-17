@@ -73,7 +73,7 @@ export class Admin implements OnInit {
       datasets: [
         {
           data: s.users_by_role.map((r) => r.count),
-          backgroundColor: ['#6366f1', '#22c55e', '#f59e0b', '#ef4444'],
+          backgroundColor: ['#5A4B9F', '#22c55e', '#f59e0b', '#ef4444'],
           borderWidth: 0,
         },
       ],
@@ -102,8 +102,8 @@ export class Admin implements OnInit {
             if (s?.monthly_revenue) return Math.round(s.monthly_revenue * (i + 1) / 12);
             return 0;
           }),
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+          borderColor: '#5A4B9F',
+          backgroundColor: 'rgba(90, 75, 159, 0.1)',
           fill: true,
           tension: 0.4,
         },

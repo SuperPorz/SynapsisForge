@@ -28,11 +28,11 @@
           </div>
         </div>
         <aside class="lg:col-span-1">
-          <div class="space-y-4 rounded-2xl border border-gray-200 bg-card-bg p-5 dark:border-gray-700 dark:bg-gray-800">
+          <div class="space-y-4 rounded-2xl border border-gray-200 bg-card-bg p-5 dark:border-brand-slate/50 dark:bg-brand-slate">
             <div class="h-44 w-full rounded-lg bg-gray-300 dark:bg-gray-600"></div>
             <div class="h-8 w-20 rounded bg-gray-300 dark:bg-gray-600"></div>
             <div class="h-12 w-full rounded-xl bg-gray-300 dark:bg-gray-600"></div>
-            <hr class="border-gray-200 dark:border-gray-700" />
+            <hr class="border-gray-200 dark:border-brand-slate/50" />
             <div class="space-y-3">
               @for (_ of [1,2,3,4]; track $index) {
                 <div class="flex items-center gap-2">
@@ -59,11 +59,11 @@
 @else {
   @let c = course()!;
 
-  <div class="relative h-72 bg-gray-900">
+  <div class="relative h-72 bg-brand-navy">
     @if (c.thumbnail_url) {
       <img loading="lazy" [src]="c.thumbnail_url" [alt]="c.title" class="absolute inset-0 h-full w-full object-cover opacity-40" />
     }
-    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/60 to-transparent"></div>
 
     <a routerLink="/courses" class="absolute left-4 top-4 z-20 flex items-center gap-1 rounded-lg bg-black/40 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-colors hover:bg-black/60">
       <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -112,9 +112,9 @@
 
         <section>
           <h2 class="mb-4 text-xl font-bold text-heading">Curriculum</h2>
-          <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+          <div class="overflow-hidden rounded-xl border border-brand-slate/30">
             @for (section of c.sections ?? []; track section.id; let last = $last) {
-              <button type="button" (click)="toggleSection(section.id)" class="flex w-full items-center justify-between border-gray-200 bg-gray-50 px-5 py-4 text-left transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700" [class.border-b]="!last || isSectionExpanded(section.id)">
+              <button type="button" (click)="toggleSection(section.id)" class="flex w-full items-center justify-between border-brand-slate/30 bg-brand-slate/10 px-5 py-4 text-left transition-colors hover:bg-brand-slate/20" [class.border-b]="!last || isSectionExpanded(section.id)">
                 <div class="flex items-center gap-3">
                   <span class="text-gray-500 transition-transform duration-200 dark:text-gray-400" [class.rotate-90]="isSectionExpanded(section.id)">
                     <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -125,7 +125,7 @@
               </button>
 
               @if (isSectionExpanded(section.id)) {
-                <ul class="divide-y divide-gray-100 bg-card-bg dark:divide-gray-700 dark:bg-gray-800" [class.border-b]="!last">
+                <ul class="divide-y divide-brand-slate/20 bg-card-bg" [class.border-b]="!last">
                   @for (lesson of section.lessons; track lesson.id) {
                     <li class="flex items-center justify-between px-5 py-3 text-sm text-gray-700 dark:text-gray-300" [class.cursor-pointer]="isEnrolled()" (click)="isEnrolled() && navigateToLesson(lesson.id)">
                       <div class="flex items-center gap-3">
@@ -164,7 +164,7 @@
       </div>
 
       <aside class="lg:col-span-1">
-        <div class="sticky top-8 overflow-hidden rounded-2xl border border-gray-200 bg-card-bg shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="sticky top-8 overflow-hidden rounded-2xl border border-gray-200 bg-card-bg shadow-sm dark:border-brand-slate/50 dark:bg-brand-slate">
           @if (c.thumbnail_url) {
             <img loading="lazy" [src]="c.thumbnail_url" [alt]="c.title" class="h-44 w-full object-cover" />
           } @else {
@@ -225,7 +225,7 @@
               </div>
             }
 
-            <hr class="border-gray-200 dark:border-gray-700" />
+            <hr class="border-gray-200 dark:border-brand-slate/50" />
 
             <ul class="space-y-2 text-sm text-fg-muted">
               <li class="flex items-center gap-2">
