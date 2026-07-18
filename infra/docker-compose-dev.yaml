@@ -38,6 +38,7 @@ services:
       MONGO_PASS: ${MONGO_PASS:-qwerty}
       MONGO_AUTH_SOURCE: admin
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      FCM_CREDENTIALS: ${FCM_CREDENTIALS:-}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-placeholder}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-placeholder}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:3000/auth/google/callback}
@@ -53,7 +54,8 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - uploads_data:/app/uploads
+      - ../backend/uploads:/app/uploads
+      - ../backend/firebase-credentials.json:/app/firebase-credentials.json
     restart: unless-stopped
 
   postgres:

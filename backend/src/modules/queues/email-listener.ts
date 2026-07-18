@@ -5,7 +5,10 @@ import { InjectQueue } from '@nestjs/bullmq';
 
 @Injectable()
 export class EmailListener {
-  constructor(@InjectQueue('email') private readonly emailQueue: Queue) {}
+  constructor(
+    @InjectQueue('email') private readonly emailQueue: Queue,
+    @InjectQueue('push') private readonly pushQueue: Queue,
+  ) {}
 
   @OnEvent('user.registered')
   async handleUserRegistered(payload: {
@@ -36,6 +39,19 @@ export class EmailListener {
       courseTitle: payload.courseTitle,
       courseUrl: `http://localhost:4200/courses/${payload.courseId}`,
     });
+
+    await this.pushQueue.add('send-push', {
+      userId: payload.userId,
+      notification: {
+        title: 'Enrolled!',
+        body: `You've enrolled in ${payload.courseTitle}`,
+        type: 'course_update',
+        metadata: {
+          courseId: payload.courseId,
+          enrollmentId: payload.enrollmentId,
+        },
+      },
+    });
   }
 
   @OnEvent('subscription.charge_failed')
@@ -47,6 +63,16 @@ export class EmailListener {
     await this.emailQueue.add('send-subscription-failed', {
       to: payload.email,
       name: payload.name,
+    });
+
+    await this.pushQueue.add('send-push', {
+      userId: payload.userId,
+      notification: {
+        title: 'Payment failed',
+        body: 'Your subscription payment failed. Please update your payment method.',
+        type: 'course_update',
+        metadata: {},
+      },
     });
   }
 }

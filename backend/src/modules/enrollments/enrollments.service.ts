@@ -174,7 +174,12 @@ export class EnrollmentsService {
     // 5. Se completato al 100%, segna la data ed emetti l'evento
     if (enrollment.progress_percent === 100 && !enrollment.completed_at) {
       enrollment.completed_at = new Date();
-      this.eventEmitter.emit('enrollment.completed', { enrollmentId: enrollment.id });
+      this.eventEmitter.emit('enrollment.completed', {
+        enrollmentId: enrollment.id,
+        courseId: enrollment.course.id,
+        courseTitle: enrollment.course.title,
+        userId: enrollment.student.userId,
+      });
     }
 
     const saved = await this.enrollmentRepository.save(enrollment);

@@ -1388,5 +1388,8 @@ Missing API endpoints added (all `freshness` strategy):
 - Upsert logic: `findOne({ user_id, platform })` → update existing or create new
 - `NotificationsModule` exports `NotificationsService` for future use by push-sending service
 - Both entities are registered in `TypeOrmModule.forFeature` in the module; `synchronize: true` in AppModule creates tables automatically
-- FCM sending not yet implemented — this is just the device registration layer
+- FCM sending implemented via BullMQ `push` queue processor (`push-queue.processor.ts`) — see PUSH.md
+- Firebase Admin SDK initialized using modular `firebase-admin/app` + `firebase-admin/messaging` APIs (v14)
+- `FCM_CREDENTIALS` env var holds the service account JSON (single-line); falls back to ADC if absent
+- Push processor: looks up active device tokens → `sendEachForMulticast` → logs to `NotificationLog` → deactivates invalid tokens
 - Naming follows existing conventions: snake_case columns, UUID PK, index on user_id

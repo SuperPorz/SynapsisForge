@@ -26,6 +26,7 @@ export class QueuesController {
     @InjectQueue('certificate') private readonly certificateQueue: Queue,
     @InjectQueue('maintenance') private readonly maintenanceQueue: Queue,
     @InjectQueue('receipt') private readonly receiptQueue: Queue,
+    @InjectQueue('push') private readonly pushQueue: Queue,
   ) {}
 
   @Public()
@@ -109,5 +110,38 @@ export class QueuesController {
     const name = jobName || 'cleanup-expired-tokens';
     const job = await this.maintenanceQueue.add(name, {});
     return { jobId: job.id, jobName: name, message: 'Maintenance job queued' };
+  }
+
+  @Public()
+  @Post('push/test')
+  @ApiOperation({ summary: 'Send a test push notification to a user' })
+  @ApiBody({
+    description: 'User ID and notification content',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        userId: { type: 'string', example: 'uuid' },
+        title: { type: 'string', example: 'Test notification' },
+        body: { type: 'string', example: 'This is a test push' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Push job queued.' })
+  async testPush(
+    @Body('userId') userId: string,
+    @Body('title') title: string,
+    @Body('body') body: string,
+  ) {
+    const job = await this.pushQueue.add('send-push', {
+      userId,
+      notification: {
+        title: title || 'Test notification',
+        body: body || 'This is a test push notification',
+        type: 'announcement',
+        metadata: {},
+      },
+    });
+    return { jobId: job.id, message: 'Push job queued' };
   }
 }

@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { QueuesProcessor } from './queues.processor';
 import { EmailQueueProcessor } from './email-queue.processor';
+import { PushQueueProcessor } from './push-queue.processor';
 import { EmailListener } from './email-listener';
 import { CertificateListener } from './certificate-listener';
 import { CertificateQueueProcessor } from './certificate-queue.processor';
@@ -20,6 +21,8 @@ import { S3Module } from '../s3/s3.module';
 import { Certificate } from '../../common/entities/certificate.entity';
 import { Enrollment } from '../../common/entities/enrollments.entity';
 import { Payment } from '../../common/entities/payments.entity';
+import { UserDevice } from '../../common/entities/user-device.entity';
+import { NotificationLog } from '../../common/entities/notification-log.entity';
 import { adminAuthMiddleware } from './admin-auth.middleware';
 
 @Module({
@@ -78,6 +81,15 @@ import { adminAuthMiddleware } from './admin-auth.middleware';
         removeOnFail: 50,
       },
     }),
+    BullModule.registerQueue({
+      name: 'push',
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 },
+        removeOnComplete: 100,
+        removeOnFail: 50,
+      },
+    }),
     BullBoardModule.forRoot({
       route: '/admin/queues',
       adapter: ExpressAdapter,
@@ -88,15 +100,23 @@ import { adminAuthMiddleware } from './admin-auth.middleware';
     BullBoardModule.forFeature({ name: 'certificate', adapter: BullMQAdapter }),
     BullBoardModule.forFeature({ name: 'maintenance', adapter: BullMQAdapter }),
     BullBoardModule.forFeature({ name: 'receipt', adapter: BullMQAdapter }),
+    BullBoardModule.forFeature({ name: 'push', adapter: BullMQAdapter }),
     MailModule,
     PdfModule,
     S3Module,
-    TypeOrmModule.forFeature([Certificate, Enrollment, Payment]),
+    TypeOrmModule.forFeature([
+      Certificate,
+      Enrollment,
+      Payment,
+      UserDevice,
+      NotificationLog,
+    ]),
   ],
   controllers: [QueuesController],
   providers: [
     QueuesProcessor,
     EmailQueueProcessor,
+    PushQueueProcessor,
     MaintenanceQueueProcessor,
     EmailListener,
     CertificateListener,
