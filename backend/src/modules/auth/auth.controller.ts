@@ -56,7 +56,11 @@ export class AuthController {
   @Public()
   @Get('/verify-email/:token')
   @ApiOperation({ summary: 'Verify email and return access token' })
-  @ApiParam({ name: 'token', description: 'UUID verification token', type: String })
+  @ApiParam({
+    name: 'token',
+    description: 'UUID verification token',
+    type: String,
+  })
   @ApiResponse({ status: 200, description: 'Email verified successfully.' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token.' })
   async verifyEmail(

@@ -1350,3 +1350,43 @@ Missing API endpoints added (all `freshness` strategy):
 - **Dark mode borders**: `dark:border-gray-700` → `dark:border-brand-slate/50`, `dark:border-gray-600` → `dark:border-brand-slate/60`
 - **Chart.js colors**: `#6366f1` → `#5A4B9F` in admin.ts and instructor.ts
 - **Build note**: `@import url(...)` for fonts appears after `@layer theme` in the compiled CSS — harmless warning, no functional impact
+
+## Push notification endpoints — NotificationsModule (2026-07-18)
+
+### Table `user_devices`
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| user_id | UUID | FK → users, index, CASCADE delete |
+| token | VARCHAR(512) | FCM token |
+| platform | ENUM('android','ios') | DevicePlatform enum |
+| active | BOOLEAN | default true |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+### Table `notification_log`
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| user_id | UUID | FK → users, CASCADE delete |
+| type | VARCHAR(50) | NotificationType enum |
+| title | VARCHAR(255) | |
+| body | TEXT | |
+| sent_at | TIMESTAMPTZ | auto CreateDateColumn |
+| read_at | TIMESTAMPTZ | nullable |
+| metadata | JSONB | courseId, lessonId, enrollmentId, deepLink |
+
+### Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/notifications/devices` | Bearer | Register/upsert device token (upsert by user_id + platform) |
+| DELETE | `/notifications/devices/:tokenId` | Bearer | Remove device token (ownership verified against req.user.id) |
+| GET | `/notifications/devices` | Bearer | List active devices for authenticated user |
+
+### Key implementation details
+- Upsert logic: `findOne({ user_id, platform })` → update existing or create new
+- `NotificationsModule` exports `NotificationsService` for future use by push-sending service
+- Both entities are registered in `TypeOrmModule.forFeature` in the module; `synchronize: true` in AppModule creates tables automatically
+- FCM sending not yet implemented — this is just the device registration layer
+- Naming follows existing conventions: snake_case columns, UUID PK, index on user_id

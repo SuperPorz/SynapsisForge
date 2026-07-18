@@ -147,9 +147,7 @@ export class AuthMobileController {
     description:
       'Invalid, expired, or reused refresh token. Session terminated on reuse detection.',
   })
-  async refresh(
-    @Headers('x-refresh-token') refreshToken: string | undefined,
-  ) {
+  async refresh(@Headers('x-refresh-token') refreshToken: string | undefined) {
     if (!refreshToken) throw new UnauthorizedException();
 
     let payload: { sub: string } | null;

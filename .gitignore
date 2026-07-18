@@ -41,10 +41,5 @@ uploads/*
 !uploads/certificates/.gitkeep
 
 # Agentic files (workflow only, not part of source code)
-AGENTS.md
-COMMANDS.md
-MEMORY.md
-PLAN.md
-TODO.md
 CONTEXT.md
-sessions/
+PUSH.md

@@ -238,8 +238,7 @@ export class AuthService implements OnModuleDestroy {
 
   private getRedis() {
     if (!this.redisClient) {
-      const url =
-        process.env.REDIS_URL || 'redis://localhost:6379';
+      const url = process.env.REDIS_URL || 'redis://localhost:6379';
       this.redisClient = createClient({ url } as any);
       this.redisClient.on('error', (err: Error) =>
         this.logger.error('Redis error:', err.message),
@@ -411,7 +410,12 @@ export class AuthService implements OnModuleDestroy {
       this.configService.get('GOOGLE_CLIENT_ID', { infer: true }),
     );
 
-    let payload: { sub: string; email: string; given_name: string; family_name: string };
+    let payload: {
+      sub: string;
+      email: string;
+      given_name: string;
+      family_name: string;
+    };
     try {
       const ticket = await client.verifyIdToken({
         idToken,
@@ -442,7 +446,9 @@ export class AuthService implements OnModuleDestroy {
   // ─────────────────────────────────────────────────────────────────────────────
   async loginWithGithubCode(code: string): Promise<AuthTokens> {
     const ghClientId = this.configService.get('GH_CLIENT_ID', { infer: true });
-    const ghClientSecret = this.configService.get('GH_CLIENT_SECRET', { infer: true });
+    const ghClientSecret = this.configService.get('GH_CLIENT_SECRET', {
+      infer: true,
+    });
 
     // 1. Scambia il codice per un access token
     let accessToken: string;
@@ -534,7 +540,10 @@ export class AuthService implements OnModuleDestroy {
 
     const resp = await fetch('https://github.com/login/device/code', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
       body: JSON.stringify({
         client_id: ghClientId,
         scope: 'user:email',
@@ -563,19 +572,27 @@ export class AuthService implements OnModuleDestroy {
     deviceCode: string,
   ): Promise<{ status: string } | AuthTokens> {
     const ghClientId = this.configService.get('GH_CLIENT_ID', { infer: true });
-    const ghClientSecret = this.configService.get('GH_CLIENT_SECRET', { infer: true });
+    const ghClientSecret = this.configService.get('GH_CLIENT_SECRET', {
+      infer: true,
+    });
 
     // Fa il polling di GitHub per sapere se l'utente ha autorizzato
-    const tokenResp = await fetch('https://github.com/login/oauth/access_token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        client_id: ghClientId,
-        client_secret: ghClientSecret,
-        device_code: deviceCode,
-        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-      }),
-    });
+    const tokenResp = await fetch(
+      'https://github.com/login/oauth/access_token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: ghClientId,
+          client_secret: ghClientSecret,
+          device_code: deviceCode,
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        }),
+      },
+    );
 
     const data = (await tokenResp.json()) as {
       access_token?: string;

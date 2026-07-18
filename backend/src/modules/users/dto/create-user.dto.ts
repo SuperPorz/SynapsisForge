@@ -1,4 +1,11 @@
-import { IsDate, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsDate,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { Country, UserRole } from '../../../common/entities/enum/users.enum';
 import { ApiProperty } from '@nestjs/swagger';

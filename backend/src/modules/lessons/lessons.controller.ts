@@ -48,7 +48,11 @@ export class LessonsController {
   @ApiOperation({ summary: 'Get lesson with content by lesson ID' })
   @ApiResponse({ status: 200, description: 'Lesson retrieved successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @ApiParam({ name: 'id', description: 'UUID of the lesson', type: String })
   @Get(':id')
   async getLesson(
@@ -70,7 +74,11 @@ export class LessonsController {
   @ApiCreatedResponse({ description: 'Lesson created successfully.' })
   @ApiNotFoundResponse({ description: 'Course not found.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @Post()
   async createLesson(
     @Param('courseId', ParseUuidPipe) courseId: string,
@@ -90,7 +98,11 @@ export class LessonsController {
   @ApiResponse({ status: 200, description: 'Lesson updated successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @ApiParam({ name: 'id', description: 'UUID of the lesson', type: String })
   @Patch(':id')
   async updateLesson(
@@ -112,7 +124,11 @@ export class LessonsController {
   @ApiNoContentResponse({ description: 'Lesson deleted successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @ApiParam({ name: 'id', description: 'UUID of the lesson', type: String })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -137,7 +153,11 @@ export class LessonsController {
   @ApiCreatedResponse({ description: 'Lesson content created successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @ApiParam({ name: 'id', description: 'UUID of the lesson', type: String })
   @Post(':id/content')
   async createContent(
@@ -165,7 +185,11 @@ export class LessonsController {
   })
   @ApiNotFoundResponse({ description: 'Lesson or content not found.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @ApiParam({ name: 'id', description: 'UUID of the lesson', type: String })
   @Patch(':id/content')
   async updateContent(
@@ -187,7 +211,11 @@ export class LessonsController {
   @ApiResponse({ status: 200, description: 'S3 key updated successfully.' })
   @ApiNotFoundResponse({ description: 'Lesson content not found.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @ApiParam({ name: 'id', description: 'UUID of the lesson', type: String })
   @Patch(':id/s3-key')
   async updateS3Key(

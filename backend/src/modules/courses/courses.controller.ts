@@ -309,7 +309,11 @@ export class CoursesController {
   @ApiBody({ type: CreateSectionDto })
   @ApiCreatedResponse({ description: 'Section created successfully.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @Post(':courseId/sections')
   createSection(
     @Param('courseId', ParseUuidPipe) courseId: string,
@@ -325,8 +329,16 @@ export class CoursesController {
   @ApiBody({ type: UpdateSectionDto })
   @ApiResponse({ status: 200, description: 'Section updated successfully.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
-  @ApiParam({ name: 'sectionId', description: 'UUID of the section', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
+  @ApiParam({
+    name: 'sectionId',
+    description: 'UUID of the section',
+    type: String,
+  })
   @Patch(':courseId/sections/:sectionId')
   updateSection(
     @Param('courseId', ParseUuidPipe) courseId: string,
@@ -347,8 +359,16 @@ export class CoursesController {
   @ApiOperation({ summary: 'Delete a section' })
   @ApiNoContentResponse({ description: 'Section deleted successfully.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
-  @ApiParam({ name: 'sectionId', description: 'UUID of the section', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
+  @ApiParam({
+    name: 'sectionId',
+    description: 'UUID of the section',
+    type: String,
+  })
   @Delete(':courseId/sections/:sectionId')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteSection(
@@ -365,7 +385,11 @@ export class CoursesController {
   @ApiBody({ type: ReorderSectionsDto })
   @ApiResponse({ status: 200, description: 'Sections reordered successfully.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
-  @ApiParam({ name: 'courseId', description: 'UUID of the course', type: String })
+  @ApiParam({
+    name: 'courseId',
+    description: 'UUID of the course',
+    type: String,
+  })
   @Patch(':courseId/sections/reorder')
   reorderSections(
     @Param('courseId', ParseUuidPipe) courseId: string,

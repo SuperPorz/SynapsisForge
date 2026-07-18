@@ -24,8 +24,16 @@ export class LessonPlayerController {
     description: 'Signed URL generated successfully.',
   })
   @ApiNotFoundResponse({ description: 'Enrollment or lesson not found.' })
-  @ApiParam({ name: 'enrollmentId', description: 'UUID of the enrollment', type: String })
-  @ApiParam({ name: 'lessonId', description: 'UUID of the lesson', type: String })
+  @ApiParam({
+    name: 'enrollmentId',
+    description: 'UUID of the enrollment',
+    type: String,
+  })
+  @ApiParam({
+    name: 'lessonId',
+    description: 'UUID of the lesson',
+    type: String,
+  })
   @Get(':lessonId/video')
   async getVideoUrl(
     @Param('enrollmentId', ParseUuidPipe) enrollmentId: string,
@@ -44,8 +52,16 @@ export class LessonPlayerController {
   @ApiBody({ type: UpdateLessonProgressDto })
   @ApiResponse({ status: 200, description: 'Progress updated successfully.' })
   @ApiNotFoundResponse({ description: 'Enrollment or lesson not found.' })
-  @ApiParam({ name: 'enrollmentId', description: 'UUID of the enrollment', type: String })
-  @ApiParam({ name: 'lessonId', description: 'UUID of the lesson', type: String })
+  @ApiParam({
+    name: 'enrollmentId',
+    description: 'UUID of the enrollment',
+    type: String,
+  })
+  @ApiParam({
+    name: 'lessonId',
+    description: 'UUID of the lesson',
+    type: String,
+  })
   @Patch(':lessonId/progress')
   async updateProgress(
     @Param('enrollmentId', ParseUuidPipe) enrollmentId: string,

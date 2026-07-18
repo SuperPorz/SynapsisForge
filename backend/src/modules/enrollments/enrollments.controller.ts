@@ -18,10 +18,13 @@ export class EnrollmentsController {
   @Get('my')
   @ApiOperation({
     summary:
-      "Get enrollment for a specific course (if courseId provided) or all user enrollments",
+      'Get enrollment for a specific course (if courseId provided) or all user enrollments',
   })
   @ApiQuery({ name: 'courseId', required: false, type: String })
-  @ApiResponse({ status: 200, description: 'Enrollment found or list of enrollments' })
+  @ApiResponse({
+    status: 200,
+    description: 'Enrollment found or list of enrollments',
+  })
   async getMyEnrollment(
     @Query('courseId') courseId: string | undefined,
     @Req() req: Request & { user: { id: string } },
@@ -36,7 +39,7 @@ export class EnrollmentsController {
   // ─── GET /enrollments/my/ids ─────────────────────────────────
   @Get('my/ids')
   @ApiOperation({
-    summary: "Get IDs of courses the user is enrolled in",
+    summary: 'Get IDs of courses the user is enrolled in',
   })
   @ApiResponse({ status: 200, description: 'List of course IDs.' })
   async getMyEnrolledCourseIds(
@@ -47,7 +50,7 @@ export class EnrollmentsController {
 
   // ─── GET /enrollments/my/activity ────────────────────────────
   @Get('my/activity')
-  @ApiOperation({ summary: "Last 10 completed lessons for the user" })
+  @ApiOperation({ summary: 'Last 10 completed lessons for the user' })
   @ApiResponse({ status: 200, description: 'Recent activity list' })
   async getMyActivity(@Req() req: Request & { user: { id: string } }) {
     const userId = req.user['id'];
@@ -76,7 +79,10 @@ export class EnrollmentsController {
     status: 404,
     description: 'Student profile or course not found',
   })
-  @ApiResponse({ status: 409, description: 'Student already enrolled in this course' })
+  @ApiResponse({
+    status: 409,
+    description: 'Student already enrolled in this course',
+  })
   async enroll(
     @Body() dto: CreateEnrollmentDto,
   ): Promise<ResponseEnrollmentDto> {

@@ -114,8 +114,7 @@ export class AdminController {
   // ─── GET /admin/stats ────────────────────────────────────────────────
   @ApiOperation({
     summary: 'Global platform statistics',
-    description:
-      'Returns platform statistics (users, courses, sales).',
+    description: 'Returns platform statistics (users, courses, sales).',
   })
   @ApiOkResponse({ description: 'Statistics generated successfully.' })
   @Get('stats')

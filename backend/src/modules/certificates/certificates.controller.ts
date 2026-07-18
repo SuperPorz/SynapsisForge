@@ -45,7 +45,7 @@ export class CertificatesController {
   @ApiBearerAuth()
   @Get('my')
   @ApiOperation({
-    summary: "Get all certificates for the authenticated user",
+    summary: 'Get all certificates for the authenticated user',
   })
   @ApiResponse({ status: 200, description: 'List of certificates' })
   findMy(@Req() req: Request & { user: { id: string } }) {
@@ -57,7 +57,11 @@ export class CertificatesController {
   @ApiBearerAuth()
   @Get(':id/download')
   @ApiOperation({ summary: 'Download certificate PDF (presigned URL)' })
-  @ApiParam({ name: 'id', description: 'UUID of the certificate', type: String })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the certificate',
+    type: String,
+  })
   @ApiResponse({ status: 200, description: 'Presigned download URL' })
   @ApiResponse({ status: 404, description: 'Certificate not found' })
   @ApiResponse({ status: 403, description: 'Access denied' })
@@ -73,7 +77,11 @@ export class CertificatesController {
   @ApiBearerAuth()
   @Get(':id')
   @ApiOperation({ summary: 'Get a certificate by internal ID' })
-  @ApiParam({ name: 'id', description: 'UUID of the certificate', type: String })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the certificate',
+    type: String,
+  })
   @ApiResponse({ status: 200, description: 'Certificate found' })
   @ApiResponse({ status: 404, description: 'Certificate not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -84,7 +92,11 @@ export class CertificatesController {
   @ApiBearerAuth()
   @Patch(':id/revoke')
   @ApiOperation({ summary: 'Revoke a certificate' })
-  @ApiParam({ name: 'id', description: 'UUID of the certificate', type: String })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the certificate',
+    type: String,
+  })
   @ApiResponse({ status: 200, description: 'Certificate revoked' })
   @ApiResponse({ status: 400, description: 'Certificate already revoked' })
   @ApiResponse({ status: 404, description: 'Certificate not found' })

@@ -162,9 +162,10 @@ export async function seedUsers(ds: DataSource): Promise<SeededUsers> {
 
   const hash = await bcrypt.hash('Password123!', 10);
   const DEMO_ADMIN_PASSWORD = process.env.DEMO_ADMIN_PASSWORD || 'Password123!';
-  const adminHash = DEMO_ADMIN_PASSWORD === 'Password123!'
-    ? hash
-    : await bcrypt.hash(DEMO_ADMIN_PASSWORD, 10);
+  const adminHash =
+    DEMO_ADMIN_PASSWORD === 'Password123!'
+      ? hash
+      : await bcrypt.hash(DEMO_ADMIN_PASSWORD, 10);
 
   // ── Admin (configurable via DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD) ───────
   const adminUser = await userRepo.save(

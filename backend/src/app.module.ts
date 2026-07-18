@@ -29,6 +29,7 @@ import { PdfModule } from './modules/pdf/pdf.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { CartModule } from './modules/cart/cart.module';
 import { S3Module } from './modules/s3/s3.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
 
 @Module({
@@ -111,6 +112,7 @@ import { RedisThrottlerStorage } from './modules/cache/redis-throttler-storage';
     PaymentsModule,
     CartModule,
     S3Module,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
