@@ -167,7 +167,7 @@ export async function seedUsers(ds: DataSource): Promise<SeededUsers> {
       ? hash
       : await bcrypt.hash(DEMO_ADMIN_PASSWORD, 10);
 
-  // ── Admin (configurable via DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD) ───────
+  // ── Admin 1 (configurable via DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD) ──────
   const adminUser = await userRepo.save(
     userRepo.create({
       email: DEMO_ADMIN_EMAIL,
@@ -185,6 +185,27 @@ export async function seedUsers(ds: DataSource): Promise<SeededUsers> {
     studentRepo.create({ userId: adminUser.id, user: adminUser }),
   );
   console.log(`  ✅ admin: ${DEMO_ADMIN_EMAIL}`);
+
+  // ── Admin 2 (hardcoded fallback — always present) ──────────────────────────
+  if (DEMO_ADMIN_EMAIL !== 'admin@example.com') {
+    const admin2 = await userRepo.save(
+      userRepo.create({
+        email: 'admin@example.com',
+        first_name: 'Admin',
+        last_name: 'Demo',
+        birth_date: new Date('1995-06-15'),
+        country: Country.ITALY,
+        role: UserRole.ADMIN,
+        isVerified: true,
+        password: hash,
+        is_active: true,
+      }),
+    );
+    await studentRepo.save(
+      studentRepo.create({ userId: admin2.id, user: admin2 }),
+    );
+    console.log('  ✅ admin: admin@example.com');
+  }
 
   // ── Instructors + profiles ────────────────────────────────────────────────
   const instructorProfiles: InstructorProfile[] = [];
