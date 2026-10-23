@@ -12,4 +12,8 @@
 
 2026-10-23 — User authorized commit/push with CI skipped and deferred development dependency updates. Read-only disk diagnosis identified MongoDB's unrotated container log as the main space consumer; no cleanup performed. Detailed findings are in MEMORY.md.
 
+2026-10-23 — At the user's request, cleared only MongoDB's Docker log without restarting containers or touching database data; disk use fell from 92% to 52%, with 8.9 GiB available. Containers remained healthy and direct/proxied API health checks passed; log rotation remains unchanged.
+
+2026-10-23 — Enabled MongoDB-only log rotation after independent script review and fresh backup. Recreated only MongoDB; its application collections/document counts and primary data volume were preserved. Effective logging settings and application/proxy/public HTTPS checks passed; disk remained at 52% used. Operational configuration is documented in MEMORY.md.
+
 Sources: https://app.opencve.io/cve/CVE-2026-111497 and https://nodejs.org/en/blog/vulnerability/october-2026-security-releases. The current GitHub workflow includes destructive database reseeding and must not be used unchanged for a runtime-only security update.
